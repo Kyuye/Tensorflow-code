@@ -1,6 +1,10 @@
 import tensorflow as tf
 
-const = tf.constant("hello world")
+data = [[1, 2, 3, 4, 5],
+        [6, 7, 8, 9, 10],
+        [20, 19, 18, 17, 16],
+        [8, 7, 6, 5, 4]]
 
-with tf.Session() as sess:
-    print(sess.run(const))
+label = [1, 1, 0, 0]
+
+print(data,label)
