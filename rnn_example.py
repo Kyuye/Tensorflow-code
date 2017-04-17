@@ -20,7 +20,7 @@ class RNN(object):
     """
      * RNN model
     """
-    def __init__(self):
+    def init(self):
         self._gen_sim_data()
         self._build_batch()
         self._set_variables()
