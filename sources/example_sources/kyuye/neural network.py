@@ -36,7 +36,7 @@ saver = tf.train.Saver()
 
 with tf.Session() as sess:
     # sess.run(init)
-    saver.restore(sess, './heal_the_world/example_sources/test')
+    saver.restore(sess, './documents')
     print()
     print("training start")
 
