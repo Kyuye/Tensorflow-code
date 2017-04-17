@@ -1,5 +1,5 @@
 """
-* this is rnn example
+* this is rnn practice code
 """
 
 import tensorflow as tf
@@ -79,38 +79,38 @@ class RNN(object):
             CONST.steps,
             CONST.input_size)
 
-        cls.ts_batch_y = tf.reshape(ts_y[:-1], sz_batch)
-        cls.ts_batch_y_ = tf.reshape(ts_y[1:], sz_batch)
+        self.ts_batch_y = tf.reshape(ts_y[:-1], sz_batch)
+        self.ts_batch_y_ = tf.reshape(ts_y[1:], sz_batch)
 
 
-    def build_batch(cls):
-        batch_set = [cls.ts_batch_y, cls.ts_batch_y_]
-        cls.b_train, cls.b_label = tf.train.batch(batch_set, CONST.batch_size, enqueue_many=True)
+    def build_batch(self):
+        batch_set = [self.ts_batch_y, self.ts_batch_y_]
+        self.b_train, self.b_label = tf.train.batch(batch_set, CONST.batch_size, enqueue_many=True)
 
-    def set_variables(cls):
+    def set_variables(self):
         sz_weight = (CONST.recurrent, CONST.state_size, CONST.input_vector_size)
         sz_bias = (CONST.recurrent, 1, CONST.input_vector_size)
         linear_w = tf.Variable(tf.truncated_normal(sz_weight))
         linear_b = tf.Variable(tf.zeros(sz_bias))
 
-        cls.linear_w = tf.unstack(linear_w)
-        cls.linear_b = tf.unstack(linear_b)
+        self.linear_w = tf.unstack(linear_w)
+        self.linear_b = tf.unstack(linear_b)
 
     def build_model(self):
         rnn_cell = tf.nn.rnn_cell.RNNCell(CONST.state_size)
-        cls.input_set = tf.unstack(cls.b_train, axis=1)
-        cls.label_set = tf.unstack(cls.b_label, axis=1)
-        cls.output, _ = tf.nn.rnn(rnn_cell, cls.input_set, dtype=tf.float32)
-        cls.pred = tf.matmul(cls.output, cls.linear_w) + cls.linear_b
+        self.input_set = tf.unstack(self.b_train, axis=1)
+        self.label_set = tf.unstack(self.b_label, axis=1)
+        self.output, _ = tf.nn.rnn(rnn_cell, self.input_set, dtype=tf.float32)
+        self.pred = tf.matmul(self.output, self.linear_w) + self.linear_b
 
     def build_train(self):
         self.loss = 0
         for i in range(CONST.recurrent):
             self.loss += self._mean_square_error(self.pred[i], self.label_set[i])
 
-        cls.train = tf.train.AdamOptimizer(CONST.learning_rate).minimize(cls.loss)
+        self.train = tf.train.AdamOptimizer(CONST.learning_rate).minimize(self.loss)
 
-    def mean_square_error(cls, batch, label):
+    def mean_square_error(self, batch, label):
         return tf.reduce_mean(tf.pow(batch - label, 2))
 
 
