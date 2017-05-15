@@ -34,8 +34,7 @@ class GAN(object):
         reader = tf.WholeFileReader()
         key, value = reader.read(filename_queue)
         record = DataRecord()
-        decoded_image = tf.image.decode_jpeg(value,
-                                             channels=3)  # Assumption:Color images are read and are to be generated
+        decoded_image = tf.image.decode_jpeg(value, channels=3)  # Assumption:Color images are read and are to be generated
 
         # decoded_image_4d = tf.expand_dims(decoded_image, 0)
         # resized_image = tf.image.resize_bilinear(decoded_image_4d, [self.target_image_size, self.target_image_size])
