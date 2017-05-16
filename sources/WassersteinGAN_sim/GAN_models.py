@@ -17,7 +17,7 @@ class GAN(object):
 
         record = DataRecord()
 
-        record.input_image = tf.constant(list(range(10)), tf.float32)
+        record.input_image = tf.constant([[i] for i in range(10)], tf.float32)
         return record
 
     def _read_input_queue(self):
@@ -240,7 +240,6 @@ class WasserstienGAN(GAN):
                 h_conv_t = utils.conv2d_transpose_strided(h, W, b, output_shape=deconv_shape)
                 h_bn = utils.batch_norm(h_conv_t, dims[index + 1], train_phase, scope="gen_bn%d" % index)
                 h = activation(h_bn, name='h_%d' % index)
-
 
             image_size *= 2
             W_pred = utils.weight_variable([4, 4, dims[-1], dims[-2]], name="W_pred")

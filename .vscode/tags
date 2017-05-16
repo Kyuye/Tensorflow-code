@@ -65,12 +65,12 @@ _cross_entropy_loss	../sources/WassersteinGAN.tensorflow-master/models/GAN_model
 _cross_entropy_loss	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _cross_entropy_loss(self, logits, labels, name="x_entropy"):$/;"	kind:member	line:85
 _discriminator	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:101
 _discriminator	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:311
-_discriminator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:254
+_discriminator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:253
 _discriminator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:57
 _gan_loss	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:154
 _gan_loss	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:336
 _gan_loss	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:108
-_gan_loss	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:284
+_gan_loss	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:283
 _gen_onehots	../sources/nlp_models/skip_gram_example.py	/^    def _gen_onehots(cls):$/;"	kind:member	line:55
 _gen_sim_data	../sources/nlp_models/rnn_example.py	/^    def _gen_sim_data(cls):$/;"	kind:member	line:101
 _generator	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):$/;"	kind:member	line:280
@@ -198,7 +198,7 @@ generate_batch	../word2vec/word2vec_basic.py	/^def generate_batch(data, batch_si
 getFacebookPageFeedData	../sources/example_sources/crawler/facebook_crawling.py	/^def getFacebookPageFeedData(page_id, access_token, num_statuses):$/;"	kind:function	line:43
 get_embeddings	../skip_gram_example.py	/^    def get_embeddings(self):$/;"	kind:member	line:94
 get_feed_dict	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^            def get_feed_dict(train_phase=True):$/;"	kind:function	line:351
-get_feed_dict	../sources/WassersteinGAN_sim/GAN_models.py	/^            def get_feed_dict(train_phase=True):$/;"	kind:function	line:299
+get_feed_dict	../sources/WassersteinGAN_sim/GAN_models.py	/^            def get_feed_dict(train_phase=True):$/;"	kind:function	line:298
 get_filename	../sources/example_sources/crawler/movie_subtitle_new.py	/^def get_filename(url):$/;"	kind:function	line:16
 get_filename	../sources/example_sources/crawler/movie_subtitles.py	/^def get_filename():$/;"	kind:function	line:9
 get_tensor_size	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def get_tensor_size(tensor):$/;"	kind:function	line:82
@@ -363,7 +363,7 @@ train_labels	../word2vec/word2vec_basic.py	/^    train_labels = tf.placeholder(t
 train_model	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:235
 train_model	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:343
 train_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:180
-train_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:291
+train_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:290
 training	../rnn_example.py	/^    def training(self):$/;"	kind:member	line:32
 training	../skip_gram_example.py	/^    def training(self):$/;"	kind:member	line:24
 training	../sources/nlp_models/rnn_example.py	/^    def training(self):$/;"	kind:member	line:42
