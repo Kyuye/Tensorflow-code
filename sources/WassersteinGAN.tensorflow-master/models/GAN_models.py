@@ -66,6 +66,9 @@ class GAN(object):
     def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):
         N = len(dims)
         image_size = self.resized_image_size // (2 ** (N - 1))
+
+        #generator_dims = [64 * 16, 64 * 16 // 2, 64 * 16 // 4, 64 * 16 // 8, 3]
+
         with tf.variable_scope(scope_name) as scope:
             W_z = utils.weight_variable([self.z_dim, dims[0] * image_size * image_size], name="W_z")
             b_z = utils.bias_variable([dims[0] * image_size * image_size], name="b_z")

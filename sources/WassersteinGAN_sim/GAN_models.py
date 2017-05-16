@@ -6,9 +6,10 @@ import utils as utils
 
 
 class GAN(object):
-    def __init__(self, z_dim, batch_size):
+    def __init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir):
         self.batch_size = batch_size
         self.z_dim = z_dim
+        self.images = self._read_input_queue()
 
     def _read_input(self):
         class DataRecord(object):
@@ -16,10 +17,10 @@ class GAN(object):
 
         record = DataRecord()
 
-        record.input_image = tf.constant([list(range(10)) for i in range(1000)], tf.float32)
+        record.input_image = tf.constant(list(range(10)), tf.float32)
         return record
 
-    def _read_input_queue(self, filename_queue):
+    def _read_input_queue(self):
         print("Setting up image reader...")
         read_input = self._read_input()
         num_preprocess_threads = 4
@@ -34,19 +35,52 @@ class GAN(object):
         return input_image
 
     def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):
-        image_size = (10,1)
-        W_z = tf.Variable(tf.truncated_normal(image_size))
-        b_z = tf.Variable(tf.zeros((image_size)))
-        h_z = tf.matmul(z, W_z) + b_z
-        h = activation(h_z, name='h_z')
+        N = len(dims)
+        image_size = 10 // (2 ** (N - 1))
 
-        for index in range(N-2):
-            W = tf.Variable()
-            
+        W_z = utils.weight_variable([self.z_dim, dims[0] * image_size * image_size], name="W_z")
+        b_z = utils.bias_variable([dims[0] * image_size * image_size], name="b_z")
+        h_z = tf.matmul(z, W_z) + b_z
+        h_z = tf.reshape(h_z, [-1, image_size, image_size, dims[0]])
+        h_bnz = utils.batch_norm(h_z, dims[0], train_phase, scope="gen_bnz")
+        h = activation(h_bnz, name='h_z')
+
+        for index in range(N - 2):
+            image_size *= 2
+            W = utils.weight_variable([5, 5, dims[index + 1], dims[index]], name="W_%d" % index)
+            b = utils.bias_variable([dims[index + 1]], name="b_%d" % index)
+            deconv_shape = tf.stack([tf.shape(h)[0], image_size, image_size, dims[index + 1]])
+            h_conv_t = utils.conv2d_transpose_strided(h, W, b, output_shape=deconv_shape)
+            h_bn = utils.batch_norm(h_conv_t, dims[index + 1], train_phase, scope="gen_bn%d" % index)
+            h = activation(h_bn, name='h_%d' % index)
 
     def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",
                        scope_reuse=False):
-        pass
+        N = len(dims)
+        with tf.variable_scope(scope_name) as scope:
+            if scope_reuse:
+                scope.reuse_variables()
+            h = input_images
+            skip_bn = True  # First layer of discriminator skips batch norm
+            for index in range(N - 2):
+                W = utils.weight_variable([5, 5, dims[index], dims[index + 1]], name="W_%d" % index)
+                b = utils.bias_variable([dims[index + 1]], name="b_%d" % index)
+                h_conv = utils.conv2d_strided(h, W, b)
+                if skip_bn:
+                    h_bn = h_conv
+                    skip_bn = False
+                else:
+                    h_bn = utils.batch_norm(h_conv, dims[index + 1], train_phase, scope="disc_bn%d" % index)
+                h = activation(h_bn, name="h_%d" % index)
+
+            shape = h.get_shape().as_list()
+            image_size = self.resized_image_size // (2 ** (N - 2))  # dims has input dim and output dim
+            h_reshaped = tf.reshape(h, [self.batch_size, image_size * image_size * shape[3]])
+            W_pred = utils.weight_variable([image_size * image_size * shape[3], dims[-1]], name="W_pred")
+            b_pred = utils.bias_variable([dims[-1]], name="b_pred")
+            h_pred = tf.matmul(h_reshaped, W_pred) + b_pred
+
+        return tf.nn.sigmoid(h_pred), h_pred, h
 
     def _cross_entropy_loss(self, logits, labels, name="x_entropy"):
         xentropy = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits, labels))
@@ -186,41 +220,40 @@ class WasserstienGAN(GAN):
                  critic_iterations=5):
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
-        GAN.__init__(self, z_dim, batch_size)
+        GAN.__init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir)
 
     def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):
         N = len(dims)
-        image_size = self.resized_image_size // (2 ** (N - 1))
+        image_size = 10 // (2 ** (N - 1))
         with tf.variable_scope(scope_name) as scope:
             W_z = utils.weight_variable([self.z_dim, dims[0] * image_size * image_size], name="W_z")
             h_z = tf.matmul(z, W_z)
             h_z = tf.reshape(h_z, [-1, image_size, image_size, dims[0]])
             h_bnz = utils.batch_norm(h_z, dims[0], train_phase, scope="gen_bnz")
             h = activation(h_bnz, name='h_z')
-            utils.add_activation_summary(h)
 
             for index in range(N - 2):
                 image_size *= 2
                 W = utils.weight_variable([4, 4, dims[index + 1], dims[index]], name="W_%d" % index)
                 b = tf.zeros([dims[index + 1]])
-                deconv_shape = tf.pack([tf.shape(h)[0], image_size, image_size, dims[index + 1]])
+                deconv_shape = tf.stack([tf.shape(h)[0], image_size, image_size, dims[index + 1]])
                 h_conv_t = utils.conv2d_transpose_strided(h, W, b, output_shape=deconv_shape)
                 h_bn = utils.batch_norm(h_conv_t, dims[index + 1], train_phase, scope="gen_bn%d" % index)
                 h = activation(h_bn, name='h_%d' % index)
-                utils.add_activation_summary(h)
+
 
             image_size *= 2
             W_pred = utils.weight_variable([4, 4, dims[-1], dims[-2]], name="W_pred")
             b = tf.zeros([dims[-1]])
-            deconv_shape = tf.pack([tf.shape(h)[0], image_size, image_size, dims[-1]])
+            deconv_shape = tf.stack([tf.shape(h)[0], image_size, image_size, dims[-1]])
             h_conv_t = utils.conv2d_transpose_strided(h, W_pred, b, output_shape=deconv_shape)
             pred_image = tf.nn.tanh(h_conv_t, name='pred_image')
-            utils.add_activation_summary(pred_image)
 
         return pred_image
 
     def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",
                        scope_reuse=False):
+        print(input_images)
         N = len(dims)
         with tf.variable_scope(scope_name) as scope:
             if scope_reuse:
@@ -228,9 +261,13 @@ class WasserstienGAN(GAN):
             h = input_images
             skip_bn = True  # First layer of discriminator skips batch norm
             for index in range(N - 2):
-                W = utils.weight_variable([4, 4, dims[index], dims[index + 1]], name="W_%d" % index)
+                W = utils.weight_variable([4, 1, dims[index], dims[index + 1]], name="W_%d" % index)
                 b = tf.zeros([dims[index+1]])
+                print(W)
+                print(b)
+                print(h)
                 h_conv = utils.conv2d_strided(h, W, b)
+
                 if skip_bn:
                     h_bn = h_conv
                     skip_bn = False
