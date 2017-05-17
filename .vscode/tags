@@ -4,6 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BIRD_DIR	../sources/StackGAN-master/misc/preprocess_birds.py	/^BIRD_DIR = 'Data\/birds'$/;"	kind:variable	line:22
 CONST	../rnn_example.py	/^CONST = CONSTANT.FLAGS$/;"	kind:variable	line:17
 CONST	../skip_gram_example.py	/^CONST = CONSTANT.FLAGS$/;"	kind:variable	line:13
 CONST	../sources/nlp_models/rnn_example.py	/^CONST = CONSTANT.FLAGS$/;"	kind:variable	line:18
@@ -13,27 +14,45 @@ CONSTANT	../skip_gram_example.py	/^CONSTANT = tf.app.flags$/;"	kind:variable	lin
 CONSTANT	../sources/nlp_models/rnn_example.py	/^CONSTANT = tf.app.flags$/;"	kind:variable	line:7
 CONSTANT	../sources/nlp_models/skip_gram_example.py	/^CONSTANT = tf.app.flags$/;"	kind:variable	line:7
 CelebA_Dataset	../sources/WassersteinGAN.tensorflow-master/Dataset_Reader/read_celebADataset.py	/^class CelebA_Dataset():$/;"	kind:class	line:19
+CondGAN	../sources/StackGAN-master/stageI/model.py	/^class CondGAN(object):$/;"	kind:class	line:11
+CondGAN	../sources/StackGAN-master/stageII/model.py	/^class CondGAN(object):$/;"	kind:class	line:14
+CondGANTrainer	../sources/StackGAN-master/stageI/trainer.py	/^class CondGANTrainer(object):$/;"	kind:class	line:28
+CondGANTrainer	../sources/StackGAN-master/stageII/trainer.py	/^class CondGANTrainer(object):$/;"	kind:class	line:29
 DATA_URL	../sources/WassersteinGAN.tensorflow-master/Dataset_Reader/read_celebADataset.py	/^DATA_URL = 'https:\/\/www.dropbox.com\/sh\/8oqt9vytwxb3s4r\/AADIKlz8PR9zr6Y20qbkunrba\/Img\/img_align_celeba.zip'$/;"	kind:variable	line:15
 DataRecord	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^        class DataRecord(object):$/;"	kind:class	line:31
-DataRecord	../sources/WassersteinGAN_sim/GAN_models.py	/^        class DataRecord(object):$/;"	kind:class	line:15
+DataRecord	../sources/WassersteinGAN_sim/GAN_models.py	/^        class DataRecord(object):$/;"	kind:class	line:16
+Dataset	../sources/StackGAN-master/misc/datasets.py	/^class Dataset(object):$/;"	kind:class	line:10
 FLAGS	../sources/WassersteinGAN.tensorflow-master/main.py	/^FLAGS = tf.flags.FLAGS$/;"	kind:variable	line:11
 FLAGS	../sources/WassersteinGAN_sim/main.py	/^FLAGS = tf.flags.FLAGS$/;"	kind:variable	line:11
 FLAGS	../sources/example_sources/word2vec/word2vec_advenced.py	/^FLAGS = flags.FLAGS$/;"	kind:variable	line:86
 FLAGS	../word2vec/word2vec_advenced.py	/^FLAGS = flags.FLAGS$/;"	kind:variable	line:86
+FLOWER_DIR	../sources/StackGAN-master/misc/preprocess_flowers.py	/^FLOWER_DIR = 'Data\/flowers'$/;"	kind:variable	line:21
 GAN	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^class GAN(object):$/;"	kind:class	line:20
-GAN	../sources/WassersteinGAN_sim/GAN_models.py	/^class GAN(object):$/;"	kind:class	line:8
+GAN	../sources/WassersteinGAN_sim/GAN_models.py	/^class GAN(object):$/;"	kind:class	line:9
 GAN_models.py	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	1;"	kind:file	line:1
 GAN_models.py	../sources/WassersteinGAN_sim/GAN_models.py	1;"	kind:file	line:1
+IMSIZE	../sources/StackGAN-master/misc/preprocess_birds.py	/^IMSIZE = 256$/;"	kind:variable	line:20
+IMSIZE	../sources/StackGAN-master/misc/preprocess_flowers.py	/^IMSIZE = 256$/;"	kind:variable	line:19
+KL_loss	../sources/StackGAN-master/stageI/trainer.py	/^def KL_loss(mu, log_sigma):$/;"	kind:function	line:21
+KL_loss	../sources/StackGAN-master/stageII/trainer.py	/^def KL_loss(mu, log_sigma):$/;"	kind:function	line:22
+LOAD_SIZE	../sources/StackGAN-master/misc/preprocess_birds.py	/^LOAD_SIZE = int(IMSIZE * 76 \/ 64)$/;"	kind:variable	line:21
+LOAD_SIZE	../sources/StackGAN-master/misc/preprocess_flowers.py	/^LOAD_SIZE = int(IMSIZE * 76 \/ 64)$/;"	kind:variable	line:20
+LR_HR_RETIO	../sources/StackGAN-master/misc/preprocess_birds.py	/^LR_HR_RETIO = 4$/;"	kind:variable	line:19
+LR_HR_RETIO	../sources/StackGAN-master/misc/preprocess_flowers.py	/^LR_HR_RETIO = 4$/;"	kind:variable	line:18
 Options	../sources/example_sources/word2vec/word2vec_advenced.py	/^class Options(object):$/;"	kind:class	line:89
 Options	../word2vec/word2vec_advenced.py	/^class Options(object):$/;"	kind:class	line:89
 RNN	../rnn_example.py	/^class RNN(object):$/;"	kind:class	line:19
 RNN	../sources/nlp_models/rnn_example.py	/^class RNN(object):$/;"	kind:class	line:20
 SkipGram	../skip_gram_example.py	/^class SkipGram(object):$/;"	kind:class	line:16
 SkipGram	../sources/nlp_models/skip_gram_example.py	/^class SkipGram(object):$/;"	kind:class	line:16
+TINY	../sources/StackGAN-master/stageI/trainer.py	/^TINY = 1e-8$/;"	kind:variable	line:17
+TINY	../sources/StackGAN-master/stageII/trainer.py	/^TINY = 1e-8$/;"	kind:variable	line:18
+TextDataset	../sources/StackGAN-master/misc/datasets.py	/^class TextDataset(object):$/;"	kind:class	line:201
 WasserstienGAN	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^class WasserstienGAN(GAN):$/;"	kind:class	line:273
-WasserstienGAN	../sources/WassersteinGAN_sim/GAN_models.py	/^class WasserstienGAN(GAN):$/;"	kind:class	line:218
+WasserstienGAN	../sources/WassersteinGAN_sim/GAN_models.py	/^class WasserstienGAN(GAN):$/;"	kind:class	line:220
 Word2vec	../sources/example_sources/word2vec/word2vec_advenced.py	/^class Word2vec(object):$/;"	kind:class	line:151
 Word2vec	../word2vec/word2vec_advenced.py	/^class Word2vec(object):$/;"	kind:class	line:151
+__C	../sources/StackGAN-master/misc/config.py	/^__C = edict()$/;"	kind:variable	line:9
 __author__	../sources/WassersteinGAN.tensorflow-master/Dataset_Reader/read_celebADataset.py	/^__author__ = 'charlie'$/;"	kind:variable	line:1
 __author__	../sources/WassersteinGAN.tensorflow-master/__init__.py	/^__author__ = 'Charlie'$/;"	kind:variable	line:1
 __author__	../sources/WassersteinGAN.tensorflow-master/main.py	/^__author__ = "shekkizh"$/;"	kind:variable	line:3
@@ -41,17 +60,31 @@ __author__	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^__
 __author__	../sources/WassersteinGAN.tensorflow-master/utils.py	/^__author__ = 'shekkizh'$/;"	kind:variable	line:1
 __author__	../sources/WassersteinGAN_sim/main.py	/^__author__ = "shekkizh"$/;"	kind:variable	line:3
 __author__	../sources/WassersteinGAN_sim/utils.py	/^__author__ = 'shekkizh'$/;"	kind:variable	line:1
+__call__	../sources/StackGAN-master/misc/custom_ops.py	/^    def __call__(self, input_layer, *args, **kwargs):$/;"	kind:member	line:57
+__call__	../sources/StackGAN-master/misc/custom_ops.py	/^    def __call__(self, input_layer, epsilon=1e-5, decay=0.9, name="batch_norm",$/;"	kind:member	line:21
+__call__	../sources/StackGAN-master/misc/custom_ops.py	/^    def __call__(self, input_layer, output_dim,$/;"	kind:member	line:76
+__call__	../sources/StackGAN-master/misc/custom_ops.py	/^    def __call__(self, input_layer, output_shape,$/;"	kind:member	line:92
+__call__	../sources/StackGAN-master/misc/custom_ops.py	/^    def __call__(self, input_layer, output_size, scope=None, in_dim=None, stddev=0.02, bias_start=0.0):$/;"	kind:member	line:121
+__init__	../sources/StackGAN-master/misc/datasets.py	/^    def __init__(self, images, imsize, embeddings=None,$/;"	kind:member	line:11
+__init__	../sources/StackGAN-master/misc/datasets.py	/^    def __init__(self, workdir, embedding_type, hr_lr_ratio):$/;"	kind:member	line:202
+__init__	../sources/StackGAN-master/stageI/model.py	/^    def __init__(self, image_shape):$/;"	kind:member	line:12
+__init__	../sources/StackGAN-master/stageI/trainer.py	/^    def __init__(self,$/;"	kind:member	line:29
+__init__	../sources/StackGAN-master/stageII/model.py	/^    def __init__(self, lr_imsize, hr_lr_ratio):$/;"	kind:member	line:15
+__init__	../sources/StackGAN-master/stageII/trainer.py	/^    def __init__(self,$/;"	kind:member	line:30
 __init__	../sources/WassersteinGAN.tensorflow-master/Dataset_Reader/read_celebADataset.py	/^    def __init__(self, dict):$/;"	kind:member	line:20
 __init__	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def __init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir):$/;"	kind:member	line:21
 __init__	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def __init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir, clip_values=(-0.01, 0.01),$/;"	kind:member	line:274
-__init__	../sources/WassersteinGAN_sim/GAN_models.py	/^    def __init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir):$/;"	kind:member	line:9
-__init__	../sources/WassersteinGAN_sim/GAN_models.py	/^    def __init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir, clip_values=(-0.01, 0.01),$/;"	kind:member	line:219
+__init__	../sources/WassersteinGAN_sim/GAN_models.py	/^    def __init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir):$/;"	kind:member	line:10
+__init__	../sources/WassersteinGAN_sim/GAN_models.py	/^    def __init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir, clip_values=(-0.01, 0.01),$/;"	kind:member	line:221
 __init__	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def __init__(self):$/;"	kind:member	line:92
 __init__	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def __init__(self, options, session):$/;"	kind:member	line:154
 __init__	../sources/nlp_models/rnn_example.py	/^    def __init__(self):$/;"	kind:member	line:24
 __init__	../sources/nlp_models/skip_gram_example.py	/^    def __init__(self):$/;"	kind:member	line:20
 __init__	../word2vec/word2vec_advenced.py	/^    def __init__(self):$/;"	kind:member	line:92
 __init__	../word2vec/word2vec_advenced.py	/^    def __init__(self, options, session):$/;"	kind:member	line:154
+__init__.py	../sources/StackGAN-master/misc/__init__.py	1;"	kind:file	line:1
+__init__.py	../sources/StackGAN-master/stageI/__init__.py	1;"	kind:file	line:1
+__init__.py	../sources/StackGAN-master/stageII/__init__.py	1;"	kind:file	line:1
 __init__.py	../sources/WassersteinGAN.tensorflow-master/Dataset_Reader/__init__.py	1;"	kind:file	line:1
 __init__.py	../sources/WassersteinGAN.tensorflow-master/__init__.py	1;"	kind:file	line:1
 __init__.py	../sources/WassersteinGAN.tensorflow-master/models/__init__.py	1;"	kind:file	line:1
@@ -62,38 +95,40 @@ _build_train	../sources/nlp_models/rnn_example.py	/^    def _build_train(cls):$/
 _close_session	../sources/nlp_models/rnn_example.py	/^    def _close_session(cls):$/;"	kind:member	line:95
 _close_session	../sources/nlp_models/skip_gram_example.py	/^    def _close_session(cls):$/;"	kind:member	line:106
 _cross_entropy_loss	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _cross_entropy_loss(self, logits, labels, name="x_entropy"):$/;"	kind:member	line:130
-_cross_entropy_loss	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _cross_entropy_loss(self, logits, labels, name="x_entropy"):$/;"	kind:member	line:85
+_cross_entropy_loss	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _cross_entropy_loss(self, logits, labels, name="x_entropy"):$/;"	kind:member	line:87
 _discriminator	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:101
 _discriminator	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:311
-_discriminator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:253
-_discriminator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:57
+_discriminator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:251
+_discriminator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",$/;"	kind:member	line:59
 _gan_loss	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:154
 _gan_loss	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:336
-_gan_loss	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:108
-_gan_loss	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:283
+_gan_loss	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:110
+_gan_loss	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):$/;"	kind:member	line:279
 _gen_onehots	../sources/nlp_models/skip_gram_example.py	/^    def _gen_onehots(cls):$/;"	kind:member	line:55
 _gen_sim_data	../sources/nlp_models/rnn_example.py	/^    def _gen_sim_data(cls):$/;"	kind:member	line:101
 _generator	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):$/;"	kind:member	line:280
 _generator	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):$/;"	kind:member	line:66
-_generator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):$/;"	kind:member	line:225
-_generator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):$/;"	kind:member	line:37
+_generator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):$/;"	kind:member	line:228
+_generator	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):$/;"	kind:member	line:38
 _get_embeddings	../sources/nlp_models/skip_gram_example.py	/^    def _get_embeddings(cls):$/;"	kind:member	line:96
 _get_optimizer	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):$/;"	kind:member	line:135
-_get_optimizer	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):$/;"	kind:member	line:90
+_get_optimizer	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):$/;"	kind:member	line:92
 _initialization	../sources/nlp_models/skip_gram_example.py	/^    def _initialization(cls):$/;"	kind:member	line:101
 _initialize	../sources/nlp_models/rnn_example.py	/^    def _initialize(cls):$/;"	kind:member	line:89
 _line_plot	../sources/nlp_models/rnn_example.py	/^    def _line_plot(cls, name, tensor):$/;"	kind:member	line:155
 _line_plot_draw	../sources/nlp_models/rnn_example.py	/^    def _line_plot_draw(cls, num_plot):$/;"	kind:member	line:175
 _mean_square_error	../sources/nlp_models/rnn_example.py	/^    def _mean_square_error(cls, batch, label):$/;"	kind:member	line:151
+_merge_a_into_b	../sources/StackGAN-master/misc/config.py	/^def _merge_a_into_b(a, b):$/;"	kind:function	line:62
+_p	../sources/StackGAN-master/misc/skipthoughts.py	/^def _p(pp, name):$/;"	kind:function	line:216
 _predict	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def _predict(self, analogy):$/;"	kind:member	line:454
 _predict	../word2vec/word2vec_advenced.py	/^    def _predict(self, analogy):$/;"	kind:member	line:454
 _print	../sources/nlp_models/rnn_example.py	/^    def _print(cls, tensor):$/;"	kind:member	line:165
 _progress	../sources/WassersteinGAN.tensorflow-master/utils.py	/^        def _progress(count, block_size, total_size):$/;"	kind:function	line:21
 _progress	../sources/WassersteinGAN_sim/utils.py	/^        def _progress(count, block_size, total_size):$/;"	kind:function	line:21
 _read_input	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _read_input(self, filename_queue):$/;"	kind:member	line:30
-_read_input	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _read_input(self):$/;"	kind:member	line:14
+_read_input	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _read_input(self):$/;"	kind:member	line:15
 _read_input_queue	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _read_input_queue(self, filename_queue):$/;"	kind:member	line:51
-_read_input_queue	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _read_input_queue(self):$/;"	kind:member	line:23
+_read_input_queue	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _read_input_queue(self):$/;"	kind:member	line:24
 _restore_checkpoint	../sources/nlp_models/rnn_example.py	/^    def _restore_checkpoint(cls, directory):$/;"	kind:member	line:85
 _run_pred	../sources/nlp_models/rnn_example.py	/^    def _run_pred(cls):$/;"	kind:member	line:72
 _run_prediction	../sources/nlp_models/skip_gram_example.py	/^    def _run_prediction(cls):$/;"	kind:member	line:50
@@ -103,29 +138,39 @@ _save_model	../sources/nlp_models/rnn_example.py	/^    def _save_model(cls):$/;"
 _set_variables	../sources/nlp_models/rnn_example.py	/^    def _set_variables(cls):$/;"	kind:member	line:121
 _set_variables	../sources/nlp_models/skip_gram_example.py	/^    def _set_variables(cls):$/;"	kind:member	line:63
 _setup_placeholder	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _setup_placeholder(self):$/;"	kind:member	line:150
-_setup_placeholder	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _setup_placeholder(self):$/;"	kind:member	line:104
+_setup_placeholder	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _setup_placeholder(self):$/;"	kind:member	line:106
+_slice	../sources/StackGAN-master/misc/skipthoughts.py	/^	def _slice(_x, n, dim):$/;"	kind:function	line:383
 _start_shell	../sources/example_sources/word2vec/word2vec_advenced.py	/^def _start_shell(local_ns=None):$/;"	kind:function	line:526
 _start_shell	../word2vec/word2vec_advenced.py	/^def _start_shell(local_ns=None):$/;"	kind:function	line:526
+_step_slice	../sources/StackGAN-master/misc/skipthoughts.py	/^	def _step_slice(m_, x_, xx_, h_, U, Ux):$/;"	kind:function	line:393
 _to_plot	../sources/nlp_models/rnn_example.py	/^    def _to_plot(cls):$/;"	kind:member	line:185
 _train	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def _train(self, loss_val, var_list, optimizer):$/;"	kind:member	line:144
-_train	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _train(self, loss_val, var_list, optimizer):$/;"	kind:member	line:99
+_train	../sources/WassersteinGAN_sim/GAN_models.py	/^    def _train(self, loss_val, var_list, optimizer):$/;"	kind:member	line:101
 _train_thread_body	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def _train_thread_body(self):$/;"	kind:member	line:392
 _train_thread_body	../word2vec/word2vec_advenced.py	/^    def _train_thread_body(self):$/;"	kind:member	line:392
 _write_checkpoint	../sources/nlp_models/rnn_example.py	/^    def _write_checkpoint(cls, directory):$/;"	kind:member	line:81
 a	../sources/example_sources/kyuye/neural network(practice).py	/^    a = sess.run(layer,feed_dict)$/;"	kind:variable	line:29
 access_token	../sources/example_sources/crawler/facebook_crawling.py	/^   access_token = app_id + "|" + app_secret$/;"	kind:variable	line:103
+algo	../sources/StackGAN-master/stageI/run_exp.py	/^    algo = CondGANTrainer($/;"	kind:variable	line:62
+algo	../sources/StackGAN-master/stageII/run_exp.py	/^    algo = CondGANTrainer($/;"	kind:variable	line:64
 analogy	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def analogy(self, w0, w1, w2):$/;"	kind:member	line:503
 analogy	../word2vec/word2vec_advenced.py	/^    def analogy(self, w0, w1, w2):$/;"	kind:member	line:503
 app_id	../sources/example_sources/crawler/facebook_crawling.py	/^   app_id = "405325483132744"$/;"	kind:variable	line:100
 app_secret	../sources/example_sources/crawler/facebook_crawling.py	/^   app_secret = "e1674998dffc6f32a750fa0c725be7c9"$/;"	kind:variable	line:101
+args	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^    args = parse_args()$/;"	kind:variable	line:161
+args	../sources/StackGAN-master/demo/demo.py	/^    args = parse_args()$/;"	kind:variable	line:165
+args	../sources/StackGAN-master/stageI/run_exp.py	/^    args = parse_args()$/;"	kind:variable	line:32
+args	../sources/StackGAN-master/stageII/run_exp.py	/^    args = parse_args()$/;"	kind:variable	line:34
 average_loss	../sources/example_sources/word2vec/word2vec_basic.py	/^    average_loss = 0$/;"	kind:variable	line:172
 average_loss	../word2vec/word2vec_basic.py	/^    average_loss = 0$/;"	kind:variable	line:172
 avg_pool_2x2	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def avg_pool_2x2(x):$/;"	kind:function	line:118
-avg_pool_2x2	../sources/WassersteinGAN_sim/utils.py	/^def avg_pool_2x2(x):$/;"	kind:function	line:118
+avg_pool_2x2	../sources/WassersteinGAN_sim/utils.py	/^def avg_pool_2x2(x):$/;"	kind:function	line:119
 batch_norm	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def batch_norm(x, n_out, phase_train, scope='bn', decay=0.9, eps=1e-5, stddev=0.02):$/;"	kind:function	line:126
-batch_norm	../sources/WassersteinGAN_sim/utils.py	/^def batch_norm(x, n_out, phase_train, scope='bn', decay=0.9, eps=1e-5, stddev=0.02):$/;"	kind:function	line:126
+batch_norm	../sources/WassersteinGAN_sim/utils.py	/^def batch_norm(x, n_out, phase_train, scope='bn', decay=0.9, eps=1e-5, stddev=0.02):$/;"	kind:function	line:127
 batch_print	../sources/example_sources/word2vec/word2vec_basic.py	/^        batch_print = session.run([train_inputs], feed_dict=feed_dict)$/;"	kind:variable	line:179
 batch_print	../word2vec/word2vec_basic.py	/^        batch_print = session.run([train_inputs], feed_dict=feed_dict)$/;"	kind:variable	line:179
+batch_size	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^        batch_size = np.minimum(num_embeddings, cfg.TEST.BATCH_SIZE)$/;"	kind:variable	line:185
+batch_size	../sources/StackGAN-master/demo/demo.py	/^        batch_size = np.minimum(num_embeddings, cfg.TEST.BATCH_SIZE)$/;"	kind:variable	line:185
 batch_size	../sources/example_sources/word2vec/word2vec_basic.py	/^batch_size = 128$/;"	kind:variable	line:121
 batch_size	../word2vec/word2vec_basic.py	/^batch_size = 128$/;"	kind:variable	line:121
 bias	../sources/example_sources/kyuye/neural network(practice).py	/^bias = tf.Variable(tf.zeros(shape=(1)))$/;"	kind:variable	line:17
@@ -133,58 +178,140 @@ bias_variable	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def bias_va
 bias_variable	../sources/WassersteinGAN_sim/utils.py	/^def bias_variable(shape, name=None):$/;"	kind:function	line:74
 biases	../sources/example_sources/word2vec/word2vec_basic.py	/^                       biases=nce_biases,$/;"	kind:variable	line:149
 biases	../word2vec/word2vec_basic.py	/^                       biases=nce_biases,$/;"	kind:variable	line:149
+birds_skip_thought_demo.py	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	1;"	kind:file	line:1
 build_batch	../rnn_example.py	/^    def build_batch(self):$/;"	kind:member	line:86
 build_dataset	../sources/example_sources/word2vec/word2vec_basic.py	/^def build_dataset(words):$/;"	kind:function	line:35
 build_dataset	../word2vec/word2vec_basic.py	/^def build_dataset(words):$/;"	kind:function	line:35
+build_encoder	../sources/StackGAN-master/misc/skipthoughts.py	/^def build_encoder(tparams, options):$/;"	kind:function	line:286
+build_encoder_bi	../sources/StackGAN-master/misc/skipthoughts.py	/^def build_encoder_bi(tparams, options):$/;"	kind:function	line:303
 build_eval_graph	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def build_eval_graph(self):$/;"	kind:member	line:291
 build_eval_graph	../word2vec/word2vec_advenced.py	/^    def build_eval_graph(self):$/;"	kind:member	line:291
 build_graph	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def build_graph(self):$/;"	kind:member	line:345
 build_graph	../word2vec/word2vec_advenced.py	/^    def build_graph(self):$/;"	kind:member	line:345
 build_model	../rnn_example.py	/^    def build_model(self):$/;"	kind:member	line:99
+build_model	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^def build_model(sess, embedding_dim, batch_size):$/;"	kind:function	line:51
+build_model	../sources/StackGAN-master/demo/demo.py	/^def build_model(sess, embedding_dim, batch_size):$/;"	kind:function	line:52
+build_model	../sources/StackGAN-master/stageI/trainer.py	/^    def build_model(self, sess):$/;"	kind:member	line:279
+build_model	../sources/StackGAN-master/stageII/trainer.py	/^    def build_model(self, sess):$/;"	kind:member	line:379
+build_placeholder	../sources/StackGAN-master/stageI/trainer.py	/^    def build_placeholder(self):$/;"	kind:member	line:51
+build_placeholder	../sources/StackGAN-master/stageII/trainer.py	/^    def build_placeholder(self):$/;"	kind:member	line:60
 build_skipgram	../skip_gram_example.py	/^    def build_skipgram(self):$/;"	kind:member	line:65
 build_train	../rnn_example.py	/^    def build_train(self):$/;"	kind:member	line:106
+cap_path	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^    cap_path = cfg.TEST.CAPTION_PATH$/;"	kind:variable	line:169
+cap_path	../sources/StackGAN-master/demo/demo.py	/^    cap_path = cfg.TEST.CAPTION_PATH$/;"	kind:variable	line:174
+captions	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^        captions = f.read().split('\\n')$/;"	kind:variable	line:171
+captions_batch	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^                    captions_batch = captions_list[count:iend]$/;"	kind:variable	line:201
+captions_batch	../sources/StackGAN-master/demo/demo.py	/^                    captions_batch = captions_list[count:iend]$/;"	kind:variable	line:201
+captions_list	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^    captions_list = [cap for cap in captions if len(cap) > 0]$/;"	kind:variable	line:172
+captions_list	../sources/StackGAN-master/demo/demo.py	/^    captions_list = t_file.raw_txt$/;"	kind:variable	line:176
+cfg	../sources/StackGAN-master/misc/config.py	/^cfg = __C$/;"	kind:variable	line:10
+cfg_from_file	../sources/StackGAN-master/misc/config.py	/^def cfg_from_file(filename):$/;"	kind:function	line:95
+ckt_logs_dir	../sources/StackGAN-master/stageI/run_exp.py	/^            (cfg.DATASET_NAME, cfg.CONFIG_NAME, timestamp)$/;"	kind:variable	line:52
+ckt_logs_dir	../sources/StackGAN-master/stageI/run_exp.py	/^        ckt_logs_dir = s_tmp[:s_tmp.find('.ckpt')]$/;"	kind:variable	line:56
+ckt_logs_dir	../sources/StackGAN-master/stageI/run_exp.py	/^        ckt_logs_dir=ckt_logs_dir$/;"	kind:variable	line:65
+ckt_logs_dir	../sources/StackGAN-master/stageII/run_exp.py	/^            (cfg.DATASET_NAME, cfg.CONFIG_NAME, timestamp)$/;"	kind:variable	line:53
+ckt_logs_dir	../sources/StackGAN-master/stageII/run_exp.py	/^        ckt_logs_dir = s_tmp[:s_tmp.find('.ckpt')]$/;"	kind:variable	line:57
+ckt_logs_dir	../sources/StackGAN-master/stageII/run_exp.py	/^        ckt_logs_dir=ckt_logs_dir$/;"	kind:variable	line:67
 close_session	../rnn_example.py	/^    def close_session(self):$/;"	kind:member	line:68
 close_session	../skip_gram_example.py	/^    def close_session(self):$/;"	kind:member	line:104
 close_word	../sources/example_sources/word2vec/word2vec_basic.py	/^                    close_word = reverse_dictionary[nearest[k]]$/;"	kind:variable	line:198
 close_word	../word2vec/word2vec_basic.py	/^                    close_word = reverse_dictionary[nearest[k]]$/;"	kind:variable	line:198
+colorize	../sources/StackGAN-master/misc/utils.py	/^def colorize(img):$/;"	kind:function	line:59
+compute_losses	../sources/StackGAN-master/stageI/trainer.py	/^    def compute_losses(self, images, wrong_images, fake_images, embeddings):$/;"	kind:member	line:133
+compute_losses	../sources/StackGAN-master/stageII/trainer.py	/^    def compute_losses(self, images, wrong_images,$/;"	kind:member	line:167
+config	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^        config = tf.ConfigProto(allow_soft_placement=True)$/;"	kind:variable	line:188
+config	../sources/StackGAN-master/demo/demo.py	/^        config = tf.ConfigProto(allow_soft_placement=True)$/;"	kind:variable	line:188
+config.py	../sources/StackGAN-master/misc/config.py	1;"	kind:file	line:1
 config.py	../sources/example_sources/kyuye/.ropeproject/config.py	1;"	kind:file	line:1
 const	../sources/example_sources/kyuye/define example.py	/^const = tf.constant("hello world")$/;"	kind:variable	line:3
+context_embedding	../sources/StackGAN-master/stageI/model.py	/^    def context_embedding(self):$/;"	kind:member	line:152
+context_embedding	../sources/StackGAN-master/stageII/model.py	/^    def context_embedding(self):$/;"	kind:member	line:211
 conv2d_basic	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def conv2d_basic(x, W, bias):$/;"	kind:function	line:87
 conv2d_basic	../sources/WassersteinGAN_sim/utils.py	/^def conv2d_basic(x, W, bias):$/;"	kind:function	line:87
 conv2d_strided	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def conv2d_strided(x, W, b):$/;"	kind:function	line:92
-conv2d_strided	../sources/WassersteinGAN_sim/utils.py	/^def conv2d_strided(x, W, b):$/;"	kind:function	line:92
+conv2d_strided	../sources/WassersteinGAN_sim/utils.py	/^def conv2d_strided(x, W, b):$/;"	kind:function	line:93
 conv2d_transpose_strided	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def conv2d_transpose_strided(x, W, b, output_shape=None):$/;"	kind:function	line:97
-conv2d_transpose_strided	../sources/WassersteinGAN_sim/utils.py	/^def conv2d_transpose_strided(x, W, b, output_shape=None):$/;"	kind:function	line:97
+conv2d_transpose_strided	../sources/WassersteinGAN_sim/utils.py	/^def conv2d_transpose_strided(x, W, b, output_shape=None):$/;"	kind:function	line:98
+conv_batch_norm	../sources/StackGAN-master/misc/custom_ops.py	/^class conv_batch_norm(pt.VarStoreMethod):$/;"	kind:class	line:15
+convert_birds_dataset_pickle	../sources/StackGAN-master/misc/preprocess_birds.py	/^def convert_birds_dataset_pickle(inpath):$/;"	kind:function	line:86
+convert_flowers_dataset_pickle	../sources/StackGAN-master/misc/preprocess_flowers.py	/^def convert_flowers_dataset_pickle(inpath):$/;"	kind:function	line:61
 cost	../sources/example_sources/kyuye/neural network.py	/^cost = -y_*tf.log(y) - (1-y_)*tf.log(1-y)$/;"	kind:variable	line:29
 cost_function	../sources/example_sources/kyuye/neural network(practice).py	/^cost_function = -plh_label*tf.log(layer) - (1-plh_label)*tf.log(1-layer)$/;"	kind:variable	line:22
 cost_mean	../sources/example_sources/kyuye/neural network(practice).py	/^cost_mean = tf.reduce_mean(cost_function)$/;"	kind:variable	line:23
 cost_mean	../sources/example_sources/kyuye/neural network.py	/^cost_mean = tf.reduce_mean(cost)$/;"	kind:variable	line:30
 cost_output	../sources/example_sources/kyuye/neural network(practice).py	/^    cost_output = sess.run(cost_function)$/;"	kind:variable	line:31
+count	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^                        count = num_embeddings - batch_size$/;"	kind:variable	line:199
+count	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^                count = 0$/;"	kind:variable	line:194
+count	../sources/StackGAN-master/demo/demo.py	/^                        count = num_embeddings - batch_size$/;"	kind:variable	line:199
+count	../sources/StackGAN-master/demo/demo.py	/^                count = 0$/;"	kind:variable	line:194
 create_image_lists	../sources/WassersteinGAN.tensorflow-master/Dataset_Reader/read_celebADataset.py	/^def create_image_lists(image_dir, testing_percentage=0.0, validation_percentage=0.0):$/;"	kind:function	line:55
 create_network	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def create_network(self, generator_dims, discriminator_dims, optimizer="Adam", learning_rate=2e-4,$/;"	kind:member	line:172
-create_network	../sources/WassersteinGAN_sim/GAN_models.py	/^    def create_network(self, generator_dims, discriminator_dims, optimizer="Adam", learning_rate=2e-4,$/;"	kind:member	line:124
+create_network	../sources/WassersteinGAN_sim/GAN_models.py	/^    def create_network(self, generator_dims, discriminator_dims, optimizer="Adam", learning_rate=2e-4,$/;"	kind:member	line:126
+custom_conv2d	../sources/StackGAN-master/misc/custom_ops.py	/^class custom_conv2d(pt.VarStoreMethod):$/;"	kind:class	line:75
+custom_crop	../sources/StackGAN-master/misc/utils.py	/^def custom_crop(img, bbox):$/;"	kind:function	line:20
+custom_deconv2d	../sources/StackGAN-master/misc/custom_ops.py	/^class custom_deconv2d(pt.VarStoreMethod):$/;"	kind:class	line:91
+custom_fully_connected	../sources/StackGAN-master/misc/custom_ops.py	/^class custom_fully_connected(pt.VarStoreMethod):$/;"	kind:class	line:120
+custom_ops.py	../sources/StackGAN-master/misc/custom_ops.py	1;"	kind:file	line:1
+d_encode_image	../sources/StackGAN-master/stageI/model.py	/^    def d_encode_image(self):$/;"	kind:member	line:158
+d_encode_image	../sources/StackGAN-master/stageII/model.py	/^    def d_encode_image(self):$/;"	kind:member	line:229
+d_encode_image_simple	../sources/StackGAN-master/stageI/model.py	/^    def d_encode_image_simple(self):$/;"	kind:member	line:188
 data	../sources/example_sources/kyuye/neural network(practice).py	/^data = [[1,2,3,4,5,6,7,8,9,10],$/;"	kind:variable	line:3
 data	../sources/example_sources/kyuye/neural network.py	/^data = [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],$/;"	kind:variable	line:3
 data_index	../sources/example_sources/word2vec/word2vec_basic.py	/^data_index=0$/;"	kind:variable	line:111
 data_index	../word2vec/word2vec_basic.py	/^data_index=0$/;"	kind:variable	line:111
+datadir	../sources/StackGAN-master/stageI/run_exp.py	/^    datadir = 'Data\/%s' % cfg.DATASET_NAME$/;"	kind:variable	line:43
+datadir	../sources/StackGAN-master/stageII/run_exp.py	/^    datadir = 'Data\/%s' % cfg.DATASET_NAME$/;"	kind:variable	line:45
+dataset	../sources/StackGAN-master/stageI/run_exp.py	/^        dataset=dataset,$/;"	kind:variable	line:64
+dataset	../sources/StackGAN-master/stageI/run_exp.py	/^    dataset = TextDataset(datadir, cfg.EMBEDDING_TYPE, 1)$/;"	kind:variable	line:44
+dataset	../sources/StackGAN-master/stageII/run_exp.py	/^        dataset=dataset,$/;"	kind:variable	line:66
+dataset	../sources/StackGAN-master/stageII/run_exp.py	/^    dataset = TextDataset(datadir,  cfg.EMBEDDING_TYPE, 4)$/;"	kind:variable	line:46
+datasets.py	../sources/StackGAN-master/misc/datasets.py	1;"	kind:file	line:1
 define example.py	../sources/example_sources/kyuye/define example.py	1;"	kind:file	line:1
+define_one_trainer	../sources/StackGAN-master/stageII/trainer.py	/^    def define_one_trainer(self, loss, learning_rate, key_word):$/;"	kind:member	line:223
+define_summaries	../sources/StackGAN-master/stageI/trainer.py	/^    def define_summaries(self):$/;"	kind:member	line:190
+define_summaries	../sources/StackGAN-master/stageII/trainer.py	/^    def define_summaries(self):$/;"	kind:member	line:261
+demo.py	../sources/StackGAN-master/demo/demo.py	1;"	kind:file	line:1
+discriminator	../sources/StackGAN-master/stageI/model.py	/^    def discriminator(self):$/;"	kind:member	line:205
+discriminator	../sources/StackGAN-master/stageII/model.py	/^    def discriminator(self):$/;"	kind:member	line:217
 download_data	../sources/example_sources/crawler/movie_subtitle_new.py	/^def download_data(s_data, save_file):$/;"	kind:function	line:12
 download_data	../sources/example_sources/crawler/movie_subtitles.py	/^def download_data(download_url, filename, save_file):$/;"	kind:function	line:39
+drawCaption	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^def drawCaption(img, caption):$/;"	kind:function	line:78
+drawCaption	../sources/StackGAN-master/demo/demo.py	/^def drawCaption(img, caption):$/;"	kind:function	line:79
+drawCaption	../sources/StackGAN-master/stageII/trainer.py	/^    def drawCaption(self, img, caption):$/;"	kind:member	line:537
 embed	../sources/example_sources/word2vec/word2vec_basic.py	/^        embed = tf.nn.embedding_lookup(embeddings, train_inputs)$/;"	kind:variable	line:140
 embed	../word2vec/word2vec_basic.py	/^        embed = tf.nn.embedding_lookup(embeddings, train_inputs)$/;"	kind:variable	line:140
 embedding_size	../sources/example_sources/word2vec/word2vec_basic.py	/^embedding_size = 128$/;"	kind:variable	line:122
 embedding_size	../word2vec/word2vec_basic.py	/^embedding_size = 128$/;"	kind:variable	line:122
+embeddings	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^        embeddings = skipthoughts.encode(model, captions_list, verbose=False)$/;"	kind:variable	line:182
+embeddings	../sources/StackGAN-master/demo/demo.py	/^    embeddings = np.concatenate(t_file.fea_txt, axis=0)$/;"	kind:variable	line:177
+embeddings	../sources/StackGAN-master/misc/datasets.py	/^    def embeddings(self):$/;"	kind:member	line:37
 embeddings	../sources/example_sources/word2vec/word2vec_basic.py	/^        embeddings = tf.Variable($/;"	kind:variable	line:138
 embeddings	../word2vec/word2vec_basic.py	/^        embeddings = tf.Variable($/;"	kind:variable	line:138
+embeddings_batch	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^                    embeddings_batch = embeddings[count:iend]$/;"	kind:variable	line:200
+embeddings_batch	../sources/StackGAN-master/demo/demo.py	/^                    embeddings_batch = embeddings[count:iend]$/;"	kind:variable	line:200
+encode	../sources/StackGAN-master/misc/skipthoughts.py	/^def encode(model, X, use_norm=True, verbose=True, batch_size=128, use_eos=False):$/;"	kind:function	line:91
+epoch_sum_images	../sources/StackGAN-master/stageI/trainer.py	/^    def epoch_sum_images(self, sess, n):$/;"	kind:member	line:237
+epoch_sum_images	../sources/StackGAN-master/stageII/trainer.py	/^    def epoch_sum_images(self, sess, n):$/;"	kind:member	line:327
+epochs_completed	../sources/StackGAN-master/misc/datasets.py	/^    def epochs_completed(self):$/;"	kind:member	line:49
 eval	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def eval(self):$/;"	kind:member	line:463
 eval	../word2vec/word2vec_advenced.py	/^    def eval(self):$/;"	kind:member	line:463
+eval_one_dataset	../sources/StackGAN-master/stageI/trainer.py	/^    def eval_one_dataset(self, sess, dataset, save_dir, subset='train'):$/;"	kind:member	line:416
+eval_one_dataset	../sources/StackGAN-master/stageII/trainer.py	/^    def eval_one_dataset(self, sess, dataset, save_dir, subset='train'):$/;"	kind:member	line:626
+evaluate	../sources/StackGAN-master/stageI/trainer.py	/^    def evaluate(self):$/;"	kind:member	line:438
+evaluate	../sources/StackGAN-master/stageII/trainer.py	/^    def evaluate(self):$/;"	kind:member	line:655
 facebook_crawling.py	../sources/example_sources/crawler/facebook_crawling.py	1;"	kind:file	line:1
+fc_batch_norm	../sources/StackGAN-master/misc/custom_ops.py	/^class fc_batch_norm(conv_batch_norm):$/;"	kind:class	line:56
 feed_dict	../sources/example_sources/kyuye/neural network(practice).py	/^feed_dict = {plh_data : data, plh_label : label}$/;"	kind:variable	line:13
 feed_dict	../sources/example_sources/kyuye/neural network.py	/^feed_dict = {x: data, y_: label}$/;"	kind:variable	line:12
 feed_dict	../sources/example_sources/word2vec/word2vec_basic.py	/^        feed_dict = {train_inputs: batch_inputs, train_labels: batch_labels}$/;"	kind:variable	line:176
 feed_dict	../word2vec/word2vec_basic.py	/^        feed_dict = {train_inputs: batch_inputs, train_labels: batch_labels}$/;"	kind:variable	line:176
 filename	../sources/example_sources/word2vec/word2vec_basic.py	/^filename = maybe_download('text8.zip', 31344016)$/;"	kind:variable	line:97
 filename	../word2vec/word2vec_basic.py	/^filename = maybe_download('text8.zip', 31344016)$/;"	kind:variable	line:97
+filename_test	../sources/StackGAN-master/stageI/run_exp.py	/^    filename_test = '%s\/test' % (datadir)$/;"	kind:variable	line:45
+filename_test	../sources/StackGAN-master/stageII/run_exp.py	/^    filename_test = '%s\/test' % (datadir)$/;"	kind:variable	line:47
+filename_train	../sources/StackGAN-master/stageI/run_exp.py	/^        filename_train = '%s\/train' % (datadir)$/;"	kind:variable	line:48
+filename_train	../sources/StackGAN-master/stageII/run_exp.py	/^        filename_train = '%s\/train' % (datadir)$/;"	kind:variable	line:50
+filenames	../sources/StackGAN-master/misc/datasets.py	/^    def filenames(self):$/;"	kind:member	line:41
 final_embeddings	../sources/example_sources/word2vec/word2vec_basic.py	/^    final_embeddings = normalized_embeddings.eval()$/;"	kind:variable	line:201
 final_embeddings	../word2vec/word2vec_basic.py	/^    final_embeddings = normalized_embeddings.eval()$/;"	kind:variable	line:201
 flags	../sources/example_sources/word2vec/word2vec_advenced.py	/^flags = tf.app.flags$/;"	kind:variable	line:19
@@ -195,25 +322,59 @@ gen_onehots	../skip_gram_example.py	/^    def gen_onehots(self):$/;"	kind:member
 gen_sim_data	../rnn_example.py	/^    def gen_sim_data(self):$/;"	kind:member	line:73
 generate_batch	../sources/example_sources/word2vec/word2vec_basic.py	/^def generate_batch(data, batch_size, num_skips, skip_window):$/;"	kind:function	line:56
 generate_batch	../word2vec/word2vec_basic.py	/^def generate_batch(data, batch_size, num_skips, skip_window):$/;"	kind:function	line:56
+generate_condition	../sources/StackGAN-master/stageI/model.py	/^    def generate_condition(self, c_var):$/;"	kind:member	line:43
+generate_condition	../sources/StackGAN-master/stageII/model.py	/^    def generate_condition(self, c_var):$/;"	kind:member	line:43
+generator	../sources/StackGAN-master/stageI/model.py	/^    def generator(self, z_var):$/;"	kind:member	line:53
+generator	../sources/StackGAN-master/stageII/model.py	/^    def generator(self, z_var):$/;"	kind:member	line:54
+generator_simple	../sources/StackGAN-master/stageI/model.py	/^    def generator_simple(self, z_var):$/;"	kind:member	line:114
 getFacebookPageFeedData	../sources/example_sources/crawler/facebook_crawling.py	/^def getFacebookPageFeedData(page_id, access_token, num_statuses):$/;"	kind:function	line:43
+get_data	../sources/StackGAN-master/misc/datasets.py	/^    def get_data(self, pickle_path, aug_flag=True):$/;"	kind:member	line:222
+get_discriminator	../sources/StackGAN-master/stageI/model.py	/^    def get_discriminator(self, x_var, c_var):$/;"	kind:member	line:216
+get_discriminator	../sources/StackGAN-master/stageII/model.py	/^    def get_discriminator(self, x_var, c_var):$/;"	kind:member	line:259
 get_embeddings	../skip_gram_example.py	/^    def get_embeddings(self):$/;"	kind:member	line:94
 get_feed_dict	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^            def get_feed_dict(train_phase=True):$/;"	kind:function	line:351
-get_feed_dict	../sources/WassersteinGAN_sim/GAN_models.py	/^            def get_feed_dict(train_phase=True):$/;"	kind:function	line:298
+get_feed_dict	../sources/WassersteinGAN_sim/GAN_models.py	/^            def get_feed_dict(train_phase=True):$/;"	kind:function	line:294
 get_filename	../sources/example_sources/crawler/movie_subtitle_new.py	/^def get_filename(url):$/;"	kind:function	line:16
 get_filename	../sources/example_sources/crawler/movie_subtitles.py	/^def get_filename():$/;"	kind:function	line:9
+get_generator	../sources/StackGAN-master/stageI/model.py	/^    def get_generator(self, z_var):$/;"	kind:member	line:143
+get_generator	../sources/StackGAN-master/stageII/model.py	/^    def get_generator(self, z_var):$/;"	kind:member	line:115
+get_image	../sources/StackGAN-master/misc/utils.py	/^def get_image(image_path, image_size, is_crop=False, bbox=None):$/;"	kind:function	line:14
+get_layer	../sources/StackGAN-master/misc/skipthoughts.py	/^def get_layer(name):$/;"	kind:function	line:249
 get_tensor_size	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def get_tensor_size(tensor):$/;"	kind:function	line:82
 get_tensor_size	../sources/WassersteinGAN_sim/utils.py	/^def get_tensor_size(tensor):$/;"	kind:function	line:82
 graph	../sources/example_sources/word2vec/word2vec_basic.py	/^graph = tf.Graph()$/;"	kind:variable	line:130
 graph	../word2vec/word2vec_basic.py	/^graph = tf.Graph()$/;"	kind:variable	line:130
+gru_layer	../sources/StackGAN-master/misc/skipthoughts.py	/^def gru_layer(tparams, state_below, options, prefix='gru', mask=None, **kwargs):$/;"	kind:function	line:368
+hr_d_encode_image	../sources/StackGAN-master/stageII/model.py	/^    def hr_d_encode_image(self):$/;"	kind:member	line:270
+hr_g_encode_image	../sources/StackGAN-master/stageII/model.py	/^    def hr_g_encode_image(self, x_var):$/;"	kind:member	line:137
+hr_g_joint_img_text	../sources/StackGAN-master/stageII/model.py	/^    def hr_g_joint_img_text(self, x_c_code):$/;"	kind:member	line:150
+hr_generator	../sources/StackGAN-master/stageII/model.py	/^    def hr_generator(self, x_c_code):$/;"	kind:member	line:158
+hr_get_discriminator	../sources/StackGAN-master/stageII/model.py	/^    def hr_get_discriminator(self, x_var, c_var):$/;"	kind:member	line:313
+hr_get_generator	../sources/StackGAN-master/stageII/model.py	/^    def hr_get_generator(self, x_var, c_code):$/;"	kind:member	line:185
+hr_lr_ratio	../sources/StackGAN-master/stageII/run_exp.py	/^        hr_lr_ratio=dataset.hr_lr_ratio$/;"	kind:variable	line:61
+hr_samples_batchs	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^                    hr_samples_batchs = []$/;"	kind:variable	line:204
+hr_samples_batchs	../sources/StackGAN-master/demo/demo.py	/^                    hr_samples_batchs = []$/;"	kind:variable	line:204
+iend	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^                        iend = num_embeddings$/;"	kind:variable	line:198
+iend	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^                    iend = count + batch_size$/;"	kind:variable	line:196
+iend	../sources/StackGAN-master/demo/demo.py	/^                        iend = num_embeddings$/;"	kind:variable	line:198
+iend	../sources/StackGAN-master/demo/demo.py	/^                    iend = count + batch_size$/;"	kind:variable	line:196
+image_shape	../sources/StackGAN-master/stageI/run_exp.py	/^        image_shape=dataset.image_shape$/;"	kind:variable	line:59
+images	../sources/StackGAN-master/misc/datasets.py	/^    def images(self):$/;"	kind:member	line:33
+imread	../sources/StackGAN-master/misc/utils.py	/^def imread(path):$/;"	kind:function	line:52
 init	../rnn_example.py	/^    def init(self):$/;"	kind:member	line:23
 init	../skip_gram_example.py	/^    def init(self):$/;"	kind:member	line:20
 init	../sources/example_sources/kyuye/neural network.py	/^init = tf.global_variables_initializer()$/;"	kind:variable	line:33
 init	../sources/example_sources/word2vec/word2vec_basic.py	/^    init = tf.global_variables_initializer()$/;"	kind:variable	line:164
 init	../word2vec/word2vec_basic.py	/^    init = tf.global_variables_initializer()$/;"	kind:variable	line:164
+init_opt	../sources/StackGAN-master/stageI/trainer.py	/^    def init_opt(self):$/;"	kind:member	line:91
+init_opt	../sources/StackGAN-master/stageII/trainer.py	/^    def init_opt(self):$/;"	kind:member	line:107
+init_params	../sources/StackGAN-master/misc/skipthoughts.py	/^def init_params(options):$/;"	kind:function	line:254
+init_params_bi	../sources/StackGAN-master/misc/skipthoughts.py	/^def init_params_bi(options):$/;"	kind:function	line:269
+init_tparams	../sources/StackGAN-master/misc/skipthoughts.py	/^def init_tparams(params):$/;"	kind:function	line:223
 initialization	../skip_gram_example.py	/^    def initialization(self):$/;"	kind:member	line:99
 initialize	../rnn_example.py	/^    def initialize(self):$/;"	kind:member	line:63
 initialize_network	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def initialize_network(self, logs_dir):$/;"	kind:member	line:219
-initialize_network	../sources/WassersteinGAN_sim/GAN_models.py	/^    def initialize_network(self, logs_dir):$/;"	kind:member	line:166
+initialize_network	../sources/WassersteinGAN_sim/GAN_models.py	/^    def initialize_network(self, logs_dir):$/;"	kind:member	line:168
 inputs	../sources/example_sources/word2vec/word2vec_basic.py	/^                       inputs=embed,$/;"	kind:variable	line:151
 inputs	../word2vec/word2vec_basic.py	/^                       inputs=embed,$/;"	kind:variable	line:151
 label	../sources/example_sources/kyuye/neural network(practice).py	/^label = [1,0,1,0]$/;"	kind:variable	line:8
@@ -229,12 +390,20 @@ layer1_w	../sources/example_sources/kyuye/neural network.py	/^layer1_w = tf.Vari
 layer2	../sources/example_sources/kyuye/neural network.py	/^layer2 = tf.nn.sigmoid(tf.matmul(layer1, layer2_w) + layer2_b)$/;"	kind:variable	line:22
 layer2_b	../sources/example_sources/kyuye/neural network.py	/^layer2_b = tf.Variable(tf.zeros(10), dtype=tf.float32)$/;"	kind:variable	line:21
 layer2_w	../sources/example_sources/kyuye/neural network.py	/^layer2_w = tf.Variable(tf.random_normal((10, 10)), dtype=tf.float32)$/;"	kind:variable	line:20
+layers	../sources/StackGAN-master/misc/skipthoughts.py	/^layers = {'gru': ('param_init_gru', 'gru_layer')}$/;"	kind:variable	line:247
+leaky_rectify	../sources/StackGAN-master/misc/custom_ops.py	/^def leaky_rectify(x, leakiness=0.01):$/;"	kind:function	line:67
 leaky_relu	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^        def leaky_relu(x, name="leaky_relu"):$/;"	kind:function	line:182
 leaky_relu	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def leaky_relu(x, alpha=0.2, name=""):$/;"	kind:function	line:110
-leaky_relu	../sources/WassersteinGAN_sim/GAN_models.py	/^        def leaky_relu(x, name="leaky_relu"):$/;"	kind:function	line:130
-leaky_relu	../sources/WassersteinGAN_sim/utils.py	/^def leaky_relu(x, alpha=0.2, name=""):$/;"	kind:function	line:110
+leaky_relu	../sources/WassersteinGAN_sim/GAN_models.py	/^        def leaky_relu(x, name="leaky_relu"):$/;"	kind:function	line:132
+leaky_relu	../sources/WassersteinGAN_sim/utils.py	/^def leaky_relu(x, alpha=0.2, name=""):$/;"	kind:function	line:111
+load_bbox	../sources/StackGAN-master/misc/preprocess_birds.py	/^def load_bbox(data_dir):$/;"	kind:function	line:33
+load_filenames	../sources/StackGAN-master/misc/preprocess_birds.py	/^def load_filenames(data_dir):$/;"	kind:function	line:25
+load_filenames	../sources/StackGAN-master/misc/preprocess_flowers.py	/^def load_filenames(data_dir):$/;"	kind:function	line:24
+load_model	../sources/StackGAN-master/misc/skipthoughts.py	/^def load_model():$/;"	kind:function	line:32
+load_params	../sources/StackGAN-master/misc/skipthoughts.py	/^def load_params(path, params):$/;"	kind:function	line:233
+load_tables	../sources/StackGAN-master/misc/skipthoughts.py	/^def load_tables():$/;"	kind:function	line:75
 local_response_norm	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def local_response_norm(x):$/;"	kind:function	line:122
-local_response_norm	../sources/WassersteinGAN_sim/utils.py	/^def local_response_norm(x):$/;"	kind:function	line:122
+local_response_norm	../sources/WassersteinGAN_sim/utils.py	/^def local_response_norm(x):$/;"	kind:function	line:123
 log_str	../sources/example_sources/word2vec/word2vec_basic.py	/^                    log_str = "%s %s," % (log_str, close_word)$/;"	kind:variable	line:199
 log_str	../sources/example_sources/word2vec/word2vec_basic.py	/^                log_str = "Nearest to %s:" % valid_word$/;"	kind:variable	line:196
 log_str	../word2vec/word2vec_basic.py	/^                    log_str = "%s %s," % (log_str, close_word)$/;"	kind:variable	line:199
@@ -243,6 +412,7 @@ loss	../sources/example_sources/word2vec/word2vec_basic.py	/^    loss = tf.reduc
 loss	../word2vec/word2vec_basic.py	/^    loss = tf.reduce_mean($/;"	kind:variable	line:147
 low_dim_embs	../sources/example_sources/word2vec/word2vec_basic.py	/^    low_dim_embs = tsne.fit_transform(final_embeddings[:plot_only, :])$/;"	kind:variable	line:209
 low_dim_embs	../word2vec/word2vec_basic.py	/^    low_dim_embs = tsne.fit_transform(final_embeddings[:plot_only, :])$/;"	kind:variable	line:209
+lr_imsize	../sources/StackGAN-master/stageII/run_exp.py	/^        lr_imsize=int(dataset.image_shape[0] \/ dataset.hr_lr_ratio),$/;"	kind:variable	line:60
 main	../rnn_example.py	/^def main(_):$/;"	kind:function	line:117
 main	../skip_gram_example.py	/^def main(_):$/;"	kind:function	line:107
 main	../sources/WassersteinGAN.tensorflow-master/main.py	/^def main(argv=None):$/;"	kind:function	line:26
@@ -254,14 +424,22 @@ main	../word2vec/word2vec_advenced.py	/^def main(_):$/;"	kind:function	line:537
 main.py	../sources/WassersteinGAN.tensorflow-master/main.py	1;"	kind:file	line:1
 main.py	../sources/WassersteinGAN_sim/main.py	1;"	kind:file	line:1
 max_pool_2x2	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def max_pool_2x2(x):$/;"	kind:function	line:114
-max_pool_2x2	../sources/WassersteinGAN_sim/utils.py	/^def max_pool_2x2(x):$/;"	kind:function	line:114
+max_pool_2x2	../sources/WassersteinGAN_sim/utils.py	/^def max_pool_2x2(x):$/;"	kind:function	line:115
 maybe_download	../sources/example_sources/word2vec/word2vec_basic.py	/^def maybe_download(filename, expected_bytes):$/;"	kind:function	line:18
 maybe_download	../word2vec/word2vec_basic.py	/^def maybe_download(filename, expected_bytes):$/;"	kind:function	line:18
 maybe_download_and_extract	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def maybe_download_and_extract(dir_path, url_name, is_tarfile=False, is_zipfile=False):$/;"	kind:function	line:15
 maybe_download_and_extract	../sources/WassersteinGAN_sim/utils.py	/^def maybe_download_and_extract(dir_path, url_name, is_tarfile=False, is_zipfile=False):$/;"	kind:function	line:15
 mean_square_error	../rnn_example.py	/^    def mean_square_error(self, batch, label):$/;"	kind:member	line:113
 mean_var_with_update	../sources/WassersteinGAN.tensorflow-master/utils.py	/^        def mean_var_with_update():$/;"	kind:function	line:138
-mean_var_with_update	../sources/WassersteinGAN_sim/utils.py	/^        def mean_var_with_update():$/;"	kind:function	line:138
+mean_var_with_update	../sources/WassersteinGAN_sim/utils.py	/^        def mean_var_with_update():$/;"	kind:function	line:139
+mkdir_p	../sources/StackGAN-master/misc/utils.py	/^def mkdir_p(path):$/;"	kind:function	line:68
+model	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^        model = skipthoughts.load_model()$/;"	kind:variable	line:181
+model	../sources/StackGAN-master/stageI/run_exp.py	/^        model=model,$/;"	kind:variable	line:63
+model	../sources/StackGAN-master/stageI/run_exp.py	/^    model = CondGAN($/;"	kind:variable	line:58
+model	../sources/StackGAN-master/stageII/run_exp.py	/^        model=model,$/;"	kind:variable	line:65
+model	../sources/StackGAN-master/stageII/run_exp.py	/^    model = CondGAN($/;"	kind:variable	line:59
+model.py	../sources/StackGAN-master/stageI/model.py	1;"	kind:file	line:1
+model.py	../sources/StackGAN-master/stageII/model.py	1;"	kind:file	line:1
 movie_subtitle_new.py	../sources/example_sources/crawler/movie_subtitle_new.py	1;"	kind:file	line:1
 movie_subtitles.py	../sources/example_sources/crawler/movie_subtitles.py	1;"	kind:file	line:1
 nce_biases	../sources/example_sources/word2vec/word2vec_basic.py	/^        nce_biases = tf.Variable(tf.zeros([vocabulary_size]))$/;"	kind:variable	line:145
@@ -276,12 +454,22 @@ nearest	../sources/example_sources/word2vec/word2vec_basic.py	/^                
 nearest	../word2vec/word2vec_basic.py	/^                nearest = (-sim[i, :]).argsort()[1:top_k+1]$/;"	kind:variable	line:195
 neural network(practice).py	../sources/example_sources/kyuye/neural network(practice).py	1;"	kind:file	line:1
 neural network.py	../sources/example_sources/kyuye/neural network.py	1;"	kind:file	line:1
+next_batch	../sources/StackGAN-master/misc/datasets.py	/^    def next_batch(self, batch_size, window):$/;"	kind:member	line:111
+next_batch_test	../sources/StackGAN-master/misc/datasets.py	/^    def next_batch_test(self, batch_size, start, max_captions):$/;"	kind:member	line:166
+nn	../sources/StackGAN-master/misc/skipthoughts.py	/^def nn(model, text, vectors, query, k=5):$/;"	kind:function	line:171
+nn_words	../sources/StackGAN-master/misc/skipthoughts.py	/^def nn_words(table, wordvecs, query, k=10):$/;"	kind:function	line:201
 norm	../sources/example_sources/word2vec/word2vec_basic.py	/^    norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))$/;"	kind:variable	line:157
 norm	../word2vec/word2vec_basic.py	/^    norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))$/;"	kind:variable	line:157
+norm_weight	../sources/StackGAN-master/misc/skipthoughts.py	/^def norm_weight(nin,nout=None, scale=0.1, ortho=True):$/;"	kind:function	line:333
 normalized_embeddings	../sources/example_sources/word2vec/word2vec_basic.py	/^    normalized_embeddings = embeddings \/ norm$/;"	kind:variable	line:158
 normalized_embeddings	../word2vec/word2vec_basic.py	/^    normalized_embeddings = embeddings \/ norm$/;"	kind:variable	line:158
+now	../sources/StackGAN-master/stageI/run_exp.py	/^    now = datetime.datetime.now(dateutil.tz.tzlocal())$/;"	kind:variable	line:40
+now	../sources/StackGAN-master/stageII/run_exp.py	/^    now = datetime.datetime.now(dateutil.tz.tzlocal())$/;"	kind:variable	line:42
 num_classes	../sources/example_sources/word2vec/word2vec_basic.py	/^                       num_classes=vocabulary_size))$/;"	kind:variable	line:153
 num_classes	../word2vec/word2vec_basic.py	/^                       num_classes=vocabulary_size))$/;"	kind:variable	line:153
+num_embeddings	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^        num_embeddings = len(embeddings)$/;"	kind:variable	line:183
+num_embeddings	../sources/StackGAN-master/demo/demo.py	/^    num_embeddings = len(captions_list)$/;"	kind:variable	line:178
+num_examples	../sources/StackGAN-master/misc/datasets.py	/^    def num_examples(self):$/;"	kind:member	line:45
 num_sampled	../sources/example_sources/word2vec/word2vec_basic.py	/^                       num_sampled=num_sampled,$/;"	kind:variable	line:152
 num_sampled	../sources/example_sources/word2vec/word2vec_basic.py	/^num_sampled = 64$/;"	kind:variable	line:128
 num_sampled	../word2vec/word2vec_basic.py	/^                       num_sampled=num_sampled,$/;"	kind:variable	line:152
@@ -294,10 +482,20 @@ optimize	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def opti
 optimize	../word2vec/word2vec_advenced.py	/^    def optimize(self, loss):$/;"	kind:member	line:274
 optimizer	../sources/example_sources/word2vec/word2vec_basic.py	/^    optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)$/;"	kind:variable	line:155
 optimizer	../word2vec/word2vec_basic.py	/^    optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)$/;"	kind:variable	line:155
+ortho_weight	../sources/StackGAN-master/misc/skipthoughts.py	/^def ortho_weight(ndim):$/;"	kind:function	line:327
 out_b	../sources/example_sources/kyuye/neural network.py	/^out_b = tf.Variable(tf.zeros(1), dtype=tf.float32)$/;"	kind:variable	line:25
 out_w	../sources/example_sources/kyuye/neural network.py	/^out_w = tf.Variable(tf.random_normal((10, 1)), dtype=tf.float32)$/;"	kind:variable	line:24
 output	../sources/example_sources/kyuye/neural network(practice).py	/^    output = sess.run(train)$/;"	kind:variable	line:30
 page_id	../sources/example_sources/crawler/facebook_crawling.py	/^   page_id = 'nytimes'$/;"	kind:variable	line:105
+param_init_gru	../sources/StackGAN-master/misc/skipthoughts.py	/^def param_init_gru(options, params, prefix='gru', nin=None, dim=None):$/;"	kind:function	line:343
+parse_args	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^def parse_args():$/;"	kind:function	line:18
+parse_args	../sources/StackGAN-master/demo/demo.py	/^def parse_args():$/;"	kind:function	line:19
+parse_args	../sources/StackGAN-master/stageI/run_exp.py	/^def parse_args():$/;"	kind:function	line:17
+parse_args	../sources/StackGAN-master/stageII/run_exp.py	/^def parse_args():$/;"	kind:function	line:18
+path_to_bmodel	../sources/StackGAN-master/misc/skipthoughts.py	/^path_to_bmodel = path_to_models + 'bi_skip.npz'$/;"	kind:variable	line:29
+path_to_models	../sources/StackGAN-master/misc/skipthoughts.py	/^path_to_models = 'Data\/skipthoughts\/'$/;"	kind:variable	line:24
+path_to_tables	../sources/StackGAN-master/misc/skipthoughts.py	/^path_to_tables = 'Data\/skipthoughts\/'$/;"	kind:variable	line:25
+path_to_umodel	../sources/StackGAN-master/misc/skipthoughts.py	/^path_to_umodel = path_to_models + 'uni_skip.npz'$/;"	kind:variable	line:28
 plh	../sources/example_sources/kyuye/define example.py	/^plh = tf.placeholder(dtype=tf.int32)$/;"	kind:variable	line:5
 plh_data	../sources/example_sources/kyuye/neural network(practice).py	/^plh_data = tf.placeholder(dtype=tf.float32, shape=(4,10))$/;"	kind:variable	line:10
 plh_label	../sources/example_sources/kyuye/neural network(practice).py	/^plh_label = tf.placeholder(dtype=tf.float32, shape=(4))$/;"	kind:variable	line:11
@@ -309,10 +507,19 @@ prediction	../rnn_example.py	/^    def prediction(self):$/;"	kind:member	line:41
 prediction	../skip_gram_example.py	/^    def prediction(self):$/;"	kind:member	line:36
 prediction	../sources/nlp_models/rnn_example.py	/^    def prediction(self):$/;"	kind:member	line:57
 prediction	../sources/nlp_models/skip_gram_example.py	/^    def prediction(self):$/;"	kind:member	line:36
+prepare_trainer	../sources/StackGAN-master/stageI/trainer.py	/^    def prepare_trainer(self, generator_loss, discriminator_loss):$/;"	kind:member	line:166
+prepare_trainer	../sources/StackGAN-master/stageII/trainer.py	/^    def prepare_trainer(self, discriminator_loss, generator_loss,$/;"	kind:member	line:233
+preprocess	../sources/StackGAN-master/misc/skipthoughts.py	/^def preprocess(text):$/;"	kind:function	line:155
+preprocess	../sources/StackGAN-master/stageI/trainer.py	/^    def preprocess(self, x, n):$/;"	kind:member	line:230
+preprocess	../sources/StackGAN-master/stageII/trainer.py	/^    def preprocess(self, x, n):$/;"	kind:member	line:320
+preprocess_birds.py	../sources/StackGAN-master/misc/preprocess_birds.py	1;"	kind:file	line:1
+preprocess_flowers.py	../sources/StackGAN-master/misc/preprocess_flowers.py	1;"	kind:file	line:1
 processFacebookPageFeedStatus	../sources/example_sources/crawler/facebook_crawling.py	/^def processFacebookPageFeedStatus(status):$/;"	kind:function	line:53
 process_image	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def process_image(image, mean_pixel, norm):$/;"	kind:function	line:150
-process_image	../sources/WassersteinGAN_sim/utils.py	/^def process_image(image, mean_pixel, norm):$/;"	kind:function	line:150
+process_image	../sources/WassersteinGAN_sim/utils.py	/^def process_image(image, mean_pixel, norm):$/;"	kind:function	line:151
+profile	../sources/StackGAN-master/misc/skipthoughts.py	/^profile = False$/;"	kind:variable	line:19
 project_opened	../sources/example_sources/kyuye/.ropeproject/config.py	/^def project_opened(project):$/;"	kind:function	line:84
+readCaptions	../sources/StackGAN-master/misc/datasets.py	/^    def readCaptions(self, filenames, class_id):$/;"	kind:member	line:57
 read_analogies	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def read_analogies(self):$/;"	kind:member	line:164
 read_analogies	../word2vec/word2vec_advenced.py	/^    def read_analogies(self):$/;"	kind:member	line:164
 read_celebADataset.py	../sources/WassersteinGAN.tensorflow-master/Dataset_Reader/read_celebADataset.py	1;"	kind:file	line:1
@@ -320,17 +527,40 @@ read_data	../sources/example_sources/word2vec/word2vec_basic.py	/^def read_data(
 read_data	../word2vec/word2vec_basic.py	/^def read_data(filename):$/;"	kind:function	line:30
 read_dataset	../sources/WassersteinGAN.tensorflow-master/Dataset_Reader/read_celebADataset.py	/^def read_dataset(data_dir):$/;"	kind:function	line:26
 request_until_succeed	../sources/example_sources/crawler/facebook_crawling.py	/^def request_until_succeed(url):$/;"	kind:function	line:16
+residual_block	../sources/StackGAN-master/stageII/model.py	/^    def residual_block(self, x_c_code):$/;"	kind:member	line:122
 restore_checkpoint	../rnn_example.py	/^    def restore_checkpoint(self, directory):$/;"	kind:member	line:60
 result	../sources/example_sources/kyuye/neural network(practice).py	/^result = tf.matmul(plh_data,weight) + bias$/;"	kind:variable	line:19
 rnn_example.py	../rnn_example.py	1;"	kind:file	line:1
 rnn_example.py	../sources/nlp_models/rnn_example.py	1;"	kind:file	line:1
+run_exp.py	../sources/StackGAN-master/stageI/run_exp.py	1;"	kind:file	line:1
+run_exp.py	../sources/StackGAN-master/stageII/run_exp.py	1;"	kind:file	line:1
 run_pred	../rnn_example.py	/^    def run_pred(self):$/;"	kind:member	line:50
 run_prediction	../skip_gram_example.py	/^    def run_prediction(self):$/;"	kind:member	line:49
 run_train	../rnn_example.py	/^    def run_train(self):$/;"	kind:member	line:45
 run_train	../skip_gram_example.py	/^    def run_train(self):$/;"	kind:member	line:45
+s_tmp	../sources/StackGAN-master/stageI/run_exp.py	/^        s_tmp = cfg.TRAIN.PRETRAINED_MODEL$/;"	kind:variable	line:55
+s_tmp	../sources/StackGAN-master/stageII/run_exp.py	/^        s_tmp = cfg.TRAIN.PRETRAINED_MODEL$/;"	kind:variable	line:56
+sample_embeddings	../sources/StackGAN-master/misc/datasets.py	/^    def sample_embeddings(self, embeddings, filenames, class_id, sample_num):$/;"	kind:member	line:87
+sample_encoded_context	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^def sample_encoded_context(embeddings, model, bAugmentation=True):$/;"	kind:function	line:35
+sample_encoded_context	../sources/StackGAN-master/demo/demo.py	/^def sample_encoded_context(embeddings, model, bAugmentation=True):$/;"	kind:function	line:36
+sample_encoded_context	../sources/StackGAN-master/stageI/trainer.py	/^    def sample_encoded_context(self, embeddings):$/;"	kind:member	line:74
+sample_encoded_context	../sources/StackGAN-master/stageII/trainer.py	/^    def sample_encoded_context(self, embeddings):$/;"	kind:member	line:88
+sampler	../sources/StackGAN-master/stageI/trainer.py	/^    def sampler(self):$/;"	kind:member	line:125
+sampler	../sources/StackGAN-master/stageII/trainer.py	/^    def sampler(self):$/;"	kind:member	line:157
+samples_batchs	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^                    samples_batchs = []$/;"	kind:variable	line:203
+samples_batchs	../sources/StackGAN-master/demo/demo.py	/^                    samples_batchs = []$/;"	kind:variable	line:203
+saveIDs	../sources/StackGAN-master/misc/datasets.py	/^    def saveIDs(self):$/;"	kind:member	line:52
+save_data_list	../sources/StackGAN-master/misc/preprocess_birds.py	/^def save_data_list(inpath, outpath, filenames, filename_bbox):$/;"	kind:function	line:56
+save_data_list	../sources/StackGAN-master/misc/preprocess_flowers.py	/^def save_data_list(inpath, outpath, filenames):$/;"	kind:function	line:32
+save_dir	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^    save_dir = cap_path[:cap_path.find('.txt')] + '-skip-thought'$/;"	kind:variable	line:176
+save_dir	../sources/StackGAN-master/demo/demo.py	/^    save_dir = cap_path[:cap_path.find('.t7')]$/;"	kind:variable	line:183
 save_imshow_grid	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def save_imshow_grid(images, logs_dir, filename, shape):$/;"	kind:function	line:173
-save_imshow_grid	../sources/WassersteinGAN_sim/utils.py	/^def save_imshow_grid(images, logs_dir, filename, shape):$/;"	kind:function	line:173
+save_imshow_grid	../sources/WassersteinGAN_sim/utils.py	/^def save_imshow_grid(images, logs_dir, filename, shape):$/;"	kind:function	line:174
 save_model	../rnn_example.py	/^    def save_model(self):$/;"	kind:member	line:54
+save_super_images	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^def save_super_images(sample_batchs, hr_sample_batchs,$/;"	kind:function	line:104
+save_super_images	../sources/StackGAN-master/demo/demo.py	/^def save_super_images(sample_batchs, hr_sample_batchs,$/;"	kind:function	line:105
+save_super_images	../sources/StackGAN-master/stageI/trainer.py	/^    def save_super_images(self, images, sample_batchs, filenames,$/;"	kind:member	line:396
+save_super_images	../sources/StackGAN-master/stageII/trainer.py	/^    def save_super_images(self, images, sample_batchs, hr_sample_batchs,$/;"	kind:member	line:562
 save_vocab	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def save_vocab(self):$/;"	kind:member	line:381
 save_vocab	../word2vec/word2vec_advenced.py	/^    def save_vocab(self):$/;"	kind:member	line:381
 saver	../sources/example_sources/kyuye/neural network.py	/^saver = tf.train.Saver()$/;"	kind:variable	line:35
@@ -346,12 +576,18 @@ skip_gram_example.py	../skip_gram_example.py	1;"	kind:file	line:1
 skip_gram_example.py	../sources/nlp_models/skip_gram_example.py	1;"	kind:file	line:1
 skip_window	../sources/example_sources/word2vec/word2vec_basic.py	/^skip_window = 1$/;"	kind:variable	line:123
 skip_window	../word2vec/word2vec_basic.py	/^skip_window = 1$/;"	kind:variable	line:123
+skipthoughts.py	../sources/StackGAN-master/misc/skipthoughts.py	1;"	kind:file	line:1
 stddev	../sources/example_sources/word2vec/word2vec_basic.py	/^                                stddev=1.0\/math.sqrt(embedding_size)))$/;"	kind:variable	line:144
 stddev	../word2vec/word2vec_basic.py	/^                                stddev=1.0\/math.sqrt(embedding_size)))$/;"	kind:variable	line:144
+t_file	../sources/StackGAN-master/demo/demo.py	/^    t_file = torchfile.load(cap_path)$/;"	kind:variable	line:175
 testFacebookPageData	../sources/example_sources/crawler/facebook_crawling.py	/^def testFacebookPageData(page_id, access_token):$/;"	kind:function	line:4
 testFacebookPageFeedData	../sources/example_sources/crawler/facebook_crawling.py	/^def testFacebookPageFeedData(page_id, access_token):$/;"	kind:function	line:32
+timestamp	../sources/StackGAN-master/stageI/run_exp.py	/^    timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')$/;"	kind:variable	line:41
+timestamp	../sources/StackGAN-master/stageII/run_exp.py	/^    timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')$/;"	kind:variable	line:43
 top_k	../sources/example_sources/word2vec/word2vec_basic.py	/^                top_k = 8$/;"	kind:variable	line:194
 top_k	../word2vec/word2vec_basic.py	/^                top_k = 8$/;"	kind:variable	line:194
+train	../sources/StackGAN-master/stageI/trainer.py	/^    def train(self):$/;"	kind:member	line:302
+train	../sources/StackGAN-master/stageII/trainer.py	/^    def train(self):$/;"	kind:member	line:459
 train	../sources/example_sources/kyuye/neural network(practice).py	/^train = tf.train.GradientDescentOptimizer(0.01).minimize(cost_mean)$/;"	kind:variable	line:24
 train	../sources/example_sources/kyuye/neural network.py	/^train = tf.train.GradientDescentOptimizer(0.01).minimize(cost_mean)$/;"	kind:variable	line:31
 train	../sources/example_sources/word2vec/word2vec_advenced.py	/^    def train(self):$/;"	kind:member	line:400
@@ -362,18 +598,24 @@ train_labels	../sources/example_sources/word2vec/word2vec_basic.py	/^    train_l
 train_labels	../word2vec/word2vec_basic.py	/^    train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])$/;"	kind:variable	line:134
 train_model	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:235
 train_model	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:343
-train_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:180
-train_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:290
+train_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:182
+train_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:286
+train_one_step	../sources/StackGAN-master/stageII/trainer.py	/^    def train_one_step(self, generator_lr,$/;"	kind:member	line:404
+trainer.py	../sources/StackGAN-master/stageI/trainer.py	1;"	kind:file	line:1
+trainer.py	../sources/StackGAN-master/stageII/trainer.py	1;"	kind:file	line:1
 training	../rnn_example.py	/^    def training(self):$/;"	kind:member	line:32
 training	../skip_gram_example.py	/^    def training(self):$/;"	kind:member	line:24
 training	../sources/nlp_models/rnn_example.py	/^    def training(self):$/;"	kind:member	line:42
 training	../sources/nlp_models/skip_gram_example.py	/^    def training(self):$/;"	kind:member	line:24
+transform	../sources/StackGAN-master/misc/datasets.py	/^    def transform(self, images):$/;"	kind:member	line:69
+transform	../sources/StackGAN-master/misc/utils.py	/^def transform(image, image_size, is_crop, bbox):$/;"	kind:function	line:42
 tsne	../sources/example_sources/word2vec/word2vec_basic.py	/^    tsne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=5000)$/;"	kind:variable	line:207
 tsne	../word2vec/word2vec_basic.py	/^    tsne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=5000)$/;"	kind:variable	line:207
 unprocess_image	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def unprocess_image(image, mean_pixel, norm):$/;"	kind:function	line:154
-unprocess_image	../sources/WassersteinGAN_sim/utils.py	/^def unprocess_image(image, mean_pixel, norm):$/;"	kind:function	line:154
+unprocess_image	../sources/WassersteinGAN_sim/utils.py	/^def unprocess_image(image, mean_pixel, norm):$/;"	kind:function	line:155
 url	../sources/example_sources/word2vec/word2vec_basic.py	/^url = 'http:\/\/mattmahoney.net\/dc\/'$/;"	kind:variable	line:16
 url	../word2vec/word2vec_basic.py	/^url = 'http:\/\/mattmahoney.net\/dc\/'$/;"	kind:variable	line:16
+utils.py	../sources/StackGAN-master/misc/utils.py	1;"	kind:file	line:1
 utils.py	../sources/WassersteinGAN.tensorflow-master/utils.py	1;"	kind:file	line:1
 utils.py	../sources/WassersteinGAN_sim/utils.py	1;"	kind:file	line:1
 utils_folder	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^utils_folder = os.path.realpath($/;"	kind:variable	line:10
@@ -391,8 +633,12 @@ valid_window	../word2vec/word2vec_basic.py	/^valid_window = 100$/;"	kind:variabl
 valid_word	../sources/example_sources/word2vec/word2vec_basic.py	/^                valid_word = reverse_dictionary[valid_examples[i]]$/;"	kind:variable	line:193
 valid_word	../word2vec/word2vec_basic.py	/^                valid_word = reverse_dictionary[valid_examples[i]]$/;"	kind:variable	line:193
 var	../sources/example_sources/kyuye/define example.py	/^var = tf.Variable(22)$/;"	kind:variable	line:4
+visualization	../sources/StackGAN-master/stageI/trainer.py	/^    def visualization(self, n):$/;"	kind:member	line:218
+visualization	../sources/StackGAN-master/stageII/trainer.py	/^    def visualization(self, n):$/;"	kind:member	line:295
 visualize_model	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^    def visualize_model(self):$/;"	kind:member	line:262
-visualize_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def visualize_model(self):$/;"	kind:member	line:207
+visualize_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def visualize_model(self):$/;"	kind:member	line:209
+visualize_one_superimage	../sources/StackGAN-master/stageI/trainer.py	/^    def visualize_one_superimage(self, img_var, images, rows, filename):$/;"	kind:member	line:205
+visualize_one_superimage	../sources/StackGAN-master/stageII/trainer.py	/^    def visualize_one_superimage(self, img_var, images, rows, filename):$/;"	kind:member	line:282
 vocabulary_size	../sources/example_sources/word2vec/word2vec_basic.py	/^vocabulary_size = 50000$/;"	kind:variable	line:102
 vocabulary_size	../word2vec/word2vec_basic.py	/^vocabulary_size = 50000$/;"	kind:variable	line:102
 weight	../sources/example_sources/kyuye/neural network(practice).py	/^weight = tf.Variable(tf.random_normal(shape=(10,1)))$/;"	kind:variable	line:16
@@ -406,6 +652,7 @@ word2vec_advenced.py	../sources/example_sources/word2vec/word2vec_advenced.py	1;
 word2vec_advenced.py	../word2vec/word2vec_advenced.py	1;"	kind:file	line:1
 word2vec_basic.py	../sources/example_sources/word2vec/word2vec_basic.py	1;"	kind:file	line:1
 word2vec_basic.py	../word2vec/word2vec_basic.py	1;"	kind:file	line:1
+word_features	../sources/StackGAN-master/misc/skipthoughts.py	/^def word_features(table):$/;"	kind:function	line:189
 words	../sources/example_sources/word2vec/word2vec_basic.py	/^words = read_data(filename)$/;"	kind:variable	line:98
 words	../word2vec/word2vec_basic.py	/^words = read_data(filename)$/;"	kind:variable	line:98
 write_checkpoint	../rnn_example.py	/^    def write_checkpoint(self, directory):$/;"	kind:member	line:57

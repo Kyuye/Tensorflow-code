@@ -1,3 +1,4 @@
+
 import tensorflow as tf
 import numpy as np
 import os, sys, inspect
@@ -17,7 +18,7 @@ class GAN(object):
 
         record = DataRecord()
 
-        record.input_image = tf.constant([[i] for i in range(10)], tf.float32)
+        record.input_image = tf.constant([[[i]] for i in range(10)], tf.float32)
         return record
 
     def _read_input_queue(self):
@@ -38,9 +39,10 @@ class GAN(object):
         N = len(dims)
         image_size = 10 // (2 ** (N - 1))
 
-        W_z = utils.weight_variable([self.z_dim, dims[0] * image_size * image_size], name="W_z")
-        b_z = utils.bias_variable([dims[0] * image_size * image_size], name="b_z")
+        W_z = tf.Variable(tf.truncated_normal([self.z_dim, dims[0] * image_size * image_size], stddev=0.02), name="W_z")
+        b_z = tf.Variable(tf.zeros([dims[0] * image_size * image_size]), name="b_z")
         h_z = tf.matmul(z, W_z) + b_z
+
         h_z = tf.reshape(h_z, [-1, image_size, image_size, dims[0]])
         h_bnz = utils.batch_norm(h_z, dims[0], train_phase, scope="gen_bnz")
         h = activation(h_bnz, name='h_z')
@@ -222,24 +224,20 @@ class WasserstienGAN(GAN):
         self.clip_values = clip_values
         GAN.__init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir)
 
+
     def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):
         N = len(dims)
-        image_size = 10 // (2 ** (N - 1))
+        # image_size = 10 // (2 ** (N - 1))
         with tf.variable_scope(scope_name) as scope:
-            W_z = utils.weight_variable([self.z_dim, dims[0] * image_size * image_size], name="W_z")
-            h_z = tf.matmul(z, W_z)
-            h_z = tf.reshape(h_z, [-1, image_size, image_size, dims[0]])
-            h_bnz = utils.batch_norm(h_z, dims[0], train_phase, scope="gen_bnz")
+            h_z = tf.layers.dense(z, dims[0], use_bias=False, kernel_initializer=tf.truncated_normal_initializer())
+            print("z:", z)
+            print("h_z:", h_z)
+            h_bnz = tf.layers.batch_normalization(h_z)
             h = activation(h_bnz, name='h_z')
 
-            for index in range(N - 2):
-                image_size *= 2
-                W = utils.weight_variable([4, 4, dims[index + 1], dims[index]], name="W_%d" % index)
-                b = tf.zeros([dims[index + 1]])
-                deconv_shape = tf.stack([tf.shape(h)[0], image_size, image_size, dims[index + 1]])
-                h_conv_t = utils.conv2d_transpose_strided(h, W, b, output_shape=deconv_shape)
-                h_bn = utils.batch_norm(h_conv_t, dims[index + 1], train_phase, scope="gen_bn%d" % index)
-                h = activation(h_bn, name='h_%d' % index)
+            h_conv = tf.layers.conv1d(h, 64, 4)
+            h_bn = tf.layers.batch_normalization(h_conv)
+            h = activation(h_bn, name='h_%d' % index)
 
             image_size *= 2
             W_pred = utils.weight_variable([4, 4, dims[-1], dims[-2]], name="W_pred")
@@ -252,8 +250,8 @@ class WasserstienGAN(GAN):
 
     def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",
                        scope_reuse=False):
-        print(input_images)
         N = len(dims)
+        print(N)
         with tf.variable_scope(scope_name) as scope:
             if scope_reuse:
                 scope.reuse_variables()
@@ -262,8 +260,6 @@ class WasserstienGAN(GAN):
             for index in range(N - 2):
                 W = utils.weight_variable([4, 1, dims[index], dims[index + 1]], name="W_%d" % index)
                 b = tf.zeros([dims[index+1]])
-                print(W)
-                print(b)
                 print(h)
                 h_conv = utils.conv2d_strided(h, W, b)
 
@@ -273,7 +269,7 @@ class WasserstienGAN(GAN):
                 else:
                     h_bn = utils.batch_norm(h_conv, dims[index + 1], train_phase, scope="disc_bn%d" % index)
                 h = activation(h_bn, name="h_%d" % index)
-                utils.add_activation_summary(h)
+                # utils.add_activation_summary(h)
 
             W_pred = utils.weight_variable([4, 4, dims[-2], dims[-1]], name="W_pred")
             b = tf.zeros([dims[-1]])

@@ -219,5 +219,5 @@ if __name__ == "__main__":
 
         print('Finish generating samples for %d sentences:' % num_embeddings)
         print('Example sentences:')
-        for i in xrange(np.minimum(10, num_embeddings)):
+        for i in range(np.minimum(10, num_embeddings)):
             print('Sentence %d: %s' % (i, captions_list[i]))
