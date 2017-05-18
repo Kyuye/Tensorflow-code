@@ -1,9 +1,4 @@
-from __future__ import print_function
 
-__author__ = "shekkizh"
-"""
-Tensorflow implementation of Wasserstein GAN
-"""
 import numpy as np
 import tensorflow as tf
 from GAN_models import *
