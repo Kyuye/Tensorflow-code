@@ -37,7 +37,7 @@ class GAN(object):
             layer1 = tf.layers.dense(x, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer1", reuse=reuse)
             layer2 = tf.layers.dense(layer1, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer2", reuse=reuse)
             prediction = tf.layers.dense(layer2, 1, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="prediction", reuse=reuse)
-            return tf.nn.sigmoid(prediction), prediction, prediction
+        return tf.nn.sigmoid(prediction), prediction, prediction
         
 
     def _cross_entropy_loss(self, prediction, labels, name="x_entropy"):
