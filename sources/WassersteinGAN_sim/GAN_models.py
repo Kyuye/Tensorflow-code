@@ -20,7 +20,7 @@ tf.flags.DEFINE_integer("gen_dimension", "16", "dimension of first layer in gene
 tf.flags.DEFINE_string("mode", "train", "train / visualize model")
 
 class GAN(object):
-    def __init__(self, z_dim=0, crop_image_size=0, resized_image_size=0, batch_size=0, data_dir=0):
+    def __init__(self):
         self.sim_data = tf.constant([ list(range(10)) for i in range(1000)], tf.float32)
         
 
@@ -94,7 +94,7 @@ class GAN(object):
         self.generator_train_op = self._train(self.gen_loss, self.generator_variables, optim)
         self.discriminator_train_op = self._train(self.discriminator_loss, self.discriminator_variables, optim)
 
-    def initialize_network(self, logs_dir="./"):
+    def initialize_network(self):
         print("Initializing network...")
         self.sess = tf.Session()
         self.sess.run(tf.initialize_all_variables())
@@ -111,7 +111,7 @@ class GAN(object):
                 # self.summary_writer.add_summary(summary_str, itr)
 
         _pred = self.sess.run(self.prediction)
-        print(_pred[0])
+        print(_pred[:10])
         self.sess.close()
 
 
@@ -127,150 +127,64 @@ class GAN(object):
 
 
 class WasserstienGAN(GAN):
-    def __init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir, clip_values=(-0.01, 0.01),
-                 critic_iterations=5):
+    def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
-        GAN.__init__(self, z_dim, crop_image_size, resized_image_size, batch_size, data_dir)
+        GAN.__init__(self)
+
+    def _generator(self, x):
+        with tf.variable_scope("generator") as scope:
+            layer1 = tf.layers.dense(x, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
+            layer2 = tf.layers.dense(layer1, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
+            self.prediction = tf.layers.dense(layer2, 10, None, True, tf.truncated_normal_initializer)
+        return self.prediction
 
 
-    def _generator(self, z, dims, train_phase, activation=tf.nn.relu, scope_name="generator"):
-        N = len(dims)
-        # image_size = 10 // (2 ** (N - 1))
-        with tf.variable_scope(scope_name) as scope:
-            h_z = tf.layers.dense(z, dims[0], use_bias=False, kernel_initializer=tf.truncated_normal_initializer())
-            print("z:", z)
-            print("h_z:", h_z)
-            h_bnz = tf.layers.batch_normalization(h_z)
-            h = activation(h_bnz, name='h_z')
-
-            h_conv = tf.layers.conv1d(h, 64, 4)
-            h_bn = tf.layers.batch_normalization(h_conv)
-            h = activation(h_bn, name='h_%d' % index)
-
-            image_size *= 2
-            W_pred = utils.weight_variable([4, 4, dims[-1], dims[-2]], name="W_pred")
-            b = tf.zeros([dims[-1]])
-            deconv_shape = tf.stack([tf.shape(h)[0], image_size, image_size, dims[-1]])
-            h_conv_t = utils.conv2d_transpose_strided(h, W_pred, b, output_shape=deconv_shape)
-            pred_image = tf.nn.tanh(h_conv_t, name='pred_image')
-
-        return pred_image
-
-    def _discriminator(self, input_images, dims, train_phase, activation=tf.nn.relu, scope_name="discriminator",
-                       scope_reuse=False):
-        N = len(dims)
-        print(N)
-        with tf.variable_scope(scope_name) as scope:
-            if scope_reuse:
-                scope.reuse_variables()
-            h = input_images
-            skip_bn = True  # First layer of discriminator skips batch norm
-            for index in range(N - 2):
-                W = utils.weight_variable([4, 1, dims[index], dims[index + 1]], name="W_%d" % index)
-                b = tf.zeros([dims[index+1]])
-                print(h)
-                h_conv = utils.conv2d_strided(h, W, b)
-
-                if skip_bn:
-                    h_bn = h_conv
-                    skip_bn = False
-                else:
-                    h_bn = utils.batch_norm(h_conv, dims[index + 1], train_phase, scope="disc_bn%d" % index)
-                h = activation(h_bn, name="h_%d" % index)
-                # utils.add_activation_summary(h)
-
-            W_pred = utils.weight_variable([4, 4, dims[-2], dims[-1]], name="W_pred")
-            b = tf.zeros([dims[-1]])
-            h_pred = utils.conv2d_strided(h, W_pred, b)
-        return None, h_pred, None  # Return the last convolution output. None values are returned to maintatin disc from other GAN
+    def _discriminator(self, x, reuse=False):
+        with tf.variable_scope("discriminator") as scope:
+            layer1 = tf.layers.dense(x, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer1", reuse=reuse)
+            layer2 = tf.layers.dense(layer1, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer2", reuse=reuse)
+            prediction = tf.layers.dense(layer2, 1, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="prediction", reuse=reuse)
+        # Return the last convolution output. None values are returned to maintatin disc from other GAN
+        return None, prediction, None
+        
 
     def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):
         self.discriminator_loss = tf.reduce_mean(logits_real - logits_fake)
         self.gen_loss = tf.reduce_mean(logits_fake)
 
-        # tf.scalar_summary("Discriminator_loss", self.discriminator_loss)
-        # tf.scalar_summary("Generator_loss", self.gen_loss)
 
     def train_model(self, max_iterations):
-        try:
-            print("Training Wasserstein GAN model...")
-            clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
-                                         var in self.discriminator_variables]
+        print("Training Wasserstein GAN model...")
+        clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
+                                        var in self.discriminator_variables]
 
-            start_time = time.time()
+        for itr in range(1, max_iterations):
+            if itr < 25 or itr % 500 == 0:
+                critic_itrs = 25
+            else:
+                critic_itrs = self.critic_iterations
 
-            def get_feed_dict(train_phase=True):
-                batch_z = np.random.uniform(-1.0, 1.0, size=[self.batch_size, self.z_dim]).astype(np.float32)
-                feed_dict = {self.z_vec: batch_z, self.train_phase: train_phase}
-                return feed_dict
+            for critic_itr in range(critic_itrs):
+                self.sess.run(self.discriminator_train_op)
+                self.sess.run(clip_discriminator_var_op)
 
-            for itr in range(1, max_iterations):
-                if itr < 25 or itr % 500 == 0:
-                    critic_itrs = 25
-                else:
-                    critic_itrs = self.critic_iterations
+            self.sess.run(self.generator_train_op)
 
-                for critic_itr in range(critic_itrs):
-                    self.sess.run(self.discriminator_train_op, feed_dict=get_feed_dict(True))
-                    self.sess.run(clip_discriminator_var_op)
-
-                feed_dict = get_feed_dict(True)
-                self.sess.run(self.generator_train_op, feed_dict=feed_dict)
-
-                if itr % 100 == 0:
-                    summary_str = self.sess.run(self.summary_op, feed_dict=feed_dict)
-                    self.summary_writer.add_summary(summary_str, itr)
-
-                if itr % 200 == 0:
-                    stop_time = time.time()
-                    duration = (stop_time - start_time) / 200.0
-                    start_time = stop_time
-                    g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss],
-                                                           feed_dict=feed_dict)
-                    print("Time: %g/itr, Step: %d, generator loss: %g, discriminator_loss: %g" % (
-                        duration, itr, g_loss_val, d_loss_val))
-
-                if itr % 5000 == 0:
-                    self.saver.save(self.sess, self.logs_dir + "model.ckpt", global_step=itr)
-
-        except tf.errors.OutOfRangeError:
-            print('Done training -- epoch limit reached')
-        except KeyboardInterrupt:
-            print("Ending Training...")
-        finally:
-            self.coord.request_stop()
-            self.coord.join(self.threads)  # Wait for threads to finish.
+            if itr % 200 == 0:
+                g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss])
+                print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
+        
+        _pred = self.sess.run(self.gen_data)
+        print(_pred[:10])
+        self.sess.close()
 
 
 def main(argv=None):
-    # gen_dim = FLAGS.gen_dimension
-    # generator_dims = [64 * gen_dim, 64 * gen_dim // 2, 64 * gen_dim // 4, 64 * gen_dim // 8, 3]
-    # discriminator_dims = [1, 64, 64 * 2, 64 * 4, 64 * 8, 1]
-
-    # crop_image_size, resized_image_size = map(int, FLAGS.image_size.split(','))
-    # if FLAGS.model == 0:
-    #     model = GAN(FLAGS.z_dim, crop_image_size, resized_image_size, FLAGS.batch_size, FLAGS.data_dir)
-    # elif FLAGS.model == 1:
-    #     model = WasserstienGAN(FLAGS.z_dim, crop_image_size, resized_image_size, FLAGS.batch_size, FLAGS.data_dir,
-    #                            clip_values=(-0.01, 0.01), critic_iterations=5)
-    # else:
-    #     raise ValueError("Unknown model identifier - FLAGS.model=%d" % FLAGS.model)
-
-    # model.create_network(generator_dims, discriminator_dims, FLAGS.optimizer, FLAGS.learning_rate,
-    #                      FLAGS.optimizer_param)
-
-    # model.initialize_network(FLAGS.logs_dir)
-
-    # if FLAGS.mode == "train":
-    #     model.train_model(int(1 + FLAGS.iterations))
-    # elif FLAGS.mode == "visualize":
-    #     model.visualize_model()
-
-    gan = GAN()
+    gan = WasserstienGAN()
     gan.create_network()
     gan.initialize_network()
-    gan.train_model(20000)
+    gan.train_model(1000)
 
 
 
