@@ -1,5 +1,9 @@
 
 import tensorflow as tf
+import numpy as np
+import os, sys, inspect
+import time
+import utils as utils
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "64", "batch size for training")
@@ -19,10 +23,41 @@ class Network(object):
     def __init__(self):
         self.sim_data = tf.constant([ list(range(10)) for i in range(1000)], tf.float32)
 
-    def initialize_network(self):
-        print("Initializing network...")
-        self.sess = tf.Session()
-        self.sess.run(tf.initialize_all_variables())
+    def _generator(self, x):
+        with tf.variable_scope("generator") as scope:
+            layer1 = tf.layers.dense(x, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
+            layer2 = tf.layers.dense(layer1, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
+            self.prediction = tf.layers.dense(layer2, 10, None, True, tf.truncated_normal_initializer)
+        return self.prediction
+
+
+    def _discriminator(self, x, reuse=False):
+        with tf.variable_scope("discriminator") as scope:
+            layer1 = tf.layers.dense(x, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer1", reuse=reuse)
+            layer2 = tf.layers.dense(layer1, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer2", reuse=reuse)
+            prediction = tf.layers.dense(layer2, 1, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="prediction", reuse=reuse)
+        return tf.nn.sigmoid(prediction), prediction, prediction
+
+class GAN(Network):
+    def __init__(self):
+        self.sim_data = tf.constant([ list(range(10)) for i in range(1000)], tf.float32)
+        
+
+    # def _generator(self, x):
+    #     with tf.variable_scope("generator") as scope:
+    #         layer1 = tf.layers.dense(x, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
+    #         layer2 = tf.layers.dense(layer1, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
+    #         self.prediction = tf.layers.dense(layer2, 10, None, True, tf.truncated_normal_initializer)
+    #     return self.prediction
+
+
+    # def _discriminator(self, x, reuse=False):
+    #     with tf.variable_scope("discriminator") as scope:
+    #         layer1 = tf.layers.dense(x, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer1", reuse=reuse)
+    #         layer2 = tf.layers.dense(layer1, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer2", reuse=reuse)
+    #         prediction = tf.layers.dense(layer2, 1, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="prediction", reuse=reuse)
+    #     return tf.nn.sigmoid(prediction), prediction, prediction
+        
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
         self.learning_rate = learning_rate
@@ -35,36 +70,21 @@ class Network(object):
 
     def _train(self, loss_val, var_list, optimizer):
         grads = optimizer.compute_gradients(loss_val, var_list=var_list)
-        return optimizer.apply_gradients(grads)
+        for grad, var in grads:
+            return optimizer.apply_gradients(grads)
 
-
-class GAN(Network):
-    def __init__(self):
-        Network.__init__(self)
-
-    def _generator(self, x):
-        with tf.variable_scope("generator") as scope:
-            layer1 = tf.layers.dense(x, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
-            layer2 = tf.layers.dense(layer1, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
-            return tf.layers.dense(layer2, 10, None, True, tf.truncated_normal_initializer) 
-
-    def _discriminator(self, x, reuse=False):
-        with tf.variable_scope("discriminator") as scope:
-            layer1 = tf.layers.dense(x, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer1", reuse=reuse)
-            layer2 = tf.layers.dense(layer1, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer2", reuse=reuse)
-            prediction = tf.layers.dense(layer2, 1, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="prediction", reuse=reuse)
-        return tf.nn.sigmoid(prediction), prediction, prediction
+    # def _setup_placeholder(self):
+    #     self.train_phase = tf.placeholder(tf.bool)
+    #     self.z_vec = tf.placeholder(tf.float32, [self.batch_size, self.z_dim], name="z")
 
     def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake):
         disc_loss_real = tf.losses.sigmoid_cross_entropy(tf.ones_like(logits_real), logits_real)
         disc_loss_fake = tf.losses.sigmoid_cross_entropy(tf.zeros_like(logits_fake), logits_fake)
-        discriminator_loss = disc_loss_real + disc_loss_fake
-    
+        self.discriminator_loss = disc_loss_real + disc_loss_fake
+
         gen_loss_disc = tf.losses.sigmoid_cross_entropy(tf.ones_like(logits_fake), logits_fake)
         gen_loss_features = tf.reduce_mean(tf.nn.l2_loss(feature_real - feature_fake)) / (10 ** 2)
-        gen_loss = gen_loss_disc + 0.1 * gen_loss_features
-
-        return discriminator_loss, gen_loss
+        self.gen_loss = gen_loss_disc + 0.1 * gen_loss_features
 
 
     def create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
@@ -76,8 +96,7 @@ class GAN(Network):
         self.discriminator_fake_prob, logits_fake, feature_fake = self._discriminator(self.gen_data, reuse=True)
 
         # Loss calculation
-        self.discriminator_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake, feature_real, feature_fake)
-
+        self._gan_loss(logits_real, logits_fake, feature_real, feature_fake)
 
         train_variables = tf.trainable_variables()
 
@@ -91,6 +110,10 @@ class GAN(Network):
         self.generator_train_op = self._train(self.gen_loss, self.generator_variables, optim)
         self.discriminator_train_op = self._train(self.discriminator_loss, self.discriminator_variables, optim)
 
+    def initialize_network(self):
+        print("Initializing network...")
+        self.sess = tf.Session()
+        self.sess.run(tf.initialize_all_variables())
 
     def train_model(self, max_iterations):
         print("Training model...")
@@ -105,6 +128,7 @@ class GAN(Network):
 
         _pred = self.sess.run(self.gen_data)
         print(_pred[:10])
+        self.sess.close()
 
 
     # def visualize_model(self):
@@ -120,9 +144,9 @@ class GAN(Network):
 
 class WasserstienGAN(GAN):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
-        GAN.__init__(self)
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
+        GAN.__init__(self)
 
     def _generator(self, x):
         with tf.variable_scope("generator") as scope:
@@ -130,6 +154,7 @@ class WasserstienGAN(GAN):
             layer2 = tf.layers.dense(layer1, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
             self.prediction = tf.layers.dense(layer2, 10, None, True, tf.truncated_normal_initializer)
         return self.prediction
+
 
     def _discriminator(self, x, reuse=False):
         with tf.variable_scope("discriminator") as scope:
@@ -165,17 +190,18 @@ class WasserstienGAN(GAN):
             if itr % 200 == 0:
                 g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss])
                 print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
-
+        
         _pred = self.sess.run(self.gen_data)
         print(_pred[:10])
         self.sess.close()
 
 
 def main(argv=None):
-    gan = GAN()
+    gan = WasserstienGAN()
     gan.create_network(optimizer="Adam")
     gan.initialize_network()
     gan.train_model(20000)
+
 
 
 if __name__ == "__main__":
