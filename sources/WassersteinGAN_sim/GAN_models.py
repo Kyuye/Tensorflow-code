@@ -141,9 +141,9 @@ class WasserstienGAN(GAN):
         
 
     def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):
-        self.discriminator_loss = tf.reduce_mean(logits_real - logits_fake)
-        self.gen_loss = tf.reduce_mean(logits_fake)
-
+        discriminator_loss = tf.reduce_mean(logits_real - logits_fake)
+        gen_loss = tf.reduce_mean(logits_fake)
+        return discriminator_loss, gen_loss
 
     def train_model(self, max_iterations):
         print("Training Wasserstein GAN model...")
@@ -172,8 +172,8 @@ class WasserstienGAN(GAN):
 
 
 def main(argv=None):
-    gan = GAN()
-    gan.create_network(optimizer="Adam")
+    gan = WasserstienGAN()
+    gan.create_network(optimizer="RMSProp")
     gan.initialize_network()
     gan.train_model(20000)
 
