@@ -33,7 +33,7 @@ def word_count(file_dir):
 
 def vocab_to_dict(file_dir):
     words = word_count(file_dir)
-    vocab_dict = {}
+    vocab_dict = {"UTK8":0}
     for w in words:
         idx = len(vocab_dict)
         vocab_dict[w[0]] = idx 
@@ -72,53 +72,62 @@ def write_train_data(batch):
 # words_pair, vocab_dict = vocab_to_dict(file_dir)
 # data = words_read_text(file_dir)
 # words = [i[0] for i in words_pair]
-# words_id = [vocab_dict[i] for i in data[:1000]]
-
+# words_id = [vocab_dict[i] if i in vocab_dict else vocab_dict["UTK8"] for i in data]
 
 # batch = build_train_data(words_id, 2, 20)
 # write_train_data(batch)
 
-vocabulary_size = 1000
+
+vocabulary_size = 100000
+embed_size = 2
 num_sampled = 64
+batch_size = 32
 
-filename = file_dir + 'train_set.csv'
-filename_queue = tf.train.string_input_producer([filename])
+with tf.name_scope("train_set_build"):
+    filename = file_dir + 'train_set.csv'
+    filename_queue = tf.train.string_input_producer([filename])
 
-reader = tf.TextLineReader()
+    reader = tf.TextLineReader()
 
-key, value = reader.read(filename_queue)
+    key, value = reader.read(filename_queue)
 
-trains, labels = tf.decode_csv(value, [[0]]*2)
-train_batch, label_batch = tf.train.batch([trains, labels], 32)
+    trains, labels = tf.decode_csv(value, [[0]]*2)
+    train_batch, label_batch = tf.train.batch([trains, labels], batch_size)
+    # train_batch = tf.reshape(train_batch, shape=(-1, 1))
+    label_batch = tf.reshape(label_batch, shape=(-1, 1))
 
-embeddings = tf.Variable(
-    tf.random_uniform(shape=(1000, 2), minval=-1, maxval=1))
-embed = tf.nn.embedding_lookup(embeddings, train_batch)
-nce_weight = tf.Variable(
-    tf.truncated_normal(shape=(1000, 2)))
-nce_bias = tf.Variable(
-    tf.zeros(shape=(1000)))
+with tf.name_scope("train_model"):
+    embeddings = tf.Variable(
+        tf.random_uniform(shape=(vocabulary_size, embed_size), minval=-1, maxval=1))
+    embed = tf.nn.embedding_lookup(embeddings, train_batch)
+    nce_weight = tf.Variable(
+        tf.truncated_normal(shape=(vocabulary_size, embed_size)))
+    nce_bias = tf.Variable(
+        tf.zeros(shape=(vocabulary_size)))
+print(embed)
+with tf.name_scope("train"):
+    loss = tf.reduce_mean(
+        tf.nn.nce_loss(
+            weights=nce_weight,
+            biases=nce_bias,
+            labels=label_batch,
+            inputs=embed,
+            num_sampled=num_sampled,
+            num_classes=vocabulary_size))
 
-loss = tf.reduce_mean(
-    tf.nn.nce_loss(
-        weights=nce_weight,
-        biases=nce_bias,
-        labels=label_batch,
-        inputs=embed,
-        num_sampled=num_sampled,
-        num_classes=1000))
+    optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)
 
-optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)
-
-init = tf.global_variables_initializer()
+with tf.name_scope("init_vars"):
+    init = tf.global_variables_initializer()
 
 with tf.Session() as sess:
     coord = tf.train.Coordinator()
     thread = tf.train.start_queue_runners(sess, coord)
 
     writer = tf.summary.FileWriter("./CheckPoint", sess.graph)
+    writer.add_graph(sess.graph)
     sess.run(init)
-    for i in range(10):
+    for i in range(100):
         _, _loss = sess.run([optimizer, loss])
         print(i, " ", _loss)
 
