@@ -9,7 +9,7 @@ from pprint import pprint
 import matplotlib.pyplot as plt
 
 
-file_dir = "./Tensorflow-code/DataSet/"
+file_dir = "./DataSet/"
 
 def csv_to_text(file_dir):
     filelist = [file_dir+i for i in filter(lambda x: x.rfind(".csv") > 0, os.listdir(file_dir))]
@@ -32,31 +32,51 @@ def word_count(file_dir):
     return collections.Counter(words).most_common(100000)
 
 def vocab_to_dict(file_dir):
-    vocab = word_count(file_dir)
+    words = word_count(file_dir)
     vocab_dict = {}
-    for w in vocab:
+    for w in words:
         idx = len(vocab_dict)
         vocab_dict[w[0]] = idx 
 
-    return vocab, vocab_dict
+    return words, vocab_dict
 
 def vocab_write_json(file_dir):
     vocab_dict = vocab_to_dict(file_dir)
-    with open('vocab_dict.txt', 'w') as outfile:
+    with open(file_dir+'vocab_dict.txt', 'w') as outfile:
         json.dump(vocab_dict, outfile)
 
 def vocab_read_json():
-    with open('vocab_dict.txt', 'r') as f:
+    with open(file_dir+'vocab_dict.txt', 'r') as f:
         data = json.load(f)
     return data
 
 
-words = words_read_text(file_dir)
-vocab_dict = vocab_read_json()
+def build_train_data(words_id, skip_window, data_num): 
+    batch = [[]]
+    for i in range(skip_window, data_num-skip_window+1):
+        for n in range(i-skip_window, i+skip_window+1):
+            if i == n:
+                continue
+            batch += [[words_id[i], words_id[n]]] 
+        if i == skip_window+1:
+            del batch[0]
+    return batch
 
-words_idx = [vocab_dict[i] for i in words]
+def write_train_data(batch):
+    with open("./DataSet/train_set.csv", 'w') as f:
+        writer = csv.writer(f, "excel")
+        for row in batch:
+            writer.writerow(row)
 
 
+words_pair, vocab_dict = vocab_to_dict(file_dir)
+data = words_read_text(file_dir)
+words = [i[0] for i in words_pair]
+words_id = [vocab_dict[i] for i in data[:100]]
+
+
+batch = build_train_data(words_id, 2, 20)
+write_train_data(batch)
 
 exit()
 
