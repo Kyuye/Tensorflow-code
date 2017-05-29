@@ -11,8 +11,9 @@ import matplotlib.pyplot as plt
 
 file_dir = "./DataSet/"
 
+
 def csv_to_text(file_dir):
-    filelist = [file_dir+i for i in filter(lambda x: x.rfind(".csv") > 0, os.listdir(file_dir))]
+    # filelist = [file_dir+i for i in filter(lambda x: x.rfind(".csv") > 0, os.listdir(file_dir))]
 
     with open(file_dir+"songdata.csv", 'r') as f:
         reader = csv.reader(f)
@@ -27,9 +28,11 @@ def words_read_text(file_dir):
     with open(file_dir+'songdata.txt', 'r')  as f:
         return [word for line in f for word in line.split()]
 
+
 def word_count(file_dir):
     words = words_read_text(file_dir)
     return collections.Counter(words).most_common(100000)
+
 
 def vocab_to_dict(file_dir):
     words = word_count(file_dir)
@@ -39,6 +42,7 @@ def vocab_to_dict(file_dir):
         vocab_dict[w[0]] = idx 
 
     return words, vocab_dict
+
 
 def vocab_write_json(file_dir):
     vocab_dict = vocab_to_dict(file_dir)
@@ -104,7 +108,7 @@ with tf.name_scope("train_model"):
         tf.truncated_normal(shape=(vocabulary_size, embed_size)))
     nce_bias = tf.Variable(
         tf.zeros(shape=(vocabulary_size)))
-print(embed)
+
 with tf.name_scope("train"):
     loss = tf.reduce_mean(
         tf.nn.nce_loss(
