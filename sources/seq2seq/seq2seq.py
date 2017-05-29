@@ -4,6 +4,9 @@ import numpy as np
 from tensorflow.contrib.rnn import core_rnn_cell
 from tensorflow.contrib import legacy_seq2seq
 
+# below the example code
+# https://github.com/hans/ipython-notebooks/blob/master/tf/TF%20tutorial.ipynb
+
 tf.reset_default_graph()
 sess = tf.InteractiveSession()
 
@@ -43,7 +46,6 @@ train_op = optimizer.minimize(loss)
 summary_writer = tf.summary.FileWriter("./sources/seq2seq/log/", sess.graph)
 
 sess.run(tf.global_variables_initializer())
-
 
 def train_batch(batch_size):
     X = [np.random.choice(vocab_size, (seq_length,), False) for _ in range(batch_size)]

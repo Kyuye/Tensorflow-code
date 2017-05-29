@@ -61,6 +61,8 @@ WasserstienGAN	../sources/WassersteinGAN_sim/GAN_models.1.py	/^class Wasserstien
 WasserstienGAN	../sources/WassersteinGAN_sim/GAN_models.py	/^class WasserstienGAN(GAN):$/;"	kind:class	line:121
 Word2vec	../sources/example_sources/word2vec/word2vec.py	/^class Word2vec(object):$/;"	kind:class	line:150
 Word2vec	../sources/trash/word2vec/word2vec_advenced.py	/^class Word2vec(object):$/;"	kind:class	line:151
+X_batch	../sources/seq2seq/seq2seq.py	/^X_batch = [np.random.choice(vocab_size, size=(seq_length,), replace=False) for _ in range(10)]$/;"	kind:variable	line:67
+X_batch	../sources/seq2seq/seq2seq.py	/^X_batch = np.array(X_batch).T$/;"	kind:variable	line:68
 __C	../sources/StackGAN-master/misc/config.py	/^__C = edict()$/;"	kind:variable	line:9
 __author__	../sources/WassersteinGAN.tensorflow-master/Dataset_Reader/read_celebADataset.py	/^__author__ = 'charlie'$/;"	kind:variable	line:1
 __author__	../sources/WassersteinGAN.tensorflow-master/__init__.py	/^__author__ = 'Charlie'$/;"	kind:variable	line:1
@@ -193,7 +195,7 @@ batch_print	../sources/trash/word2vec/word2vec_basic.py	/^        batch_print = 
 batch_size	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^        batch_size = np.minimum(num_embeddings, cfg.TEST.BATCH_SIZE)$/;"	kind:variable	line:185
 batch_size	../sources/StackGAN-master/demo/demo.py	/^        batch_size = np.minimum(num_embeddings, cfg.TEST.BATCH_SIZE)$/;"	kind:variable	line:185
 batch_size	../sources/example_sources/word2vec/word2vec_basic.py	/^batch_size = 128$/;"	kind:variable	line:121
-batch_size	../sources/seq2seq/seq2seq_example3.py	/^batch_size = 64$/;"	kind:variable	line:12
+batch_size	../sources/seq2seq/seq2seq.py	/^batch_size = 64$/;"	kind:variable	line:11
 batch_size	../sources/trash/word2vec/word2vec_basic.py	/^batch_size = 128$/;"	kind:variable	line:121
 batch_size	../sources/word2vec/word2vec.py	/^batch_size = 32$/;"	kind:variable	line:88
 bias	../sources/example_sources/kyuye/neural network(practice).py	/^bias = tf.Variable(tf.zeros(shape=(1)))$/;"	kind:variable	line:17
@@ -229,9 +231,9 @@ captions_batch	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^    
 captions_batch	../sources/StackGAN-master/demo/demo.py	/^                    captions_batch = captions_list[count:iend]$/;"	kind:variable	line:201
 captions_list	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^    captions_list = [cap for cap in captions if len(cap) > 0]$/;"	kind:variable	line:172
 captions_list	../sources/StackGAN-master/demo/demo.py	/^    captions_list = t_file.raw_txt$/;"	kind:variable	line:176
+cell	../sources/seq2seq/seq2seq.py	/^cell = core_rnn_cell.GRUCell(memory_dim)$/;"	kind:variable	line:26
 cell	../sources/seq2seq/seq2seq_example1.py	/^          cell = lstm_cell_decoder,$/;"	kind:variable	line:54
 cell	../sources/seq2seq/seq2seq_example1.py	/^    cell = lstm_cell_decoder, $/;"	kind:variable	line:46
-cell	../sources/seq2seq/seq2seq_example3.py	/^cell = core_rnn_cell.GRUCell(memory_dim)$/;"	kind:variable	line:27
 cell_bw	../sources/seq2seq/seq2seq_example2.py	/^    cell_bw=encoder_cell,$/;"	kind:variable	line:30
 cell_fw	../sources/seq2seq/seq2seq_example2.py	/^    cell_fw=encoder_cell,$/;"	kind:variable	line:29
 cfg	../sources/StackGAN-master/misc/config.py	/^cfg = __C$/;"	kind:variable	line:10
@@ -299,8 +301,9 @@ dataset	../sources/StackGAN-master/stageI/run_exp.py	/^    dataset = TextDataset
 dataset	../sources/StackGAN-master/stageII/run_exp.py	/^        dataset=dataset,$/;"	kind:variable	line:66
 dataset	../sources/StackGAN-master/stageII/run_exp.py	/^    dataset = TextDataset(datadir,  cfg.EMBEDDING_TYPE, 4)$/;"	kind:variable	line:46
 datasets.py	../sources/StackGAN-master/misc/datasets.py	1;"	kind:file	line:1
+decode_input	../sources/seq2seq/seq2seq.py	/^decode_input = ([tf.zeros_like(encode_input[0], dtype=np.int32, name="GO")] + encode_input[:-1])$/;"	kind:variable	line:22
 decode_input	../sources/seq2seq/seq2seq_example1.py	/^decode_input = [tf.zeros_like(encode_input[0], dtype=np.int32, name="GO")] + labels[:-1]$/;"	kind:variable	line:30
-decode_input	../sources/seq2seq/seq2seq_example3.py	/^decode_input = ([tf.zeros_like(encode_input[0], dtype=np.int32, name="GO")] + encode_input[:-1])$/;"	kind:variable	line:23
+decode_outputs_batch	../sources/seq2seq/seq2seq.py	/^decode_outputs_batch = sess.run(decode_outputs, feed_dict)$/;"	kind:variable	line:71
 decoder	../sources/seq2seq/seq2seq_example1.py	/^decoder = seq2seq.BasicDecoder($/;"	kind:variable	line:53
 decoder_cell	../sources/seq2seq/seq2seq_example2.py	/^decoder_cell = tf.contrib.rnn.core_rnn_cell.LSTMCell(decoder_hidden_units)$/;"	kind:variable	line:44
 decoder_hidden_units	../sources/seq2seq/seq2seq_example2.py	/^decoder_hidden_units = encoder_hidden_units * 2$/;"	kind:variable	line:14
@@ -322,8 +325,8 @@ embed	../sources/example_sources/word2vec/word2vec_basic.py	/^        embed = tf
 embed	../sources/trash/word2vec/word2vec_basic.py	/^        embed = tf.nn.embedding_lookup(embeddings, train_inputs)$/;"	kind:variable	line:140
 embed	../sources/word2vec/word2vec.py	/^    embed = tf.nn.embedding_lookup(embeddings, train_batch)$/;"	kind:variable	line:106
 embed_size	../sources/word2vec/word2vec.py	/^embed_size = 2$/;"	kind:variable	line:86
+embedding_dim	../sources/seq2seq/seq2seq.py	/^embedding_dim = 50$/;"	kind:variable	line:14
 embedding_dim	../sources/seq2seq/seq2seq_example1.py	/^embedding_dim = 20$/;"	kind:variable	line:19
-embedding_dim	../sources/seq2seq/seq2seq_example3.py	/^embedding_dim = 50$/;"	kind:variable	line:15
 embedding_size	../sources/example_sources/word2vec/word2vec_basic.py	/^embedding_size = 128$/;"	kind:variable	line:122
 embedding_size	../sources/trash/word2vec/word2vec_basic.py	/^embedding_size = 128$/;"	kind:variable	line:122
 embeddings	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^        embeddings = skipthoughts.encode(model, captions_list, verbose=False)$/;"	kind:variable	line:182
@@ -336,8 +339,8 @@ embeddings	../sources/word2vec/word2vec.py	/^    embeddings = tf.Variable($/;"	k
 embeddings_batch	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^                    embeddings_batch = embeddings[count:iend]$/;"	kind:variable	line:200
 embeddings_batch	../sources/StackGAN-master/demo/demo.py	/^                    embeddings_batch = embeddings[count:iend]$/;"	kind:variable	line:200
 encode	../sources/StackGAN-master/misc/skipthoughts.py	/^def encode(model, X, use_norm=True, verbose=True, batch_size=128, use_eos=False):$/;"	kind:function	line:91
+encode_input	../sources/seq2seq/seq2seq.py	/^encode_input = [tf.placeholder(tf.int32, shape=(None,), name="inp%i"%t) for t in range(seq_length)]$/;"	kind:variable	line:18
 encode_input	../sources/seq2seq/seq2seq_example1.py	/^encode_input = [tf.placeholder(tf.int32, shape=(None,), name = "ei_%i" %i) for i in range(input_seq_length)]$/;"	kind:variable	line:26
-encode_input	../sources/seq2seq/seq2seq_example3.py	/^encode_input = [tf.placeholder(tf.int32, shape=(None,), name="inp%i"%t) for t in range(seq_length)]$/;"	kind:variable	line:19
 encoder_cell	../sources/seq2seq/seq2seq_example1.py	/^encoder_cell = EmbeddingWrapper(lstm_cell, embedding_classes=input_vocab_size, embedding_size=embedding_dim)$/;"	kind:variable	line:36
 encoder_cell	../sources/seq2seq/seq2seq_example2.py	/^encoder_cell = tf.contrib.rnn.core_rnn_cell.LSTMCell(encoder_hidden_units)$/;"	kind:variable	line:23
 encoder_final_state	../sources/seq2seq/seq2seq_example2.py	/^encoder_final_state = tf.contrib.rnn.core_rnn_cell.LSTMStateTuple(c=encoder_final_state_c, h=encoder_final_state_h)$/;"	kind:variable	line:41
@@ -363,6 +366,7 @@ fc_batch_norm	../sources/StackGAN-master/misc/custom_ops.py	/^class fc_batch_nor
 feed_dict	../sources/example_sources/kyuye/neural network(practice).py	/^feed_dict = {plh_data : data, plh_label : label}$/;"	kind:variable	line:13
 feed_dict	../sources/example_sources/kyuye/neural network.py	/^feed_dict = {x: data, y_: label}$/;"	kind:variable	line:12
 feed_dict	../sources/example_sources/word2vec/word2vec_basic.py	/^        feed_dict = {train_inputs: batch_inputs, train_labels: batch_labels}$/;"	kind:variable	line:176
+feed_dict	../sources/seq2seq/seq2seq.py	/^feed_dict = {encode_input[t]: X_batch[t] for t in range(seq_length)}$/;"	kind:variable	line:70
 feed_dict	../sources/trash/word2vec/word2vec_basic.py	/^        feed_dict = {train_inputs: batch_inputs, train_labels: batch_labels}$/;"	kind:variable	line:176
 file_dir	../sources/word2vec/word2vec.py	/^file_dir = ".\/DataSet\/"$/;"	kind:variable	line:12
 filename	../sources/example_sources/word2vec/word2vec_basic.py	/^filename = maybe_download('text8.zip', 31344016)$/;"	kind:variable	line:97
@@ -454,8 +458,8 @@ label	../sources/example_sources/kyuye/neural network.py	/^label = [1, 0, 1, 0]$
 label_batch	../sources/word2vec/word2vec.py	/^    label_batch = tf.reshape(label_batch, shape=(-1, 1))$/;"	kind:variable	line:101
 labels	../sources/example_sources/word2vec/word2vec_basic.py	/^                       labels=train_labels,$/;"	kind:variable	line:150
 labels	../sources/example_sources/word2vec/word2vec_basic.py	/^    labels = [reverse_dictionary[i] for i in xrange(plot_only)]$/;"	kind:variable	line:210
+labels	../sources/seq2seq/seq2seq.py	/^labels = [tf.placeholder(tf.int32, shape=(None,), name="labels%i"%t) for t in range(seq_length)]$/;"	kind:variable	line:19
 labels	../sources/seq2seq/seq2seq_example1.py	/^labels = [tf.placeholder(tf.int32, shape=(None,), name = "l_%i" %i) for i in range(output_seq_length)]$/;"	kind:variable	line:28
-labels	../sources/seq2seq/seq2seq_example3.py	/^labels = [tf.placeholder(tf.int32, shape=(None,), name="labels%i"%t) for t in range(seq_length)]$/;"	kind:variable	line:20
 labels	../sources/trash/word2vec/word2vec_basic.py	/^                       labels=train_labels,$/;"	kind:variable	line:150
 labels	../sources/trash/word2vec/word2vec_basic.py	/^    labels = [reverse_dictionary[i] for i in xrange(plot_only)]$/;"	kind:variable	line:210
 labels	../sources/word2vec/word2vec.py	/^            labels=label_batch,$/;"	kind:variable	line:117
@@ -471,7 +475,7 @@ leaky_rectify	../sources/StackGAN-master/misc/custom_ops.py	/^def leaky_rectify(
 leaky_relu	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py	/^        def leaky_relu(x, name="leaky_relu"):$/;"	kind:function	line:182
 leaky_relu	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def leaky_relu(x, alpha=0.2, name=""):$/;"	kind:function	line:110
 leaky_relu	../sources/WassersteinGAN_sim/utils.py	/^def leaky_relu(x, alpha=0.2, name=""):$/;"	kind:function	line:111
-learning_rate	../sources/seq2seq/seq2seq_example3.py	/^learning_rate = 0.05$/;"	kind:variable	line:39
+learning_rate	../sources/seq2seq/seq2seq.py	/^learning_rate = 0.05$/;"	kind:variable	line:38
 load_bbox	../sources/StackGAN-master/misc/preprocess_birds.py	/^def load_bbox(data_dir):$/;"	kind:function	line:33
 load_filenames	../sources/StackGAN-master/misc/preprocess_birds.py	/^def load_filenames(data_dir):$/;"	kind:function	line:25
 load_filenames	../sources/StackGAN-master/misc/preprocess_flowers.py	/^def load_filenames(data_dir):$/;"	kind:function	line:24
@@ -487,7 +491,7 @@ log_str	../sources/trash/word2vec/word2vec_basic.py	/^                log_str = 
 loop_fn_initial	../sources/seq2seq/seq2seq_example2.py	/^def loop_fn_initial():$/;"	kind:function	line:59
 loop_fn_transition	../sources/seq2seq/seq2seq_example2.py	/^def loop_fn_transition(time, previous_output, previous_state, previous_loop_state):$/;"	kind:function	line:72
 loss	../sources/example_sources/word2vec/word2vec_basic.py	/^    loss = tf.reduce_mean($/;"	kind:variable	line:147
-loss	../sources/seq2seq/seq2seq_example3.py	/^loss = legacy_seq2seq.sequence_loss(decode_outputs, labels, weights, vocab_size)$/;"	kind:variable	line:31
+loss	../sources/seq2seq/seq2seq.py	/^loss = legacy_seq2seq.sequence_loss(decode_outputs, labels, weights, vocab_size)$/;"	kind:variable	line:30
 loss	../sources/trash/word2vec/word2vec_basic.py	/^    loss = tf.reduce_mean($/;"	kind:variable	line:147
 loss	../sources/word2vec/word2vec.py	/^    loss = tf.reduce_mean($/;"	kind:variable	line:113
 low_dim_embs	../sources/example_sources/word2vec/word2vec_basic.py	/^    low_dim_embs = tsne.fit_transform(final_embeddings[:plot_only, :])$/;"	kind:variable	line:209
@@ -507,7 +511,7 @@ main	../sources/trash/skip_gram_example.py	/^def main(_):$/;"	kind:function	line
 main	../sources/trash/word2vec/word2vec_advenced.py	/^def main(_):$/;"	kind:function	line:537
 main.py	../sources/WassersteinGAN.tensorflow-master/main.py	1;"	kind:file	line:1
 main.py	../sources/WassersteinGAN_sim/main.py	1;"	kind:file	line:1
-manitude	../sources/seq2seq/seq2seq_example3.py	/^manitude = tf.sqrt(tf.reduce_sum(tf.square(decode_memory[1])))$/;"	kind:variable	line:34
+manitude	../sources/seq2seq/seq2seq.py	/^manitude = tf.sqrt(tf.reduce_sum(tf.square(decode_memory[1])))$/;"	kind:variable	line:33
 max_pool_2x2	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def max_pool_2x2(x):$/;"	kind:function	line:114
 max_pool_2x2	../sources/WassersteinGAN_sim/utils.py	/^def max_pool_2x2(x):$/;"	kind:function	line:115
 maybe_download	../sources/example_sources/word2vec/word2vec_basic.py	/^def maybe_download(filename, expected_bytes):$/;"	kind:function	line:18
@@ -517,7 +521,7 @@ maybe_download_and_extract	../sources/WassersteinGAN_sim/utils.py	/^def maybe_do
 mean_square_error	../sources/trash/rnn_example.py	/^    def mean_square_error(self, batch, label):$/;"	kind:member	line:113
 mean_var_with_update	../sources/WassersteinGAN.tensorflow-master/utils.py	/^        def mean_var_with_update():$/;"	kind:function	line:138
 mean_var_with_update	../sources/WassersteinGAN_sim/utils.py	/^        def mean_var_with_update():$/;"	kind:function	line:139
-memory_dim	../sources/seq2seq/seq2seq_example3.py	/^memory_dim = 100$/;"	kind:variable	line:17
+memory_dim	../sources/seq2seq/seq2seq.py	/^memory_dim = 100$/;"	kind:variable	line:16
 mkdir_p	../sources/StackGAN-master/misc/utils.py	/^def mkdir_p(path):$/;"	kind:function	line:68
 model	../sources/StackGAN-master/demo/birds_skip_thought_demo.py	/^        model = skipthoughts.load_model()$/;"	kind:variable	line:181
 model	../sources/StackGAN-master/stageI/run_exp.py	/^        model=model,$/;"	kind:variable	line:63
@@ -526,7 +530,7 @@ model	../sources/StackGAN-master/stageII/run_exp.py	/^        model=model,$/;"	k
 model	../sources/StackGAN-master/stageII/run_exp.py	/^    model = CondGAN($/;"	kind:variable	line:59
 model.py	../sources/StackGAN-master/stageI/model.py	1;"	kind:file	line:1
 model.py	../sources/StackGAN-master/stageII/model.py	1;"	kind:file	line:1
-momentum	../sources/seq2seq/seq2seq_example3.py	/^momentum = 0.9$/;"	kind:variable	line:40
+momentum	../sources/seq2seq/seq2seq.py	/^momentum = 0.9$/;"	kind:variable	line:39
 movie_subtitle_new.py	../sources/example_sources/crawler/movie_subtitle_new.py	1;"	kind:file	line:1
 movie_subtitles.py	../sources/example_sources/crawler/movie_subtitles.py	1;"	kind:file	line:1
 name	../sources/seq2seq/seq2seq_example1.py	/^    name="attention_wrapper")$/;"	kind:variable	line:49
@@ -574,7 +578,7 @@ num_steps	../sources/trash/word2vec/word2vec_basic.py	/^num_steps = 100001$/;"	k
 optimize	../sources/example_sources/word2vec/word2vec.py	/^    def optimize(self, loss):$/;"	kind:member	line:274
 optimize	../sources/trash/word2vec/word2vec_advenced.py	/^    def optimize(self, loss):$/;"	kind:member	line:274
 optimizer	../sources/example_sources/word2vec/word2vec_basic.py	/^    optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)$/;"	kind:variable	line:155
-optimizer	../sources/seq2seq/seq2seq_example3.py	/^optimizer = tf.train.MomentumOptimizer(learning_rate, momentum)$/;"	kind:variable	line:41
+optimizer	../sources/seq2seq/seq2seq.py	/^optimizer = tf.train.MomentumOptimizer(learning_rate, momentum)$/;"	kind:variable	line:40
 optimizer	../sources/trash/word2vec/word2vec_basic.py	/^    optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)$/;"	kind:variable	line:155
 optimizer	../sources/word2vec/word2vec.py	/^    optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)$/;"	kind:variable	line:122
 ortho_weight	../sources/StackGAN-master/misc/skipthoughts.py	/^def ortho_weight(ndim):$/;"	kind:function	line:327
@@ -613,7 +617,7 @@ preprocess	../sources/StackGAN-master/stageI/trainer.py	/^    def preprocess(sel
 preprocess	../sources/StackGAN-master/stageII/trainer.py	/^    def preprocess(self, x, n):$/;"	kind:member	line:320
 preprocess_birds.py	../sources/StackGAN-master/misc/preprocess_birds.py	1;"	kind:file	line:1
 preprocess_flowers.py	../sources/StackGAN-master/misc/preprocess_flowers.py	1;"	kind:file	line:1
-previous_memory	../sources/seq2seq/seq2seq_example3.py	/^previous_memory = tf.zeros((batch_size, memory_dim))$/;"	kind:variable	line:25
+previous_memory	../sources/seq2seq/seq2seq.py	/^previous_memory = tf.zeros((batch_size, memory_dim))$/;"	kind:variable	line:24
 prime_est.py	../sources/play_sources/prime_est.py	1;"	kind:file	line:1
 processFacebookPageFeedStatus	../sources/example_sources/crawler/facebook_crawling.py	/^def processFacebookPageFeedStatus(status):$/;"	kind:function	line:53
 process_image	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def process_image(image, mean_pixel, norm):$/;"	kind:function	line:150
@@ -668,14 +672,14 @@ save_vocab	../sources/example_sources/word2vec/word2vec.py	/^    def save_vocab(
 save_vocab	../sources/trash/word2vec/word2vec_advenced.py	/^    def save_vocab(self):$/;"	kind:member	line:381
 saver	../sources/example_sources/kyuye/neural network.py	/^saver = tf.train.Saver()$/;"	kind:variable	line:35
 scrapeFacebookPageFeedStatus	../sources/example_sources/crawler/facebook_crawling.py	/^def scrapeFacebookPageFeedStatus(page_id, access_token):$/;"	kind:function	line:70
+seq2seq.py	../sources/seq2seq/seq2seq.py	1;"	kind:file	line:1
 seq2seq_example1.py	../sources/seq2seq/seq2seq_example1.py	1;"	kind:file	line:1
 seq2seq_example2.py	../sources/seq2seq/seq2seq_example2.py	1;"	kind:file	line:1
-seq2seq_example3.py	../sources/seq2seq/seq2seq_example3.py	1;"	kind:file	line:1
-seq_length	../sources/seq2seq/seq2seq_example3.py	/^seq_length = 5$/;"	kind:variable	line:11
+seq_length	../sources/seq2seq/seq2seq.py	/^seq_length = 5$/;"	kind:variable	line:10
 sequence_length	../sources/seq2seq/seq2seq_example2.py	/^    sequence_length=encoder_inputs_length,$/;"	kind:variable	line:32
+sess	../sources/seq2seq/seq2seq.py	/^sess = tf.InteractiveSession()$/;"	kind:variable	line:8
 sess	../sources/seq2seq/seq2seq_example1.py	/^sess = tf.InteractiveSession()$/;"	kind:variable	line:17
 sess	../sources/seq2seq/seq2seq_example2.py	/^sess = tf.InteractiveSession() $/;"	kind:variable	line:8
-sess	../sources/seq2seq/seq2seq_example3.py	/^sess = tf.InteractiveSession()$/;"	kind:variable	line:9
 set_prefs	../sources/example_sources/kyuye/.ropeproject/config.py	/^def set_prefs(prefs):$/;"	kind:function	line:4
 set_variables	../sources/trash/rnn_example.py	/^    def set_variables(self):$/;"	kind:member	line:90
 set_variables	../sources/trash/skip_gram_example.py	/^    def set_variables(self):$/;"	kind:member	line:62
@@ -690,8 +694,8 @@ skip_window	../sources/trash/word2vec/word2vec_basic.py	/^skip_window = 1$/;"	ki
 skipthoughts.py	../sources/StackGAN-master/misc/skipthoughts.py	1;"	kind:file	line:1
 stddev	../sources/example_sources/word2vec/word2vec_basic.py	/^                                stddev=1.0\/math.sqrt(embedding_size)))$/;"	kind:variable	line:144
 stddev	../sources/trash/word2vec/word2vec_basic.py	/^                                stddev=1.0\/math.sqrt(embedding_size)))$/;"	kind:variable	line:144
-summary_op	../sources/seq2seq/seq2seq_example3.py	/^summary_op = tf.summary.merge_all()$/;"	kind:variable	line:37
-summary_writer	../sources/seq2seq/seq2seq_example3.py	/^summary_writer = tf.summary.FileWriter(".\/sources\/seq2seq\/log\/", sess.graph)$/;"	kind:variable	line:44
+summary_op	../sources/seq2seq/seq2seq.py	/^summary_op = tf.summary.merge_all()$/;"	kind:variable	line:36
+summary_writer	../sources/seq2seq/seq2seq.py	/^summary_writer = tf.summary.FileWriter(".\/sources\/seq2seq\/log\/", sess.graph)$/;"	kind:variable	line:43
 t_file	../sources/StackGAN-master/demo/demo.py	/^    t_file = torchfile.load(cap_path)$/;"	kind:variable	line:175
 testFacebookPageData	../sources/example_sources/crawler/facebook_crawling.py	/^def testFacebookPageData(page_id, access_token):$/;"	kind:function	line:4
 testFacebookPageFeedData	../sources/example_sources/crawler/facebook_crawling.py	/^def testFacebookPageFeedData(page_id, access_token):$/;"	kind:function	line:32
@@ -706,7 +710,7 @@ train	../sources/example_sources/kyuye/neural network(practice).py	/^train = tf.
 train	../sources/example_sources/kyuye/neural network.py	/^train = tf.train.GradientDescentOptimizer(0.01).minimize(cost_mean)$/;"	kind:variable	line:31
 train	../sources/example_sources/word2vec/word2vec.py	/^    def train(self):$/;"	kind:member	line:400
 train	../sources/trash/word2vec/word2vec_advenced.py	/^    def train(self):$/;"	kind:member	line:400
-train_batch	../sources/seq2seq/seq2seq_example3.py	/^def train_batch(batch_size):$/;"	kind:function	line:49
+train_batch	../sources/seq2seq/seq2seq.py	/^def train_batch(batch_size):$/;"	kind:function	line:48
 train_inputs	../sources/example_sources/word2vec/word2vec_basic.py	/^    train_inputs = tf.placeholder(tf.int32, shape=[batch_size])$/;"	kind:variable	line:133
 train_inputs	../sources/trash/word2vec/word2vec_basic.py	/^    train_inputs = tf.placeholder(tf.int32, shape=[batch_size])$/;"	kind:variable	line:133
 train_labels	../sources/example_sources/word2vec/word2vec_basic.py	/^    train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])$/;"	kind:variable	line:134
@@ -718,7 +722,7 @@ train_model	../sources/WassersteinGAN_sim/GAN_models.1.py	/^    def train_model(
 train_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:148
 train_model	../sources/WassersteinGAN_sim/GAN_models.py	/^    def train_model(self, max_iterations):$/;"	kind:member	line:95
 train_one_step	../sources/StackGAN-master/stageII/trainer.py	/^    def train_one_step(self, generator_lr,$/;"	kind:member	line:404
-train_op	../sources/seq2seq/seq2seq_example3.py	/^train_op = optimizer.minimize(loss)$/;"	kind:variable	line:42
+train_op	../sources/seq2seq/seq2seq.py	/^train_op = optimizer.minimize(loss)$/;"	kind:variable	line:41
 trainer.py	../sources/StackGAN-master/stageI/trainer.py	1;"	kind:file	line:1
 trainer.py	../sources/StackGAN-master/stageII/trainer.py	1;"	kind:file	line:1
 training	../sources/trash/nlp_models/rnn_example.py	/^    def training(self):$/;"	kind:member	line:42
@@ -757,8 +761,8 @@ visualize_model	../sources/WassersteinGAN.tensorflow-master/models/GAN_models.py
 visualize_one_superimage	../sources/StackGAN-master/stageI/trainer.py	/^    def visualize_one_superimage(self, img_var, images, rows, filename):$/;"	kind:member	line:205
 visualize_one_superimage	../sources/StackGAN-master/stageII/trainer.py	/^    def visualize_one_superimage(self, img_var, images, rows, filename):$/;"	kind:member	line:282
 vocab_read_json	../sources/word2vec/word2vec.py	/^def vocab_read_json():$/;"	kind:function	line:52
+vocab_size	../sources/seq2seq/seq2seq.py	/^vocab_size = 7$/;"	kind:variable	line:13
 vocab_size	../sources/seq2seq/seq2seq_example2.py	/^vocab_size = 10$/;"	kind:variable	line:10
-vocab_size	../sources/seq2seq/seq2seq_example3.py	/^vocab_size = 7$/;"	kind:variable	line:14
 vocab_to_dict	../sources/word2vec/word2vec.py	/^def vocab_to_dict(file_dir):$/;"	kind:function	line:37
 vocab_write_json	../sources/word2vec/word2vec.py	/^def vocab_write_json(file_dir):$/;"	kind:function	line:47
 vocabulary_size	../sources/example_sources/word2vec/word2vec_basic.py	/^vocabulary_size = 50000$/;"	kind:variable	line:102
@@ -769,7 +773,7 @@ weight_variable	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def weigh
 weight_variable	../sources/WassersteinGAN_sim/utils.py	/^def weight_variable(shape, stddev=0.02, name=None):$/;"	kind:function	line:66
 weight_variable_xavier_initialized	../sources/WassersteinGAN.tensorflow-master/utils.py	/^def weight_variable_xavier_initialized(shape, constant=1, name=None):$/;"	kind:function	line:61
 weight_variable_xavier_initialized	../sources/WassersteinGAN_sim/utils.py	/^def weight_variable_xavier_initialized(shape, constant=1, name=None):$/;"	kind:function	line:61
-weights	../sources/seq2seq/seq2seq_example3.py	/^weights = [tf.ones_like(labels_t, dtype=tf.float32) for labels_t in labels]$/;"	kind:variable	line:21
+weights	../sources/seq2seq/seq2seq.py	/^weights = [tf.ones_like(labels_t, dtype=tf.float32) for labels_t in labels]$/;"	kind:variable	line:20
 weights	../sources/word2vec/word2vec.py	/^            weights=nce_weight,$/;"	kind:variable	line:115
 word2vec	../sources/example_sources/word2vec/word2vec.py	/^word2vec = tf.load_op_library(os.path.join(os.path.dirname($/;"	kind:variable	line:16
 word2vec	../sources/trash/word2vec/word2vec_advenced.py	/^word2vec = tf.load_op_library(os.path.join(os.path.dirname($/;"	kind:variable	line:16
