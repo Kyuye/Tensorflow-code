@@ -46,7 +46,6 @@ sess.run(tf.global_variables_initializer())
 
 
 def train_batch(batch_size):
-    # X = [np.random.choice(vocab_size, size=(seq_length,), replace=False) for _ in range(batch_size)]
     X = [np.random.choice(vocab_size, (seq_length,), False) for _ in range(batch_size)]
     Y = X[:]
 
@@ -65,3 +64,11 @@ for t in range(500):
 summary_writer.flush()
 
 
+X_batch = [np.random.choice(vocab_size, size=(seq_length,), replace=False) for _ in range(10)]
+X_batch = np.array(X_batch).T
+
+feed_dict = {encode_input[t]: X_batch[t] for t in range(seq_length)}
+decode_outputs_batch = sess.run(decode_outputs, feed_dict)
+
+print(X_batch)
+print([logits_t.argmax(axis=1) for logits_t in decode_outputs_batch])
