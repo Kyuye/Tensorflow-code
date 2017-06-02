@@ -1,0 +1,10 @@
+
+vscode remote editing
+rmate -p 52698 filename_to_edit
+http://thrillfighter.tistory.com/458
+
+vscode intellisense tensorflow
+ - launch.json
+ - setting.json 
+config exactly same as below link
+https://github.com/alexwalchli/visualstudiocode-tensorflow

@@ -15,32 +15,10 @@ tf.flags.DEFINE_string("optimizer", "Adam", "Optimizer to use for training")
 tf.flags.DEFINE_integer("gen_dimension", "16", "dimension of first layer in generator")
 tf.flags.DEFINE_string("mode", "train", "train / visualize model")
 
-class Network(object):
+
+class GAN(object):
     def __init__(self):
         self.sim_data = tf.constant([ list(range(10)) for i in range(1000)], tf.float32)
-
-    def initialize_network(self):
-        print("Initializing network...")
-        self.sess = tf.Session()
-        self.sess.run(tf.initialize_all_variables())
-
-    def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
-        self.learning_rate = learning_rate
-        if optimizer_name == "Adam":
-            return tf.train.AdamOptimizer(learning_rate, beta1=optimizer_param)
-        elif optimizer_name == "RMSProp":
-            return tf.train.RMSPropOptimizer(learning_rate, decay=optimizer_param)
-        else:
-            raise ValueError("Unknown optimizer %s" % optimizer_name)
-
-    def _train(self, loss_val, var_list, optimizer):
-        grads = optimizer.compute_gradients(loss_val, var_list=var_list)
-        return optimizer.apply_gradients(grads)
-
-
-class GAN(Network):
-    def __init__(self):
-        Network.__init__(self)
 
     def _generator(self, x):
         with tf.variable_scope("generator") as scope:
@@ -105,6 +83,24 @@ class GAN(Network):
 
         _pred = self.sess.run(self.gen_data)
         print(_pred[:10])
+
+    def initialize_network(self):
+        print("Initializing network...")
+        self.sess = tf.Session()
+        self.sess.run(tf.initialize_all_variables())
+
+    def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
+        self.learning_rate = learning_rate
+        if optimizer_name == "Adam":
+            return tf.train.AdamOptimizer(learning_rate, beta1=optimizer_param)
+        elif optimizer_name == "RMSProp":
+            return tf.train.RMSPropOptimizer(learning_rate, decay=optimizer_param)
+        else:
+            raise ValueError("Unknown optimizer %s" % optimizer_name)
+
+    def _train(self, loss_val, var_list, optimizer):
+        grads = optimizer.compute_gradients(loss_val, var_list=var_list)
+        return optimizer.apply_gradients(grads)
 
 
     # def visualize_model(self):
