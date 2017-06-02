@@ -1,5 +1,8 @@
 
 import tensorflow as tf
+import numpy as np
+from tensorflow.contrib.rnn import core_rnn_cell
+from tensorflow.contrib import legacy_seq2seq
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "64", "batch size for training")
@@ -122,10 +125,31 @@ class WasserstienGAN(GAN):
 
     def _generator(self, x):
         with tf.variable_scope("generator") as scope:
-            layer1 = tf.layers.dense(x, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
-            layer2 = tf.layers.dense(layer1, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
-            self.prediction = tf.layers.dense(layer2, 10, None, True, tf.truncated_normal_initializer)
-        return self.prediction
+            seq_length = 5
+            batch_size = 64
+
+            vocab_size = 7
+            embedding_dim = 50
+
+            memory_dim = 100
+
+            encode_input = [tf.placeholder(tf.int32, shape=(None,), name="inp%i"%t) for t in range(seq_length)]
+            labels = [tf.placeholder(tf.int32, shape=(None,), name="labels%i"%t) for t in range(seq_length)]
+            weights = [tf.ones_like(labels_t, dtype=tf.float32) for labels_t in labels]
+
+            decode_input = ([tf.zeros_like(encode_input[0], dtype=np.int32, name="GO")] + encode_input[:-1])
+
+            previous_memory = tf.zeros((batch_size, memory_dim))
+            cell = core_rnn_cell.GRUCell(memory_dim)
+            self.decode_outputs, decode_memory = legacy_seq2seq.embedding_rnn_seq2seq(
+                encode_input, 
+                decode_input, 
+                cell, 
+                vocab_size, 
+                vocab_size, 
+                embedding_dim)
+
+        return self.decode_outputs
 
     def _discriminator(self, x, reuse=False):
         with tf.variable_scope("discriminator") as scope:

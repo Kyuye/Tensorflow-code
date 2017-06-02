@@ -8,3 +8,4 @@ vscode intellisense tensorflow
  - setting.json 
 config exactly same as below link
 https://github.com/alexwalchli/visualstudiocode-tensorflow
+
