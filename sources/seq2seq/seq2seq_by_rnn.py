@@ -43,7 +43,6 @@ def build_rnn():
     return out, pred, states
 
 
-
 def train_model():
     loss = 0
     for i in range(time_step):
