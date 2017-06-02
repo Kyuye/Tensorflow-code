@@ -7,6 +7,9 @@ from tensorflow.contrib import legacy_seq2seq
 # below the example code
 # https://github.com/hans/ipython-notebooks/blob/master/tf/TF%20tutorial.ipynb
 
+# nice reference for seq2seq
+# http://suriyadeepan.github.io/2016-06-28-easy-seq2seq/
+
 tf.reset_default_graph()
 sess = tf.InteractiveSession()
 

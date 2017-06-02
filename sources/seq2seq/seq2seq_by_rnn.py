@@ -6,32 +6,54 @@ input_size = 10
 state_size = 5
 time_step = 7
 
-init_state = tf.constant([[0]*state_size], tf.float32)
-input_data = [tf.constant([list(range(input_size))], tf.float32) for i in range(time_step)]
-label = [tf.constant([list(range(1,output_size+1))], tf.float32) for i in range(time_step)]
+init_state = tf.Variable([[0]*state_size], trainable=False, dtype=tf.float32)
 
-# with tf.variable_scope("rnn_cell"):
-init_val = lambda x,y: tf.truncated_normal(shape=(x,y))
-init_zeros = lambda x: tf.zeros(shape=(x,), dtype=tf.float32)
-Wi = tf.Variable(init_val(input_size, state_size))
-Ws = tf.Variable(init_val(state_size, state_size))
-bs = tf.Variable(init_zeros(state_size))
-Wo = [tf.Variable(init_val(state_size, output_size)) for _ in range(time_step)]
+input_data = [
+    tf.Variable([list(range(input_size))], trainable=False, dtype=tf.float32) \
+    for _ in range(time_step)
+    ]
+    
+label = [
+    tf.Variable([list(range(1,output_size+1))], trainable=False, dtype=tf.float32) \
+    for _ in range(time_step)
+    ]
 
-state = init_state
-out = []
-pred = []
-for i in range(time_step):
-    linear = tf.matmul(input_data[i], Wi) + tf.matmul(state, Ws) + bs
-    state = tf.matmul(state, Ws)
-    out.append(tf.nn.tanh(linear))
-    pred.append(tf.matmul(out[i], Wo[i]))
+def build_rnn():
+    init_val = lambda x,y: tf.truncated_normal(shape=(x,y))
+    init_zeros = lambda x: tf.zeros(shape=(x,), dtype=tf.float32)
+    Wi = tf.Variable(init_val(input_size, state_size))
+    Ws = tf.Variable(init_val(state_size, state_size))
+    bs = tf.Variable(init_zeros(state_size))
+    Wo = [
+        tf.Variable(init_val(state_size, output_size)) \
+        for _ in range(time_step)
+        ]
 
-loss = 0
-for i in range(time_step):
-    loss += tf.losses.mean_squared_error(label[i], pred[i])
+    state = init_state
+    out = []
+    pred = []
+    states = []
+    for i in range(time_step):
+        linear = tf.matmul(input_data[i], Wi) + tf.matmul(state, Ws) + bs
+        state = tf.matmul(state, Ws)
+        states.append(state)
+        out.append(tf.nn.tanh(linear))
+        pred.append(tf.matmul(out[i], Wo[i]))
 
-train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
+    return out, pred, states
+
+
+
+def train_model():
+    loss = 0
+    for i in range(time_step):
+        loss += tf.losses.mean_squared_error(label[i], pred[i])
+
+    train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
+    return train, loss
+
+out, pred, states = build_rnn()
+train, loss = train_model()
 
 init = tf.global_variables_initializer()
 
@@ -46,5 +68,3 @@ with tf.Session() as sess:
     print("predictions")
     for j in range(time_step):
         print(sess.run(pred[j]))
-
-    
