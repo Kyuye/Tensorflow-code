@@ -122,43 +122,34 @@ class WasserstienGAN(GAN):
         GAN.__init__(self)
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
-        
-        #seq2seq parameters
-        self.seq_length = 5
-        self.batch_size = 64
-        self.vocab_size = 7
-        self.embedding_dim = 50
-        self.memory_dim = 100
-        self.encode_input=[
-            tf.placeholder(
-                dtype=tf.int32,
-                shape=(None,),
-                name="input%i"%t)
-                for t in range(self.seq_length)]
-
-        self.labels = [
-            tf.placeholder(
-                dtype=tf.int32,
-                shape=(None,),
-                name="labels%i"%t)
-                for t in range(self.seq_length)]
-
-        self.weights = [
-            tf.ones_like(
-                tensor=labels_t,
-                dtype=tf.float32)
-                for labels_t in self.labels]
-        
-        self.decode_input=([
-            tf.zeros_like(
-                tensor=self.encode_input[0],
-                dtype=np.int32,
-                name="GO")] + self.encode_input[:-1])
 
     def _generator(self, x):
         with tf.variable_scope("generator") as scope:
-            previous_memory = tf.zeros(shape=(self.batch_size, self.memory_dim))
-            cell = core_rnn_cell.GRUCell(num_units=self.memory_dim)
+            seq_length = 5
+            batch_size = 64
+
+            vocab_size = 7
+            embedding_dim = 50
+
+            memory_dim = 100
+
+            encode_input = [tf.placeholder(tf.int32, shape=(None,), name="inp%i"%t) for t in range(seq_length)]
+            labels = [tf.placeholder(tf.int32, shape=(None,), name="labels%i"%t) for t in range(seq_length)]
+            weights = [tf.ones_like(labels_t, dtype=tf.float32) for labels_t in labels]
+
+            decode_input = ([tf.zeros_like(encode_input[0], dtype=np.int32, name="GO")] + encode_input[:-1])
+
+            previous_memory = tf.zeros((batch_size, memory_dim))
+            cell = core_rnn_cell.GRUCell(memory_dim)
+            self.decode_outputs, decode_memory = legacy_seq2seq.embedding_rnn_seq2seq(
+                encode_input, 
+                decode_input, 
+                cell, 
+                vocab_size, 
+                vocab_size, 
+                embedding_dim)
+
+        return self.decode_outputs
 
     def _discriminator(self, x, reuse=False):
         with tf.variable_scope("discriminator") as scope:

@@ -1,5 +1,8 @@
 
 import tensorflow as tf
+import helper
+
+exit()
 
 output_size = 10
 input_size = 10

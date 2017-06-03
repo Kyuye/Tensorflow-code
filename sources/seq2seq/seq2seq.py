@@ -21,19 +21,49 @@ embedding_dim = 50
 
 memory_dim = 100
 
-encode_input = [tf.placeholder(tf.int32, shape=(None,), name="inp%i"%t) for t in range(seq_length)]
-labels = [tf.placeholder(tf.int32, shape=(None,), name="labels%i"%t) for t in range(seq_length)]
-weights = [tf.ones_like(labels_t, dtype=tf.float32) for labels_t in labels]
+encode_input = [
+    tf.placeholder(
+        dtype=tf.int32, 
+        shape=(None,), 
+        name="inp%i"%t)
+        for t in range(seq_length)]
 
-decode_input = ([tf.zeros_like(encode_input[0], dtype=np.int32, name="GO")] + encode_input[:-1])
+labels = [
+    tf.placeholder(
+        dtype=tf.int32, 
+        shape=(None,), 
+        name="labels%i"%t)
+        for t in range(seq_length)]
 
-previous_memory = tf.zeros((batch_size, memory_dim))
+weights = [
+    tf.ones_like(
+        tensor=labels_t, 
+        dtype=tf.float32) 
+        for labels_t in labels]
 
-cell = core_rnn_cell.GRUCell(memory_dim)
+decode_input = ([
+    tf.zeros_like(
+        tensor=encode_input[0], 
+        dtype=np.int32, 
+        name="GO")] + encode_input[:-1])
 
-decode_outputs, decode_memory = legacy_seq2seq.embedding_rnn_seq2seq(encode_input, decode_input, cell, vocab_size, vocab_size, embedding_dim)
+previous_memory = tf.zeros(shape=(batch_size, memory_dim))
 
-loss = legacy_seq2seq.sequence_loss(decode_outputs, labels, weights, vocab_size)
+cell = core_rnn_cell.GRUCell(num_units=memory_dim)
+
+decode_outputs, decode_memory = legacy_seq2seq.embedding_rnn_seq2seq(
+    encoder_inputs=encode_input,
+    decoder_inputs=decode_input,
+    cell=cell,
+    num_encoder_symbols=vocab_size,
+    num_decoder_symbols=vocab_size,
+    embedding_size=embedding_dim)
+
+loss = legacy_seq2seq.sequence_loss(
+    logits=decode_outputs,
+    targets=labels,
+    weights=weights)
+
 tf.summary.scalar("loss", loss)
 
 manitude = tf.sqrt(tf.reduce_sum(tf.square(decode_memory[1])))
@@ -51,29 +81,54 @@ summary_writer = tf.summary.FileWriter("./sources/seq2seq/log/", sess.graph)
 sess.run(tf.global_variables_initializer())
 
 def train_batch(batch_size):
-    X = [np.random.choice(vocab_size, (seq_length,), False) for _ in range(batch_size)]
+    X = [
+        np.random.choice(
+            vocab_size, 
+            (seq_length,), 
+            False) 
+            for _ in range(batch_size)]
+
     Y = X[:]
 
     X = np.array(X).T
     Y = np.array(Y).T
 
-    feed_dict = {encode_input[t]: X[t] for t in range(seq_length)}
-    feed_dict.update({labels[t]: Y[t] for t in range(seq_length)})
+    feed_dict = {
+        encode_input[t]: X[t] 
+        for t in range(seq_length)}
+        
+    feed_dict.update({
+        labels[t]: Y[t] 
+        for t in range(seq_length)})
 
-    _, loss_t, summary = sess.run([train_op, loss, summary_op], feed_dict)
+    _, loss_t, summary = sess.run(
+        fetches=[train_op, loss, summary_op],
+        feed_dict=feed_dict)
+
     return loss_t, summary
 
 for t in range(500):
-    loss_t, summary = train_batch(batch_size)
-    summary_writer.add_summary(summary, t)
+    loss_t, summary = train_batch(batch_size=batch_size)
+    summary_writer.add_summary(summary=summary, global_step=t)
+
 summary_writer.flush()
 
+X_batch = [
+    np.random.choice(
+        a=vocab_size,
+        size=(seq_length,),
+        replace=False)
+        for _ in range(10)]
 
-X_batch = [np.random.choice(vocab_size, size=(seq_length,), replace=False) for _ in range(10)]
 X_batch = np.array(X_batch).T
 
-feed_dict = {encode_input[t]: X_batch[t] for t in range(seq_length)}
-decode_outputs_batch = sess.run(decode_outputs, feed_dict)
+feed_dict = {
+    encode_input[t]: X_batch[t] 
+    for t in range(seq_length)}
+
+decode_outputs_batch = sess.run(
+    fetches=decode_outputs,
+    feed_dict=feed_dict)
 
 print(X_batch)
 print([logits_t.argmax(axis=1) for logits_t in decode_outputs_batch])
