@@ -40,6 +40,10 @@ class Seq2Seq(object):
                             name='ei_{}'.format(t)) for t in range(yseq_len)]
             
             #decoder inputs: "GO" + [ y1, y2, ... y_t-1]
+            # slice <EOS> ---> labels[:-1]
+            # [ y1, y2, y3 ... <EOS>] label
+            # [ GO, y1, y2 ... y_t-1] dec_input
+            # GO == [0, 0, 0, 0, 0, ... 0]
             self.dec_ip = [tf.zeros_like(self.enc_ip[0], dtype=tf.int64, name='GO') ] + self.labels[:-1]
 
             #Basic LSTM cell wrapped in Dropout Wrapper
@@ -64,7 +68,7 @@ class Seq2Seq(object):
                 #share parameters
                 scope.reuse_variables()
 
-                #testing model, where output of previous timestep is fed as inpu
+                #testing model, where output of previous timestep is fed as input
                 # to the next timestep
                 self.decode_outputs_test, self.decode_states_test = tf.contrib.legacy_seq2seq.embedding_rnn_seq2seq(
                     self.enc_ip, self.dec_ip, stacked_lstm, xvocab_size, yvocab_size, emb_dim,

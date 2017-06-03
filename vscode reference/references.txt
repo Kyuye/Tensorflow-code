@@ -9,3 +9,5 @@ vscode intellisense tensorflow
 config exactly same as below link
 https://github.com/alexwalchli/visualstudiocode-tensorflow
 
+seq2seq with Attention 
+https://www.slideshare.net/KeonKim/attention-mechanisms-with-tensorflow
