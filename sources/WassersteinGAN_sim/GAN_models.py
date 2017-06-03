@@ -129,6 +129,8 @@ class WasserstienGAN(GAN):
         self.vocab_size = 7
         self.embedding_dim = 50
         self.memory_dim = 100
+        self.momentum = 0.9
+        self.learning_rate = 5e-2
         self.encode_input=[
             tf.placeholder(
                 dtype=tf.int32,
@@ -157,8 +159,19 @@ class WasserstienGAN(GAN):
 
     def _generator(self, x):
         with tf.variable_scope("generator") as scope:
-            previous_memory = tf.zeros(shape=(self.batch_size, self.memory_dim))
-            cell = core_rnn_cell.GRUCell(num_units=self.memory_dim)
+            previous_memory = tf.zeros(
+                shape=(self.batch_size, self.memory_dim))
+            
+            cell = core_rnn_cell.GRUCell(
+                num_units=self.memory_dim)
+
+            decode_outputs, decode_memory = legacy_seq2seq.embedding_rnn_seq2seq(
+                encoder_inputs=self.encode_input,
+                decoder_inputs=self.decode_input,
+                cell=cell,
+                embedding_size=self.embedding_dim)
+        return decode_outputs
+            
 
     def _discriminator(self, x, reuse=False):
         with tf.variable_scope("discriminator") as scope:
