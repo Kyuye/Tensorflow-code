@@ -11,3 +11,6 @@ https://github.com/alexwalchli/visualstudiocode-tensorflow
 
 seq2seq with Attention 
 https://www.slideshare.net/KeonKim/attention-mechanisms-with-tensorflow
+
+emotional data set link
+https://stackoverflow.com/questions/30703485/dataset-for-emotion-detection-by-text

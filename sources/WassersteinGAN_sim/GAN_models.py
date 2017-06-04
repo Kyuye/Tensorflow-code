@@ -131,7 +131,7 @@ class WasserstienGAN(GAN):
         self.memory_dim = 100
         self.momentum = 0.9
         self.learning_rate = 5e-2
-        self.encode_input=[
+        self.encode_input = [
             tf.placeholder(
                 dtype=tf.int32,
                 shape=(None,),
