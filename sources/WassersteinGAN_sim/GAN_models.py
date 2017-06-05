@@ -20,10 +20,14 @@ tf.flags.DEFINE_string("mode", "train", "train / visualize model")
 
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
+        # self.sim_data = tf.unstack(tf.constant(
+        #     [[[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]] 
+        #     if i % 2 == 0 else 
+        #     [[10], [9], [8], [7], [6], [5], [4], [3], [2], [1]] 
+        #     for i in range(1000)], tf.float32), axis=1)
+
         self.sim_data = tf.unstack(tf.constant(
             [[[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]] 
-            if i % 2 == 0 else 
-            [[10], [9], [8], [7], [6], [5], [4], [3], [2], [1]] 
             for i in range(1000)], tf.float32), axis=1)
 
         self.critic_iterations = critic_iterations
@@ -95,6 +99,8 @@ class WasserstienGAN(object):
         self.discriminator_variables = [v for v in train_variables if v.name.startswith("discriminator")]
         print(list(map(lambda x: x.op.name, self.discriminator_variables)))
 
+        self.saver = tf.train.Saver(self.generator_variables)
+
         optim = self._get_optimizer(optimizer, learning_rate, optimizer_param)
 
         self.generator_train_op = self._train(self.gen_loss, self.generator_variables, optim)
@@ -118,6 +124,17 @@ class WasserstienGAN(object):
         grads = optimizer.compute_gradients(loss_val, var_list=var_list)
         return optimizer.apply_gradients(grads)
 
+    def destroy(self):
+        self.sess.close()
+
+    def predict(self):
+        self.saver.restore(self.sess, "./CheckPoint/rnn_GAN")
+        _pred = self.sess.run(tf.transpose(tf.reduce_mean(self.gen_data, axis=2)))
+        print(_pred[:10])
+        with open("generator_outputs.txt", 'w') as f:
+            for i in _pred:
+                f.writelines(str(i.round())+"\n\n")
+
 
     def train_model(self, max_iterations):
         print("Training Wasserstein GAN model...")
@@ -138,25 +155,17 @@ class WasserstienGAN(object):
 
             if itr % 200 == 0:
                 g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss])
+                self.saver.save(self.sess, "./CheckPoint/rnn_GAN")
                 print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
 
-        _pred = self.sess.run(tf.unstack(self.gen_data))
-
-        for p in _pred:
-            print(p.round())
-            print()
-
-        with open("generator_outputs.txt", 'w') as f:
-            for i in _pred:
-                f.writelines(str(i.round())+"\n\n")
-
-        self.sess.close()
 
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
     gan.create_network(optimizer="Adam")
     gan.initialize_network()
     gan.train_model(20000)
+    gan.predict()
+    gan.destroy()
 
 
 if __name__ == "__main__":
