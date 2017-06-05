@@ -20,42 +20,73 @@ tf.flags.DEFINE_string("mode", "train", "train / visualize model")
 
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
-        self.sim_data = tf.constant([ [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] if i % 2 == 0 else [10, 9, 8, 7, 6, 5, 4, 3, 2, 1] for i in range(1000)], tf.float32)
+        self.sim_data = tf.unstack(tf.constant(
+            [[[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]] 
+            if i % 2 == 0 else 
+            [[10], [9], [8], [7], [6], [5], [4], [3], [2], [1]] 
+            for i in range(1000)], tf.float32), axis=1)
+
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
-        
+
+
     def _generator(self, x):
         with tf.variable_scope("generator") as scope:
-            layer1 = tf.layers.dense(x, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
-            layer2 = tf.layers.dense(layer1, 10, tf.nn.relu, True, tf.truncated_normal_initializer)
-            return tf.layers.dense(layer2, 10, None, True, tf.truncated_normal_initializer) 
-            
+            rnn_cell = tf.contrib.rnn.BasicRNNCell(num_units=20)
+            out, _ = tf.contrib.rnn.static_rnn(cell=rnn_cell, inputs=x, dtype=tf.float32)
+            Wo = tf.Variable(tf.truncated_normal(shape=(len(x), 20, 1)))
+            return tf.unstack(tf.matmul(out, Wo))
+
 
     def _discriminator(self, x, reuse=False):
         with tf.variable_scope("discriminator") as scope:
-            layer1 = tf.layers.dense(x, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer1", reuse=reuse)
-            layer2 = tf.layers.dense(layer1, 10, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="layer2", reuse=reuse)
-            prediction = tf.layers.dense(layer2, 1, lambda x: tf.maximum(0.2 * x, x), True, tf.truncated_normal_initializer, name="prediction", reuse=reuse)
-        # Return the last convolution output. None values are returned to maintatin disc from other GAN
-        return None, prediction, None
-        
+            prediction = []
+            for i in range(10):
+                layer1 = tf.layers.dense(
+                    inputs=x[i], 
+                    units=10, 
+                    activation=lambda x: tf.maximum(0.2 * x, x), 
+                    use_bias=True, 
+                    kernel_initializer=tf.truncated_normal_initializer, 
+                    name="layer1_s%d"%i, 
+                    reuse=reuse)
+                layer2 = tf.layers.dense(
+                    inputs=layer1, 
+                    units=10, 
+                    activation=lambda x: tf.maximum(0.2 * x, x), 
+                    use_bias=True, 
+                    kernel_initializer=tf.truncated_normal_initializer, 
+                    name="layer2_s%d"%i, 
+                    reuse=reuse)
+                prediction += [[
+                    tf.layers.dense(
+                        inputs=layer2, 
+                        units=1, 
+                        activation=lambda x: tf.maximum(0.2 * x, x), 
+                        use_bias=True, 
+                        kernel_initializer=tf.truncated_normal_initializer, 
+                        name="prediction_s%d"%i, 
+                        reuse=reuse)]]
+            # Return the last convolution output. None values are returned to maintatin disc from other GAN
+        return tf.reduce_mean(prediction)
 
-    def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):
+
+    def _gan_loss(self, logits_real, logits_fake, use_features=False):
         discriminator_loss = tf.reduce_mean(logits_real - logits_fake)
         gen_loss = tf.reduce_mean(logits_fake)
         return discriminator_loss, gen_loss
 
+
     def create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
         print("Setting up model...")
-        self.z = tf.random_uniform((1000, 10), -1, 1, tf.float32)
+        self.z = tf.unstack(tf.random_uniform((1000, 10, 1), -1, 1, tf.float32), axis=1)
         self.gen_data = self._generator(self.z)
 
-        self.discriminator_real_prob, logits_real, feature_real = self._discriminator(self.sim_data, reuse=False)
-        self.discriminator_fake_prob, logits_fake, feature_fake = self._discriminator(self.gen_data, reuse=True)
+        logits_real = self._discriminator(self.sim_data, reuse=False)
+        logits_fake = self._discriminator(self.gen_data, reuse=True)
 
         # Loss calculation
-        self.discriminator_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake, feature_real, feature_fake)
-
+        self.discriminator_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake)
 
         train_variables = tf.trainable_variables()
 
@@ -72,7 +103,7 @@ class WasserstienGAN(object):
     def initialize_network(self):
         print("Initializing network...")
         self.sess = tf.Session()
-        self.sess.run(tf.initialize_all_variables())
+        self.sess.run(tf.global_variables_initializer())
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
         self.learning_rate = learning_rate
@@ -86,7 +117,8 @@ class WasserstienGAN(object):
     def _train(self, loss_val, var_list, optimizer):
         grads = optimizer.compute_gradients(loss_val, var_list=var_list)
         return optimizer.apply_gradients(grads)
-    
+
+
     def train_model(self, max_iterations):
         print("Training Wasserstein GAN model...")
         clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
@@ -110,14 +142,18 @@ class WasserstienGAN(object):
 
         _pred = self.sess.run(tf.unstack(self.gen_data))
 
-        for i in _pred:
-            print(i)
+        for p in _pred:
+            print(p.round())
             print()
+
+        with open("generator_outputs.txt", 'w') as f:
+            for i in _pred:
+                f.writelines(str(i.round())+"\n\n")
 
         self.sess.close()
 
 def main(argv=None):
-    gan = WasserstienGAN()
+    gan = WasserstienGAN(critic_iterations=5)
     gan.create_network(optimizer="Adam")
     gan.initialize_network()
     gan.train_model(20000)
