@@ -20,12 +20,6 @@ tf.flags.DEFINE_string("mode", "train", "train / visualize model")
 
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
-        # self.sim_data = tf.unstack(tf.constant(
-        #     [[[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]] 
-        #     if i % 2 == 0 else 
-        #     [[10], [9], [8], [7], [6], [5], [4], [3], [2], [1]] 
-        #     for i in range(1000)], tf.float32), axis=1)
-
         self.sim_data = tf.unstack(tf.constant(
             [[[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]] 
             for i in range(1000)], tf.float32), axis=1)
@@ -41,10 +35,8 @@ class WasserstienGAN(object):
             Wo = tf.Variable(tf.truncated_normal(shape=(len(x), 20, 1)))
             return tf.unstack(tf.matmul(out, Wo))
 
-
     def _discriminator(self, x, reuse=False):
         with tf.variable_scope("discriminator") as scope:
-            prediction = []
             for i in range(10):
                 layer1 = tf.layers.dense(
                     inputs=x[i], 
@@ -62,22 +54,23 @@ class WasserstienGAN(object):
                     kernel_initializer=tf.truncated_normal_initializer, 
                     name="layer2_s%d"%i, 
                     reuse=reuse)
-                prediction += [[
-                    tf.layers.dense(
-                        inputs=layer2, 
-                        units=1, 
-                        activation=lambda x: tf.maximum(0.2 * x, x), 
-                        use_bias=True, 
-                        kernel_initializer=tf.truncated_normal_initializer, 
-                        name="prediction_s%d"%i, 
-                        reuse=reuse)]]
+                prediction = tf.layers.dense(
+                    inputs=layer2, 
+                    units=10, 
+                    use_bias=True, 
+                    kernel_initializer=tf.truncated_normal_initializer, 
+                    name="prediction_s%d"%i, 
+                    reuse=reuse)
             # Return the last convolution output. None values are returned to maintatin disc from other GAN
-        return tf.reduce_mean(prediction)
+        return prediction
 
 
     def _gan_loss(self, logits_real, logits_fake, use_features=False):
-        discriminator_loss = tf.reduce_mean(logits_real - logits_fake)
-        gen_loss = tf.reduce_mean(logits_fake)
+        discriminator_loss = 0
+        gen_loss = 0
+        for t in range(10):
+            discriminator_loss += tf.reduce_mean(logits_real[t] - logits_fake[t])
+            gen_loss += tf.reduce_mean(logits_fake[t])
         return discriminator_loss, gen_loss
 
 
@@ -161,11 +154,11 @@ class WasserstienGAN(object):
 
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
-    gan.create_network(optimizer="Adam")
-    gan.initialize_network()
-    gan.train_model(20000)
-    gan.predict()
-    gan.destroy()
+    # gan.create_network(optimizer="Adam")
+    # gan.initialize_network()
+    # gan.train_model(20000)
+    # gan.predict()
+    # gan.destroy()
 
 
 if __name__ == "__main__":

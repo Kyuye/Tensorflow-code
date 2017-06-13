@@ -14,3 +14,6 @@ https://www.slideshare.net/KeonKim/attention-mechanisms-with-tensorflow
 
 emotional data set link
 https://stackoverflow.com/questions/30703485/dataset-for-emotion-detection-by-text
+
+google cloud pipe-line
+https://github.com/GoogleCloudPlatform/training-data-analyst/blob/master/blogs/babyweight/babyweight.ipynb
