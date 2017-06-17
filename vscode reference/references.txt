@@ -17,3 +17,6 @@ https://stackoverflow.com/questions/30703485/dataset-for-emotion-detection-by-te
 
 google cloud pipe-line
 https://github.com/GoogleCloudPlatform/training-data-analyst/blob/master/blogs/babyweight/babyweight.ipynb
+
+EmoBank Dataset link
+https://github.com/Kyuye/EmoBank.git
