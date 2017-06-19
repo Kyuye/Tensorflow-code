@@ -30,24 +30,13 @@ class skip_gram(object):
             for i in data:
                 f.writelines(i)
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 32a6d35ce7174cf36caa4a5680bbb70a5d8c0034
     def words_read_text(self, file_dir):
         with open(data_name, 'r')  as f:
             return [word for line in f for word in line.split()]
 
-<<<<<<< HEAD
     def word_count(self, file_dir):
         words = self.words_read_text(file_dir)
         return collections.Counter(words).most_common(self.vocabulary_size)
-=======
-
-    def word_count(self, file_dir):
-        words = self.words_read_text(file_dir)
-        return collections.Counter(words).most_common(100000)
->>>>>>> 32a6d35ce7174cf36caa4a5680bbb70a5d8c0034
 
     def vocab_to_dict(self, file_dir):
         words = self.word_count(file_dir)
@@ -76,11 +65,7 @@ class skip_gram(object):
                 writer.writerow(row)
 
 
-<<<<<<< HEAD
     def train_model(self):
-=======
-    def word2vec_model(self):
->>>>>>> 32a6d35ce7174cf36caa4a5680bbb70a5d8c0034
         with tf.name_scope("train_set_build"):
             filename = file_dir + 'train_set.csv'
             filename_queue = tf.train.string_input_producer([filename])
@@ -94,24 +79,13 @@ class skip_gram(object):
             # train_batch = tf.reshape(train_batch, shape=(-1, 1))
             label_batch = tf.reshape(label_batch, shape=(-1, 1))
 
-<<<<<<< HEAD
         with tf.name_scope("train_model"):
             embeddings = tf.Variable(
                 tf.random_uniform(shape=(self.vocabulary_size, self.embed_size), minval=-1, maxval=1),
                 name="embeddings")
-            saver = tf.train.Saver([self.embeddings])
-
-            embed = tf.nn.embedding_lookup(self.embeddings, train_batch)
-=======
-        embeddings = tf.Variable(
-            tf.random_uniform(shape=(self.vocabulary_size, self.embed_size), minval=-1, maxval=1),
-            name="embeddings")
-        saver = tf.train.Saver([embeddings])
-
-        with tf.name_scope("train_model"):
+            saver = tf.train.Saver([embeddings])
 
             embed = tf.nn.embedding_lookup(embeddings, train_batch)
->>>>>>> 32a6d35ce7174cf36caa4a5680bbb70a5d8c0034
             nce_weight = tf.Variable(
                 tf.truncated_normal(shape=(self.vocabulary_size, self.embed_size)))
             nce_bias = tf.Variable(
