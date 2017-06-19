@@ -1,13 +1,10 @@
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import tensorflow as tf
-import os
 
-from tensorflow.contrib.learn import Estimator
-from tensorflow.contrib.learn import Experiment
-from tensorflow.contrib.learn.python.learn import learn_runner
-from tensorflow.contrib.learn import ModelFnOps
-from tensorflow.contrib.learn import InputFnOps
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("batch_size", "64", "batch size for training")
@@ -23,12 +20,15 @@ tf.flags.DEFINE_string("optimizer", "Adam", "Optimizer to use for training")
 tf.flags.DEFINE_integer("gen_dimension", "16", "dimension of first layer in generator")
 tf.flags.DEFINE_string("mode", "train", "train / visualize model")
 
+
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
-        self.sim_data = tf.unstack(tf.constant(
-            [[[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]] 
-            for i in range(1000)], tf.float32), axis=1)
-
+        self.embeddings = tf.Variable(tf.zeros(shape=(50000, 300)), name="embeddings")
+        self.sim_data = tf.unstack(tf.nn.embedding_lookup(
+            self.embeddings,
+            [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10] for i in range(1000)]), 
+            axis=1)
+    
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
 
@@ -93,7 +93,9 @@ class WasserstienGAN(object):
         train_variables = tf.trainable_variables()
 
         self.generator_variables = [v for v in train_variables if v.name.startswith("generator")]
+        print(list(map(lambda x: x.op.name, self.generator_variables)))
         self.discriminator_variables = [v for v in train_variables if v.name.startswith("discriminator")]
+        print(list(map(lambda x: x.op.name, self.discriminator_variables)))
 
         self.saver = tf.train.Saver(self.generator_variables)
 
@@ -106,6 +108,7 @@ class WasserstienGAN(object):
         print("Initializing network...")
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
+        self.saver.restore(self.sess, "./CheckPoint/embedding_set")
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
         self.learning_rate = learning_rate
@@ -160,78 +163,7 @@ def main(argv=None):
     gan.create_network(optimizer="Adam")
     gan.initialize_network()
     gan.train_model(20000)
-    gan.predict()
     gan.destroy()
-
-    # model_dir = os.getcwd() + "/sources/Personality Replication/"
-
-    # def model(train, label, mode):
-    #     a = tf.Variable(0, dtype=tf.float32)
-    #     x = tf.constant(10, tf.float32)
-    #     y = a * x
-
-    #     b = tf.Variable(0, dtype=tf.float32)
-    #     yy = b*x
-    #     loss = tf.losses.mean_squared_error(10, y)
-    #     global_step = tf.contrib.framework.get_global_step()
-    #     global_step = tf.
-    #     train = tf.train.GradientDescentOptimizer(0.00001).minimize(loss, global_step)
-
-
-    #     return ModelFnOps(
-    #         mode=mode,
-    #         predictions=y,
-    #         loss=loss,
-    #         train_op=train,
-    #         eval_metric_ops=None,
-    #         output_alternatives=None,
-    #         training_chief_hooks=None,
-    #         training_hooks=None,
-    #         scaffold=None
-    #     )
-
-    # def train_input():
-    #     return InputFnOps(
-    #         features=None,
-    #         labels=None,
-    #         default_inputs=None
-    #     )[:2]
-
-    # def exp_fn(output_dir):
-    #     def exp(output_dir):
-    #         return Experiment(
-    #             estimator=Estimator(
-    #                 model_fn=model,
-    #                 model_dir=output_dir,
-    #                 config=None,
-    #                 params=None,
-    #                 feature_engineering_fn=None
-    #             ),
-    #             train_input_fn=train_input,
-    #             eval_input_fn=train_input,
-    #             eval_metrics=None,
-    #             train_steps=1,
-    #             eval_steps=1,
-    #             train_monitors=None,
-    #             eval_hooks=None,
-    #             local_eval_frequency=None,
-    #             eval_delay_secs=120,
-    #             continuous_eval_throttle_secs=60,
-    #             min_eval_frequency=None,
-    #             delay_workers_by_global_step=False,
-    #             export_strategies=None,
-    #             train_steps_per_iteration=None
-    #         )
-    #     return exp
-
-    # learn_runner.run(
-    #     experiment_fn=exp_fn(model_dir), 
-    #     output_dir=model_dir+'log',
-    #     schedule=None,
-    #     run_config=None,
-    #     hparams=None
-    #     )
-
 
 
 if __name__ == "__main__":

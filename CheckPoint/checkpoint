@@ -1,2 +1,2 @@
-model_checkpoint_path: "rnn_GAN"
-all_model_checkpoint_paths: "rnn_GAN"
+model_checkpoint_path: "embedding_set"
+all_model_checkpoint_paths: "embedding_set"
