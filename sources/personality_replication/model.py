@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import json
 
 
 FLAGS = tf.flags.FLAGS
@@ -23,14 +24,15 @@ tf.flags.DEFINE_string("mode", "train", "train / visualize model")
 
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
-        self.embeddings = tf.Variable(tf.zeros(shape=(50000, 300)), name="embeddings")
-        self.sim_data = tf.unstack(tf.nn.embedding_lookup(
-            self.embeddings,
-            [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10] for i in range(1000)]), 
-            axis=1)
-    
+        print("importing json file...")
+        with open('./DataSet/word2vec_map.json') as jsonfile:    
+            self.embedding_map = json.load(jsonfile)
+
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
+
+    def word2vec(self, word_sequence):
+        return list(map(lambda x: self.embedding_map[x], word_sequence))
 
 
     def _generator(self, x):
@@ -160,10 +162,25 @@ class WasserstienGAN(object):
 
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
-    gan.create_network(optimizer="Adam")
-    gan.initialize_network()
-    gan.train_model(20000)
-    gan.destroy()
+    print("converting")
+    output = gan.word2vec(["I", "love", "you"])
+    print("convert in function")
+    print(output[0][:10])
+    print(output[1][:10])
+    print(output[2][:10])
+
+    print()
+
+    print("converting")
+    embed_map = gan.embedding_map
+    print("convert with json file")
+    print(embed_map["I"][:10])
+    print(embed_map["love"][:10])
+    print(embed_map["you"][:10])
+    # gan.create_network(optimizer="Adam")
+    # gan.initialize_network()
+    # gan.train_model(20000)
+    # gan.destroy()
 
 
 if __name__ == "__main__":

@@ -66,6 +66,7 @@ class skip_gram(object):
 
 
     def train_model(self):
+        tf.reset_default_graph()
         with tf.name_scope("train_set_build"):
             filename = file_dir + 'train_set.csv'
             filename_queue = tf.train.string_input_producer([filename])
@@ -79,12 +80,12 @@ class skip_gram(object):
             # train_batch = tf.reshape(train_batch, shape=(-1, 1))
             label_batch = tf.reshape(label_batch, shape=(-1, 1))
 
-        with tf.name_scope("train_model"):
-            embeddings = tf.Variable(
-                tf.random_uniform(shape=(self.vocabulary_size, self.embed_size), minval=-1, maxval=1),
-                name="embeddings")
-            saver = tf.train.Saver([embeddings])
+        embeddings = tf.Variable(
+            tf.random_uniform(shape=(self.vocabulary_size, self.embed_size), minval=-1, maxval=1),
+            name="embeddings")
+        saver = tf.train.Saver([embeddings])
 
+        with tf.name_scope("train_model"):
             embed = tf.nn.embedding_lookup(embeddings, train_batch)
             nce_weight = tf.Variable(
                 tf.truncated_normal(shape=(self.vocabulary_size, self.embed_size)))
@@ -147,6 +148,9 @@ class skip_gram(object):
             json.dump(wordvec_map, outfile)
             
 if __name__ == "__main__":
+    word2vec = skip_gram()
+    # word2vec.train_model()
+    # word2vec.wordvec_map()
     with open('./DataSet/word2vec_map.json') as data_file:    
         data = json.load(data_file)
 
