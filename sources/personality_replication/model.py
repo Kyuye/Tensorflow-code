@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import json
+import os
 
 
 FLAGS = tf.flags.FLAGS
@@ -24,10 +25,16 @@ tf.flags.DEFINE_string("mode", "train", "train / visualize model")
 
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
-        print("importing json file...")
-        with open('./DataSet/word2vec_map.json') as jsonfile:    
-            self.embedding_map = json.load(jsonfile)
-
+        if os.path.exists('./DataSet/word2vec_map.json'):
+            print("importing json file...")
+            with open('./DataSet/word2vec_map.json') as jsonfile:    
+                self.embedding_map = json.load(jsonfile)
+        
+        self.sim_data = tf.unstack(tf.constant(
+            [[[t] for t in range(10)] 
+            for _ in range(100)], 
+            dtype=tf.float32), 
+            axis=1)
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
 
@@ -39,11 +46,14 @@ class WasserstienGAN(object):
         with tf.variable_scope("generator") as scope:
             rnn_cell = tf.contrib.rnn.BasicRNNCell(num_units=20)
             out, _ = tf.contrib.rnn.static_rnn(cell=rnn_cell, inputs=x, dtype=tf.float32)
-            Wo = tf.Variable(tf.truncated_normal(shape=(len(x), 20, 1)))
-            return tf.unstack(tf.matmul(out, Wo))
+            Wo = tf.unstack(tf.Variable(tf.truncated_normal(shape=(len(x), 20, 1))))
+            bo = tf.unstack(tf.Variable(tf.zeros(shape=(len(x), 1, 1))))
+            return tf.matmul(out, Wo) + bo
 
     def _discriminator(self, x, reuse=False):
         with tf.variable_scope("discriminator") as scope:
+            x = tf.unstack(x)
+            logits = []
             for i in range(10):
                 layer1 = tf.layers.dense(
                     inputs=x[i], 
@@ -61,17 +71,19 @@ class WasserstienGAN(object):
                     kernel_initializer=tf.truncated_normal_initializer, 
                     name="layer2_s%d"%i, 
                     reuse=reuse)
-                prediction = tf.layers.dense(
+                logits += [tf.layers.dense(
                     inputs=layer2, 
                     units=10, 
                     use_bias=True, 
                     kernel_initializer=tf.truncated_normal_initializer, 
-                    name="prediction_s%d"%i, 
-                    reuse=reuse)
-            # Return the last convolution output. None values are returned to maintatin disc from other GAN
-        return prediction
+                    name="logits_s%d"%i, 
+                    reuse=reuse)]
+        return logits
 
-
+    def _create_generator(self):
+        self.z = tf.unstack(tf.random_uniform((100, 10, 1), -1, 1, tf.float32), axis=1)
+        self.gen_data = self._generator(self.z)
+        
     def _gan_loss(self, logits_real, logits_fake, use_features=False):
         discriminator_loss = 0
         gen_loss = 0
@@ -83,8 +95,9 @@ class WasserstienGAN(object):
 
     def create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
         print("Setting up model...")
-        self.z = tf.unstack(tf.random_uniform((1000, 10, 1), -1, 1, tf.float32), axis=1)
-        self.gen_data = self._generator(self.z)
+        # self.z = tf.unstack(tf.random_uniform((100, 10, 1), -1, 1, tf.float32), axis=1)
+        # self.gen_data = self._generator(self.z)
+        self._create_generator()
 
         logits_real = self._discriminator(self.sim_data, reuse=False)
         logits_fake = self._discriminator(self.gen_data, reuse=True)
@@ -95,9 +108,9 @@ class WasserstienGAN(object):
         train_variables = tf.trainable_variables()
 
         self.generator_variables = [v for v in train_variables if v.name.startswith("generator")]
-        print(list(map(lambda x: x.op.name, self.generator_variables)))
+        # print(list(map(lambda x: x.op.name, self.generator_variables)))
         self.discriminator_variables = [v for v in train_variables if v.name.startswith("discriminator")]
-        print(list(map(lambda x: x.op.name, self.discriminator_variables)))
+        # print(list(map(lambda x: x.op.name, self.discriminator_variables)))
 
         self.saver = tf.train.Saver(self.generator_variables)
 
@@ -110,7 +123,6 @@ class WasserstienGAN(object):
         print("Initializing network...")
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
-        self.saver.restore(self.sess, "./CheckPoint/embedding_set")
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
         self.learning_rate = learning_rate
@@ -129,13 +141,9 @@ class WasserstienGAN(object):
         self.sess.close()
 
     def predict(self):
-        self.saver.restore(self.sess, "./CheckPoint/rnn_GAN")
-        _pred = self.sess.run(tf.transpose(tf.reduce_mean(self.gen_data, axis=2)))
-        print(_pred[:10])
-        with open("generator_outputs.txt", 'w') as f:
-            for i in _pred:
-                f.writelines(str(i.round())+"\n\n")
-
+        saver = tf.train.Saver()
+        saver.restore(self.sess, "./CheckPoint/rnn_GAN")
+        _pred, __pred = self.sess.run([tf.transpose(self.gen_data, perm=[1,0,2]), self.gen_data])
 
     def train_model(self, max_iterations):
         print("Training Wasserstein GAN model...")
@@ -162,25 +170,12 @@ class WasserstienGAN(object):
 
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
-    print("converting")
-    output = gan.word2vec(["I", "love", "you"])
-    print("convert in function")
-    print(output[0][:10])
-    print(output[1][:10])
-    print(output[2][:10])
-
-    print()
-
-    print("converting")
-    embed_map = gan.embedding_map
-    print("convert with json file")
-    print(embed_map["I"][:10])
-    print(embed_map["love"][:10])
-    print(embed_map["you"][:10])
     # gan.create_network(optimizer="Adam")
-    # gan.initialize_network()
-    # gan.train_model(20000)
-    # gan.destroy()
+    gan._create_generator()
+    gan.initialize_network()
+    # gan.train_model(1000)
+    gan.predict()
+    gan.destroy()
 
 
 if __name__ == "__main__":
