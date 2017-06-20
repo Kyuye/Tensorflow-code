@@ -20,3 +20,6 @@ https://github.com/GoogleCloudPlatform/training-data-analyst/blob/master/blogs/b
 
 EmoBank Dataset link
 https://github.com/Kyuye/EmoBank.git
+
+ML Jeju Camp
+https://docs.google.com/presentation/d/1sb678t81XYshosVEmOoNZnP8DKpt4JXY7U_b1PWbhM4/edit#slide=id.g22d5eba9b5_3_5
