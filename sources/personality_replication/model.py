@@ -37,10 +37,10 @@ class WasserstienGAN(object):
             axis=1)
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
+        self.sess = tf.Session()
 
     def word2vec(self, word_sequence):
         return list(map(lambda x: self.embedding_map[x], word_sequence))
-
 
     def _generator(self, x):
         with tf.variable_scope("generator") as scope:
@@ -93,10 +93,8 @@ class WasserstienGAN(object):
         return discriminator_loss, gen_loss
 
 
-    def create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
+    def _create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
         print("Setting up model...")
-        # self.z = tf.unstack(tf.random_uniform((100, 10, 1), -1, 1, tf.float32), axis=1)
-        # self.gen_data = self._generator(self.z)
         self._create_generator()
 
         logits_real = self._discriminator(self.sim_data, reuse=False)
@@ -119,10 +117,27 @@ class WasserstienGAN(object):
         self.generator_train_op = self._train(self.gen_loss, self.generator_variables, optim)
         self.discriminator_train_op = self._train(self.discriminator_loss, self.discriminator_variables, optim)
 
-    def initialize_network(self):
-        print("Initializing network...")
-        self.sess = tf.Session()
-        self.sess.run(tf.global_variables_initializer())
+    def initialize_network(self, mode):
+        if mode is 'train':
+            print("building network")
+            self._create_network()
+            print("variables initializing")
+            self.sess.run(tf.global_variables_initializer())
+            print("training...")
+            self.train_model(1000)
+            print("session closed")
+            self.sess.close()
+        elif mode is 'predict':
+            print("building network")
+            self._create_generator()
+            print("predict..")
+            self.predict()
+            print("session closed")
+            self.sess.close()
+        else:
+            print("please select the mode train/predict")
+            return
+
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
         self.learning_rate = learning_rate
@@ -137,13 +152,12 @@ class WasserstienGAN(object):
         grads = optimizer.compute_gradients(loss_val, var_list=var_list)
         return optimizer.apply_gradients(grads)
 
-    def destroy(self):
-        self.sess.close()
-
     def predict(self):
         saver = tf.train.Saver()
         saver.restore(self.sess, "./CheckPoint/rnn_GAN")
-        _pred, __pred = self.sess.run([tf.transpose(self.gen_data, perm=[1,0,2]), self.gen_data])
+        _pred  = self.sess.run(tf.transpose(self.gen_data, perm=[1,0,2]))
+        print(_pred.round())
+
 
     def train_model(self, max_iterations):
         print("Training Wasserstein GAN model...")
@@ -170,13 +184,7 @@ class WasserstienGAN(object):
 
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
-    # gan.create_network(optimizer="Adam")
-    gan._create_generator()
-    gan.initialize_network()
-    # gan.train_model(1000)
-    gan.predict()
-    gan.destroy()
-
+    gan.initialize_network("predict")
 
 if __name__ == "__main__":
     tf.app.run()
