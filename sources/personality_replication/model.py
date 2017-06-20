@@ -155,8 +155,9 @@ class WasserstienGAN(object):
     def predict(self):
         saver = tf.train.Saver()
         saver.restore(self.sess, "./CheckPoint/rnn_GAN")
+        tf.train.write_graph(self.sess.graph_def,"./CheckPoint/",'graph.pbtxt',False)
         _pred  = self.sess.run(tf.transpose(self.gen_data, perm=[1,0,2]))
-        print(_pred.round())
+        print(_pred)
 
 
     def train_model(self, max_iterations):
