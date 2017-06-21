@@ -138,9 +138,9 @@ class skip_gram(object):
         
         print("word2vec mapping in progress...")
         wordvec_map = {"UNK":_embeddings[0].tolist()}
-        for w in words:
+        for w, c in words:
             if len(wordvec_map) < self.vocabulary_size:
-                wordvec_map[w[0]] = _embeddings[len(wordvec_map)].tolist()
+                wordvec_map[w] = _embeddings[len(wordvec_map)].tolist()
 
         print("saving json...")
         
@@ -150,10 +150,10 @@ class skip_gram(object):
 if __name__ == "__main__":
     word2vec = skip_gram()
     # word2vec.train_model()
-    # word2vec.wordvec_map()
-    with open('./DataSet/word2vec_map.json') as data_file:    
-        data = json.load(data_file)
+    word2vec.wordvec_map()
+    # with open('./DataSet/word2vec_map.json') as data_file:    
+    #     data = json.load(data_file)
 
-    print(data["the"])
-    print(type(data["the"]))
-    print(type(data["the"][0]))
+    # print(data["the"])
+    # print(type(data["the"]))
+    # print(type(data["the"][0]))
