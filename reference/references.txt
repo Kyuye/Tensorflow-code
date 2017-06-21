@@ -23,3 +23,6 @@ https://github.com/Kyuye/EmoBank.git
 
 ML Jeju Camp
 https://docs.google.com/presentation/d/1sb678t81XYshosVEmOoNZnP8DKpt4JXY7U_b1PWbhM4/edit#slide=id.g22d5eba9b5_3_5
+
+Relational Network tutorial
+http://nbviewer.jupyter.org/github/fireeye/tf_rl_tutorial/blob/master/tf_rl_tutorial.ipynb
