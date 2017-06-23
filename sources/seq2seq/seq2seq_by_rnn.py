@@ -11,33 +11,6 @@ time_step = 7
 
 init_state = tf.Variable([[0]*state_size], trainable=False, dtype=tf.float32)
 
-
-tf.reshape
-tf.reshape
-
-reshape(
-    tensor,
-    shape,
-    name=None
-)
-
-Defined in tensorflow/python/ops/gen_array_ops.py.
-
-See the guide: Tensor Transformations > Shapes and Shaping
-
-Reshapes a tensor.
-
-Given tensor, this operation returns a tensor that has the same values as tensor with shape shape.
-
-If one component of shape is the special value -1, the size of that dimension is computed so that the total size remains constant. In particular, a shape of [-1] flattens into 1-D. At most one component of shape can be -1.
-
-If shape is 1-D or higher, then the operation returns a tensor with shape shape filled with the values of tensor. In this case, the number of elements implied by shape must be the same as the number of elements in tensor.
-
-For example:
-
-# tensor 't' is [1, 2, 3, 4, 5, 6, 7, 8, 9]
-# tensor 't' has shape [9]
-
 input_data = [
     tf.Variable([list(range(input_size))], trainable=False, dtype=tf.float32) \
     for _ in range(time_step)

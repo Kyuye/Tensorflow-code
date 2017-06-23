@@ -44,7 +44,8 @@ class WasserstienGAN(object):
 
     def _generator(self, x):
         with tf.variable_scope("generator") as scope:
-            rnn_cell = tf.contrib.rnn.BasicRNNCell(num_units=20)
+            # TODO static_rnn --> dynamic_rnn
+            rnn_cell = tf.contrib.rnn.BasicLSTMCell(num_units=20)
             out, _ = tf.contrib.rnn.static_rnn(cell=rnn_cell, inputs=x, dtype=tf.float32)
             Wo = tf.unstack(tf.Variable(tf.truncated_normal(shape=(len(x), 20, 1))))
             bo = tf.unstack(tf.Variable(tf.zeros(shape=(len(x), 1, 1))))
