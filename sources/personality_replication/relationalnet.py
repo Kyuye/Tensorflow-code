@@ -2,19 +2,6 @@
 import tensorflow as tf
 import collections
 
-ids = tf.constant([[1, 5], [2, 5], [2, 5], [0, 4], [0, 4], [3, 4]])
-vectors = tf.contrib.layers.embed_sequence(
-    ids=ids,
-    vocab_size=6,
-    embed_dim=2
-)
-
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
-    print(sess.run(vectors))
-
-exit()
-
 vocabulary_size=50000
 state_size = 32
 q_state_size = 32
@@ -22,9 +9,6 @@ regularizer_scale=0.5
 g_hidden1 = 256
 g_hidden2 = 256
 g_hidden3 = 256
-g_hidden4 = 256
-g_hidden5 = 256
-g_hidden6 = 256
 g_class = 256
 
 f_hidden1 = 256
@@ -161,11 +145,3 @@ f_out = tf.layers.dense(
     trainable=True,
     name="f_out"
 )
-
-# const1 = tf.constant([1, 2, 3, 4, 5])
-# const2 = tf.constant([6, 7, 8, 9, 10])
-
-# merge = tf.concat([const1, const2], axis=0)
-
-# with tf.Session() as sess:
-#     print(sess.run(merge))
