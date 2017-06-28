@@ -4,100 +4,40 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.contrib.learn.python.learn.preprocessing import VocabularyProcessor
-
-import collections
-import numpy as np
-import pandas
 import json
-import csv
 import os
 
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
-tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
-tf.flags.DEFINE_string("train_data", "./DataSet/twitter_emotion.csv", "train data path")
-tf.flags.DEFINE_integer("batch_size", 64, "batch size for training")
-tf.flags.DEFINE_integer("emotion_class", 3, "emotion label classes")
-tf.flags.DEFINE_integer("embed_dim", 200, "embedding dimension")
-# tf.flags.DEFINE_string("logs_dir", "logs/CelebA_GAN_logs/", "path to logs directory")
-# tf.flags.DEFINE_string("data_dir", "../Data_zoo/CelebA_faces/", "path to dataset")
-# tf.flags.DEFINE_integer("z_dim", "100", "size of input vector to generator")
-# tf.flags.DEFINE_float("learning_rate", "2e-4", "Learning rate for Adam Optimizer")
-# tf.flags.DEFINE_float("optimizer_param", "0.5", "beta1 for Adam optimizer / decay for RMSProp")
-# tf.flags.DEFINE_float("iterations", "1e5", "No. of iterations to train model")
-# tf.flags.DEFINE_string("image_size", "108,64", "Size of actual images, Size of images to be generated at.")
-# tf.flags.DEFINE_integer("model", "1", "Model to train. 0 - GAN, 1 - WassersteinGAN")
-# tf.flags.DEFINE_string("optimizer", "Adam", "Optimizer to use for training")
-# tf.flags.DEFINE_integer("gen_dimension", "16", "dimension of first layer in generator")
-# tf.flags.DEFINE_string("mode", "train", "train / visualize model")
+tf.flags.DEFINE_integer("batch_size", "64", "batch size for training")
+tf.flags.DEFINE_string("logs_dir", "logs/CelebA_GAN_logs/", "path to logs directory")
+tf.flags.DEFINE_string("data_dir", "../Data_zoo/CelebA_faces/", "path to dataset")
+tf.flags.DEFINE_integer("z_dim", "100", "size of input vector to generator")
+tf.flags.DEFINE_float("learning_rate", "2e-4", "Learning rate for Adam Optimizer")
+tf.flags.DEFINE_float("optimizer_param", "0.5", "beta1 for Adam optimizer / decay for RMSProp")
+tf.flags.DEFINE_float("iterations", "1e5", "No. of iterations to train model")
+tf.flags.DEFINE_string("image_size", "108,64", "Size of actual images, Size of images to be generated at.")
+tf.flags.DEFINE_integer("model", "1", "Model to train. 0 - GAN, 1 - WassersteinGAN")
+tf.flags.DEFINE_string("optimizer", "Adam", "Optimizer to use for training")
+tf.flags.DEFINE_integer("gen_dimension", "16", "dimension of first layer in generator")
+tf.flags.DEFINE_string("mode", "train", "train / visualize model")
 
 
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
-        self.filename = FLAGS.train_data
+        if os.path.exists('./DataSet/word2vec_map.json'):
+            print("importing json file...")
+            with open('./DataSet/word2vec_map.json') as jsonfile:    
+                self.embedding_map = json.load(jsonfile)
+        
+        self.sim_data = tf.unstack(tf.constant(
+            [[[t] for t in range(10)] 
+            for _ in range(100)], 
+            dtype=tf.float32), 
+            axis=1)
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
-        self.max_document_length = FLAGS.max_document_length
-        self.data = self.read_datafile(self.filename)
-        self.word_ids, self.vocabulary_size = self.word_identify(self.data)
-        self.object_pairs_set = []
-
-        # print(np.count_nonzero(self.word_ids[1]))
-        # print(np.count_nonzero(self.word_ids[2]))
-        # print(np.count_nonzero(self.word_ids[3]))
-
-        for ids in self.word_ids:
-            object_pairs = []
-            seq = ids.tolist()
-            seq_length = np.count_nonzero(ids)
-            while seq_length >= 2:
-                object_pairs += list(map(lambda x: (seq[0], x), seq[:seq_length]))[1:]
-                del seq[0]
-                seq_length = np.count_nonzero(seq)
-            
-            self.object_pairs_set.append(object_pairs)
-        
-
-        # self.train_batch = tf.train.batch(
-        #     tensors=[self.word_ids], 
-        #     batch_size=FLAGS.batch_size, 
-        #     num_threads=4, 
-        #     enqueue_many=True)
-
-        sequences = tf.contrib.layers.embed_sequence(
-            ids=self.object_pairs_set,
-            vocab_size=FLAGS.vocabulary_size,
-            embed_dim=FLAGS.embed_dim,
-            reuse=False)
-
-
-    def read_datafile(self, filename):
-        data = pandas.read_csv(filename, usecols=["sentiment", "content"])
-        data["content"] = data["content"].astype("str")
-        return data
-
-
-    def word_identify(self, dataframe):
-        contents = dataframe["content"].values.tolist()
-        vocab_processor = VocabularyProcessor(self.max_document_length)
-        word_ids = np.array(list(vocab_processor.fit_transform(contents)))
-        return word_ids, np.max(word_ids)
-
-
-    def text_sort(self, filename):
-        with open(filename, 'r') as f:
-            reader = csv.reader(f)
-            data = list(map(lambda x: (x[1], x[3]) , reader))
-            del data[0]
-
-        with open(filename[:-4] + "sorted.csv", 'w') as f:
-            writer = csv.writer(f)
-            for sentiment, content in data:
-                writer.writerow([sentiment, content])
-
-
+        self.sess = tf.Session()
 
     def word2vec(self, word_sequence):
         return list(map(lambda x: self.embedding_map[x], word_sequence))
@@ -113,7 +53,7 @@ class WasserstienGAN(object):
 
     def _discriminator(self, x, reuse=False):
         with tf.variable_scope("discriminator") as scope:
-            # o1 = 
+            o1 = 
 
             g_in = tf.concat([o1, o2], axis=0)
 
@@ -203,9 +143,9 @@ class WasserstienGAN(object):
                 name="f_layer2"
             )
 
-            logits = tf.layers.dense(
+            f_out = tf.layers.dense(
                 inputs=f_layer2,
-                units=logits_dim,
+                units=f_class,
                 activation=tf.nn.relu,
                 use_bias=True,
                 kernel_initializer=tf.truncated_normal_initializer(),
@@ -216,38 +156,19 @@ class WasserstienGAN(object):
                 trainable=True,
                 name="f_out"
             )
-        
-            supervised_logits = tf.layers.dense(
-                inputs=logits, 
-                units=FLAGS.emotion_class,
-                activation=None,
-                use_bias=True,
-                kernel_initializer=tf.truncated_normal_initializer(),
-                bias_initializer=tf.zeros_initializer(),
-                kernel_regularizer=tf.contrib.layers.l2_regularizer(regularizer_scale),
-                bias_regularizer=tf.contrib.layers.l2_regularizer(regularizer_scale),
-                activity_regularizer=tf.contrib.layers.l2_regularizer(regularizer_scale),
-                trainable=True,
-                name="supervised_layer"
-                )
 
-        return logits, supervised_logits
+        return f_out
 
     def _create_generator(self):
-        self.z = tf.unstack(
-            tf.random_uniform(
-                shape=(10, FLAGS.max_document_length, FLAGS.embed_dim), 
-                minval=-1, 
-                maxval=1, 
-                dtype=tf.float32), 
-                axis=1)
+        self.z = tf.unstack(tf.random_uniform((100, 10, 1), -1, 1, tf.float32), axis=1)
         self.gen_data = self._generator(self.z)
         
-
-    def _gan_loss(self, logits_real, logits_fake, supervised_logits, use_features=False):
-        supervised_loss = tf.losses.softmax_cross_entropy(label, supervised_logits)
-        discriminator_loss = tf.reduce_mean(logits_real - logits_fake) + supervised_loss
-        gen_loss = tf.reduce_mean(logits_fake)
+    def _gan_loss(self, logits_real, logits_fake, use_features=False):
+        discriminator_loss = 0
+        gen_loss = 0
+        for t in range(10):
+            discriminator_loss += tf.reduce_mean(logits_real[t] - logits_fake[t])
+            gen_loss += tf.reduce_mean(logits_fake[t])
         return discriminator_loss, gen_loss
 
 
@@ -255,18 +176,17 @@ class WasserstienGAN(object):
         print("Setting up model...")
         self._create_generator()
 
-        logits_real, logits_supervised = self._discriminator(self.sim_data, reuse=False)
-        logits_fake, _ = self._discriminator(self.gen_data, reuse=True)
+        logits_real = self._discriminator(self.sim_data, reuse=False)
+        logits_fake = self._discriminator(self.gen_data, reuse=True)
 
         # Loss calculation
-        self.discriminator_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake, logits_supervised)
+        self.discriminator_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake)
 
         train_variables = tf.trainable_variables()
 
         self.generator_variables = [v for v in train_variables if v.name.startswith("generator")]
-        self.discriminator_variables = [v for v in train_variables if v.name.startswith("discriminator")]
-
         # print(list(map(lambda x: x.op.name, self.generator_variables)))
+        self.discriminator_variables = [v for v in train_variables if v.name.startswith("discriminator")]
         # print(list(map(lambda x: x.op.name, self.discriminator_variables)))
 
         self.saver = tf.train.Saver(self.generator_variables)
@@ -344,7 +264,7 @@ class WasserstienGAN(object):
 
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
-    # gan.initialize_network("predict")
+    gan.initialize_network("predict")
 
 if __name__ == "__main__":
     tf.app.run()

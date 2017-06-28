@@ -40,6 +40,8 @@ with tf.variable_scope("object") as scope:
     _, o1 = tf.nn.dynamic_rnn(o_lstm_cell, fact1_embeds)
     scope.reuse_variables()
     _, o2 = tf.nn.dynamic_rnn(o_lstm_cell, fact2_embeds)
+
+    
 with tf.variable_scope("question"):
     q_lstm_cell = tf.contrib.rnn.BasicLSTMCell(q_state_size, dtype=tf.float32)
     _, q = tf.nn.dynamic_rnn(q_lstm_cell, question_embeds)
@@ -145,3 +147,6 @@ f_out = tf.layers.dense(
     trainable=True,
     name="f_out"
 )
+
+loss = tf.losses.softmax_cross_entropy(label, f_out)
+train = tf.train.AdamOptimizer(2e-4).minimize(loss)
