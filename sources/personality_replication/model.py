@@ -18,7 +18,7 @@ FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
 tf.flags.DEFINE_string("train_data", "./DataSet/twitter_emotion.csv", "train data path")
-tf.flags.DEFINE_integer("batch_size", 64, "batch size for training")
+tf.flags.DEFINE_integer("batch_size", 10, "batch size for training")
 tf.flags.DEFINE_integer("emotion_class", 3, "emotion label classes")
 tf.flags.DEFINE_integer("embed_dim", 200, "embedding dimension")
 # tf.flags.DEFINE_string("logs_dir", "logs/CelebA_GAN_logs/", "path to logs directory")
@@ -43,10 +43,8 @@ class WasserstienGAN(object):
         self.data = self.read_datafile(self.filename)
         self.word_ids, self.vocabulary_size = self.word_identify(self.data)
         self.object_pairs_set = []
+        self.max_object_pairs_num = 0
 
-        # print(np.count_nonzero(self.word_ids[1]))
-        # print(np.count_nonzero(self.word_ids[2]))
-        # print(np.count_nonzero(self.word_ids[3]))
 
         for ids in self.word_ids:
             object_pairs = []
@@ -56,23 +54,66 @@ class WasserstienGAN(object):
                 object_pairs += list(map(lambda x: (seq[0], x), seq[:seq_length]))[1:]
                 del seq[0]
                 seq_length = np.count_nonzero(seq)
-            
+
             self.object_pairs_set.append(object_pairs)
+
+            if self.max_object_pairs_num < len(object_pairs):
+                self.max_object_pairs_num = len(object_pairs)
         
+        embed_reuse = False
+        object_pairs_list = []
+        for ids in self.object_pairs_set[:100]:
+            object_pairs_embed = tf.contrib.layers.embed_sequence(
+                ids=ids,
+                vocab_size=FLAGS.vocabulary_size,
+                embed_dim=FLAGS.embed_dim,
+                reuse=embed_reuse,
+                scope="embeddings")
+            
+            object_pairs_concat = tf.reshape(
+                object_pairs_embed,
+                shape=(-1, 2*FLAGS.embed_dim))
+            
+            object_pairs_list.append(tf.pad(
+                tensor=object_pairs_concat,
+                paddings=[
+                    [0, self.max_object_pairs_num-len(ids)], 
+                    [0, 0]])
+            )
 
-        # self.train_batch = tf.train.batch(
-        #     tensors=[self.word_ids], 
-        #     batch_size=FLAGS.batch_size, 
-        #     num_threads=4, 
-        #     enqueue_many=True)
+            embed_reuse = True
 
-        sequences = tf.contrib.layers.embed_sequence(
-            ids=self.object_pairs_set,
-            vocab_size=FLAGS.vocabulary_size,
-            embed_dim=FLAGS.embed_dim,
-            reuse=False)
+        object_pairs = tf.stack(object_pairs_list)
 
+        self.train_batch = tf.train.batch(
+            tensors=[object_pairs], 
+            batch_size=FLAGS.batch_size, 
+            num_threads=4, 
+            enqueue_many=True)
+        
+        gs = []
+        g_reuse = False
+        for i in range(5):
+            x = tf.reshape(self.train_batch[:,i,:], (-1, FLAGS.embed_dim))
+            gs.append(tf.layers.dense(x, 10, reuse=g_reuse, name="g_function"))
+            g_reuse=True
 
+        g_batch = tf.reduce_sum(tf.transpose(tf.stack(gs), [1, 0, 2]), axis=1)
+        
+        f = tf.layers.dense(g_batch, 3, name="f_function")
+
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
+            coord = tf.train.Coordinator()
+            thread = tf.train.start_queue_runners(sess, coord)
+            
+            a, b = sess.run([f, tf.shape(f)])
+            print(a)
+            print(b)
+            
+            coord.request_stop()
+            coord.join(thread)
+        
     def read_datafile(self, filename):
         data = pandas.read_csv(filename, usecols=["sentiment", "content"])
         data["content"] = data["content"].astype("str")
