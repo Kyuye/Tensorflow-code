@@ -12,7 +12,7 @@ import pandas
 import json
 import csv
 import os
-
+import time
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
@@ -46,6 +46,7 @@ tf.flags.DEFINE_integer("memory_size", 500, "LSTM cell(memory) size")
 
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
+        self.iterator = 0
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
         self.max_document_length = FLAGS.max_document_length
@@ -62,10 +63,24 @@ class WasserstienGAN(object):
         print("one hot encoding ....")
         self.label = self.one_hot_encoding(self.data)
         print("batching..")
-        self.train_batch, self.label_batch = self.build_batch(self.object_pairs, self.label)
-        print("session opening...")
-        self.open_session()
+        self.real_pairs, self.label_batch = self.build_batch(self.object_pairs, self.label)
         print("ready to run")
+
+
+    def build_generated_pair_set(self, gen_data):
+        generated_pair_set = []
+        for seq in tf.unstack(gen_data):
+            comb = [i for i in range(FLAGS.max_document_length)]
+            ids = []
+            while len(comb) > 2:
+                ids += list(map(lambda x: [comb[0], x], comb))[1:]
+                del comb[0]
+            
+            pair = tf.nn.embedding_lookup(seq, ids)
+            generated_pair_set.append(tf.concat([pair[:,0], pair[:,1]], axis=1))
+            
+        return tf.stack(generated_pair_set)
+
 
     def one_hot_encoding(self, dataframe):
         indices = []
@@ -130,8 +145,8 @@ class WasserstienGAN(object):
     def build_batch(self, trains, labels):
         return tf.train.batch(
             tensors=[trains, labels], 
-            batch_size=FLAGS.batch_size, 
-            num_threads=4, 
+            batch_size=FLAGS.batch_size,
+            num_threads=4,
             enqueue_many=True)
         
         
@@ -154,20 +169,30 @@ class WasserstienGAN(object):
 
     def _generator(self, x):
         with tf.variable_scope("generator") as scope:
-            # TODO static_rnn --> dynamic_rnn
             rnn_cell = tf.contrib.rnn.BasicLSTMCell(num_units=FLAGS.memory_size)
             out, _ = tf.contrib.rnn.static_rnn(cell=rnn_cell, inputs=x, dtype=tf.float32)
-            Wo = tf.unstack(tf.Variable(tf.truncated_normal(shape=(len(x), FLAGS.memory_size, 1))))
-            bo = tf.unstack(tf.Variable(tf.zeros(shape=(len(x), 1, 1))))
-            return tf.matmul(out, Wo) + bo
+            Wo = tf.Variable(tf.truncated_normal(shape=(len(x), FLAGS.memory_size, FLAGS.embed_dim)))
+            bo = tf.Variable(tf.zeros(shape=(len(x), FLAGS.embed_dim)))
+            return tf.unstack(tf.matmul(out, Wo), axis=1)+ bo
+
+    def _create_generator(self, samples):
+        self.z = tf.unstack(
+            tf.random_uniform(
+                shape=(samples, self.max_document_length, FLAGS.embed_dim), 
+                minval=-1, 
+                maxval=1, 
+                dtype=tf.float32), 
+                axis=1)
+        self.gen_data = self._generator(self.z)
+
 
     def _discriminator(self, x, reuse=False):
         with tf.variable_scope("discriminator") as scope:
             gs = []
-            g_reuse = False
-            print(x)
+            g_reuse = reuse
+            f_reuse = reuse
             for i in range(self.max_object_pairs_num):
-                g_in = tf.reshape(x[:,i,:], (-1, FLAGS.embed_dim))
+                g_in = tf.reshape(x[:,i,:], (-1, 2*FLAGS.embed_dim))
                 g_layer1 = tf.layers.dense(
                     inputs=g_in,
                     units=FLAGS.g_hidden1,
@@ -179,8 +204,8 @@ class WasserstienGAN(object):
                     bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                     activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                     trainable=True,
-                    reuse=g_reuse,
-                    name="g_layer1"
+                    name="g_layer1",
+                    reuse=g_reuse
                 )
 
                 g_layer2 = tf.layers.dense(
@@ -231,6 +256,7 @@ class WasserstienGAN(object):
                 gs.append(g_out)
                 g_reuse=True
 
+            
             g_batch = tf.reduce_sum(tf.transpose(tf.stack(gs), [1, 0, 2]), axis=1)
 
             f_layer1 = tf.layers.dense(
@@ -244,6 +270,7 @@ class WasserstienGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
+                reuse=f_reuse,
                 name="f_layer1"
             )
 
@@ -258,6 +285,7 @@ class WasserstienGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
+                reuse=f_reuse,
                 name="f_layer2"
             )
 
@@ -272,6 +300,7 @@ class WasserstienGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
+                reuse=f_reuse,
                 name="f_out"
             )
         
@@ -286,21 +315,12 @@ class WasserstienGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
+                reuse=f_reuse,
                 name="supervised_layer"
                 )
 
         return logits, supervised_logits
 
-    def _create_generator(self, samples):
-        self.z = tf.unstack(
-            tf.random_uniform(
-                shape=(samples, self.max_object_pairs_num, FLAGS.embed_dim), 
-                minval=-1, 
-                maxval=1, 
-                dtype=tf.float32), 
-                axis=1)
-        self.gen_data = self._generator(self.z)
-        
 
     def _gan_loss(self, logits_real, logits_fake, supervised_logits, use_features=False):
         supervised_loss = tf.losses.softmax_cross_entropy(self.label_batch, supervised_logits)
@@ -311,14 +331,21 @@ class WasserstienGAN(object):
 
     def _create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
         print("Setting up model...")
+        print("create generator...")
         self._create_generator(FLAGS.batch_size)
+        print("building generated pair set...")
+        fake_pairs = self.build_generated_pair_set(self.gen_data)
 
-        logits_real, logits_supervised = self._discriminator(self.train_batch, reuse=False)
-        logits_fake, _ = self._discriminator(self.gen_data, reuse=True)
+        print("building discriminator for real data...")
+        logits_real, logits_supervised = self._discriminator(self.real_pairs, reuse=False)
+        print("building discriminator for fake data...")
+        logits_fake, _ = self._discriminator(fake_pairs, reuse=True)
 
         # Loss calculation
+        print("building gan loss graph...")
         self.discriminator_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake, logits_supervised)
 
+        print("variables scoping...")
         train_variables = tf.trainable_variables()
 
         self.generator_variables = [v for v in train_variables if v.name.startswith("generator")]
@@ -331,6 +358,7 @@ class WasserstienGAN(object):
 
         optim = self._get_optimizer(optimizer, learning_rate, optimizer_param)
 
+        print("building train op")
         self.generator_train_op = self._train(self.gen_loss, self.generator_variables, optim)
         self.discriminator_train_op = self._train(self.discriminator_loss, self.discriminator_variables, optim)
 
@@ -338,15 +366,18 @@ class WasserstienGAN(object):
         if mode is 'train':
             print("building network")
             self._create_network()
+            print("session opening...")
+            self.open_session()
             print("variables initializing")
             self.sess.run(tf.global_variables_initializer())
             print("training...")
             self.train_model(1000)
             print("session closed")
-            self.sess.close()
         elif mode is 'predict':
             print("building network")
-            self._create_generator(10)
+            self._create_generator()
+            print("session opening...")
+            self.open_session()
             print("predict..")
             self.predict()
             print("session closed")
@@ -413,8 +444,6 @@ class WasserstienGAN(object):
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
     gan.initialize_network("train")
-
-    
 
 
 if __name__ == "__main__":
