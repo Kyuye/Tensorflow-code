@@ -20,16 +20,16 @@ tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) leng
 tf.flags.DEFINE_string("train_data", "./DataSet/twitter_emotion_v2(p,n,N).csv", "train data path")
 tf.flags.DEFINE_integer("batch_size", 10, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
-tf.flags.DEFINE_integer("embed_dim", 200, "embedding dimension")
-tf.flags.DEFINE_integer("g_hidden1", 256, "g function 1st hidden layer unit")
-tf.flags.DEFINE_integer("g_hidden2", 256, "g function 1st hidden layer unit")
-tf.flags.DEFINE_integer("g_hidden3", 256, "g function 1st hidden layer unit")
-tf.flags.DEFINE_integer("g_logits", 256, "g function logits")
-tf.flags.DEFINE_integer("f_hidden1", 256, "f function 1st hidden layer unit")
-tf.flags.DEFINE_integer("f_hidden2", 256, "f function 2nd hidden layer unit")
-tf.flags.DEFINE_integer("f_logits", 256, "f function logits")
+tf.flags.DEFINE_integer("embed_dim", 50, "embedding dimension")
+tf.flags.DEFINE_integer("g_hidden1", 50, "g function 1st hidden layer unit")
+tf.flags.DEFINE_integer("g_hidden2", 50, "g function 1st hidden layer unit")
+tf.flags.DEFINE_integer("g_hidden3", 50, "g function 1st hidden layer unit")
+tf.flags.DEFINE_integer("g_logits", 50, "g function logits")
+tf.flags.DEFINE_integer("f_hidden1", 50, "f function 1st hidden layer unit")
+tf.flags.DEFINE_integer("f_hidden2", 50, "f function 2nd hidden layer unit")
+tf.flags.DEFINE_integer("f_logits", 50, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
-tf.flags.DEFINE_integer("memory_size", 500, "LSTM cell(memory) size")
+tf.flags.DEFINE_integer("memory_size", 50, "LSTM cell(memory) size")
 
 # tf.flags.DEFINE_string("logs_dir", "logs/CelebA_GAN_logs/", "path to logs directory")
 # tf.flags.DEFINE_string("data_dir", "../Data_zoo/CelebA_faces/", "path to dataset")
@@ -46,7 +46,7 @@ tf.flags.DEFINE_integer("memory_size", 500, "LSTM cell(memory) size")
 
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
-        self.iterator = 0
+        self.global_step = 0
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
         self.max_document_length = FLAGS.max_document_length
@@ -62,10 +62,9 @@ class WasserstienGAN(object):
         self.object_pairs = self.embedding_object_pairs(self.object_pairs_set)
         print("one hot encoding ....")
         self.label = self.one_hot_encoding(self.data)
-        print("batching..")
-        self.real_pairs, self.label_batch = self.build_batch(self.object_pairs, self.label)
-        print("ready to run")
-
+        # print("batching..")
+        # self.real_pairs, self.label_batch = self.build_batch(self.object_pairs, self.label)
+        # print("ready to run")
 
     def build_generated_pair_set(self, gen_data):
         generated_pair_set = []
@@ -140,15 +139,21 @@ class WasserstienGAN(object):
             embed_reuse = True
 
         return tf.stack(object_pairs_list)
+
+
+    def get_batch(self, train, label, minibatch_size, fullbatch_size):
+        train_batch = train[self.global_step%fullbatch_size*minibatch_size:(self.global_step%fullbatch_size+1)*minibatch_size]
+        label_batch = label[self.global_step%fullbatch_size*minibatch_size:(self.global_step%fullbatch_size+1)*minibatch_size]
+        return train_batch, label_batch
+
     
-    
-    def build_batch(self, trains, labels):
-        return tf.train.batch(
-            tensors=[trains, labels], 
-            batch_size=FLAGS.batch_size,
-            num_threads=4,
-            enqueue_many=True)
-        
+    # def build_batch_(self, trains, labels):
+    #     return tf.train.batch(
+    #         tensors=[trains, labels], 
+    #         batch_size=FLAGS.batch_size,
+    #         num_threads=4,
+    #         enqueue_many=True)
+
         
     def read_datafile(self, filename):
         data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
@@ -322,8 +327,8 @@ class WasserstienGAN(object):
         return logits, supervised_logits
 
 
-    def _gan_loss(self, logits_real, logits_fake, supervised_logits, use_features=False):
-        supervised_loss = tf.losses.softmax_cross_entropy(self.label_batch, supervised_logits)
+    def _gan_loss(self, logits_real, logits_fake, supervised_logits, label, use_features=False):
+        supervised_loss = tf.losses.softmax_cross_entropy(label, supervised_logits)
         discriminator_loss = tf.reduce_mean(logits_real - logits_fake) + supervised_loss
         gen_loss = tf.reduce_mean(logits_fake)
         return discriminator_loss, gen_loss
@@ -331,19 +336,20 @@ class WasserstienGAN(object):
 
     def _create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
         print("Setting up model...")
+        real_pairs, labels = self.get_batch(self.object_pairs, self.label, FLAGS.batch_size, 100)
         print("create generator...")
         self._create_generator(FLAGS.batch_size)
         print("building generated pair set...")
         fake_pairs = self.build_generated_pair_set(self.gen_data)
 
         print("building discriminator for real data...")
-        logits_real, logits_supervised = self._discriminator(self.real_pairs, reuse=False)
+        logits_real, logits_supervised = self._discriminator(real_pairs, reuse=False)
         print("building discriminator for fake data...")
         logits_fake, _ = self._discriminator(fake_pairs, reuse=True)
 
         # Loss calculation
         print("building gan loss graph...")
-        self.discriminator_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake, logits_supervised)
+        self.discriminator_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake, logits_supervised, labels)
 
         print("variables scoping...")
         train_variables = tf.trainable_variables()
@@ -397,6 +403,7 @@ class WasserstienGAN(object):
             raise ValueError("Unknown optimizer %s" % optimizer_name)
 
     def _train(self, loss_val, var_list, optimizer):
+        self.global_step += 1
         grads = optimizer.compute_gradients(loss_val, var_list=var_list)
         return optimizer.apply_gradients(grads)
 
@@ -413,7 +420,9 @@ class WasserstienGAN(object):
         clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
                                         var in self.discriminator_variables]
 
+
         for itr in range(1, max_iterations):
+            print("iterations: ", itr)
             if itr < 25 or itr % 500 == 0:
                 critic_itrs = 25
             else:
