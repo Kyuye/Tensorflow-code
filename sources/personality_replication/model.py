@@ -12,11 +12,12 @@ import pandas
 import json
 import csv
 import os
-import time
+from gcloud import storage
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
+# tf.flags.DEFINE_string("train_data", "gs:tensorflowprojects-mlengine/DataSet/twitter_emotion_v2(p,n,N).csv", "train data path")
 tf.flags.DEFINE_string("train_data", "./DataSet/twitter_emotion_v2(p,n,N).csv", "train data path")
 tf.flags.DEFINE_integer("batch_size", 10, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
@@ -156,6 +157,7 @@ class WasserstienGAN(object):
 
         
     def read_datafile(self, filename):
+        print(os.getcwd())
         data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
         data = data[data["content"] != "0"]
         data["content"] = data["content"].astype("str")
