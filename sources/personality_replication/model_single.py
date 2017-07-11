@@ -19,7 +19,7 @@ tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
 # tf.flags.DEFINE_string("train_data", "gs://wgan/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
 # tf.flags.DEFINE_string("train_data", "./DataSet/twitter_emotion_v2(p,n,N).csv", "train data path")
-tf.flags.DEFINE_string("train_data", "./dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
+tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
 tf.flags.DEFINE_integer("batch_size", 10, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
 tf.flags.DEFINE_integer("embed_dim", 50, "embedding dimension")
@@ -45,6 +45,7 @@ class WasserstienGAN(object):
         self.object_pairs_set = []
         self.max_object_pairs_num = 0
         print("reading data..")
+        print(os.getcwd() + FLAGS.train_data)
         self.data = self.read_datafile(os.getcwd() + FLAGS.train_data)
         print("words identifing")
         self.word_ids  = self.word_identify(self.data)
@@ -142,8 +143,8 @@ class WasserstienGAN(object):
         
     def read_datafile(self, filename):
         print(os.getcwd())
-        # os.system("rm -rf ./dataset")
-        os.system("gsutil cp -r gs://wgan/dataset $(pwd)/dataset")
+        os.system("mkdir dataset")
+        os.system("gsutil cp -r gs://wgan/dataset/* $(pwd)/dataset/")
         print("data set copy")
         data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
         data = data[data["content"] != "0"]
@@ -360,22 +361,13 @@ class WasserstienGAN(object):
     def initialize_network(self, mode):
         print("initialize")
         if mode == 'train':
-            print("train mode")
-            print(self.job_name)
-            if self.job_name == "ps":
-                print("ps work")
-                server.join()
-            elif self.job_name == "worker":
-                print("workers work")
-                with tf.device(tf.train.replica_device_setter()):
-                    print("building network")
-                    self._create_network()
-                
-            # print("variables initializing")
-            # self.sess.run(tf.global_variables_initializer())
-                print("training...")
-                self.train_model(100)
-                print("session closed")
+            print("model creating..")
+            self._create_network()                
+            print("variables initializing")
+            self.sess.run(tf.global_variables_initializer())
+            print("training...")
+            self.train_model(100)
+            print("session closed")
         elif mode == 'predict':
             print("building network")
             self._create_generator()
@@ -411,14 +403,15 @@ class WasserstienGAN(object):
         _pred  = self.sess.run(tf.transpose(self.gen_data, perm=[1,0,2]))
         print(_pred)
 
+            
 
     def train_model(self, max_iterations):
         print("Training Wasserstein GAN model...")
         clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
                                         var in self.discriminator_variables]
 
-        itr = 0
-        while not self.sess.should_stop():    
+
+        for itr in range(1, max_iterations):
             print("iterations: ", itr)
             if itr < 25 or itr % 500 == 0:
                 critic_itrs = 25
@@ -430,78 +423,11 @@ class WasserstienGAN(object):
                 self.sess.run(clip_discriminator_var_op)
 
             self.sess.run(self.generator_train_op)
-            itr += 1
 
-
-
-    # def train_model(self):
-    #     print("training Wasserstein GAN model....")
-    #     clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
-    #     var in self.discriminator_variables]
-
-    #     while not self.sess.should_stop():
-    #         print("start training")
-    #         def set_critic_fn(cond):
-    #             print("set critic")
-    #             if cond == True:
-    #                 self.critic_itrs=25
-    #             else:
-    #                 self.critic_itrs=self.critic_iterations
-
-
-    #         set_critic_itr = tf.cond(
-    #             tf.logical_or(
-    #                 self.global_step < 25, 
-    #                 tf.mod(self.global_step, 500)),
-    #             true_fn=lambda x: set_critic_fn(True),
-    #             false_fn=lambda x: set_critic_fn(False))
-
-    #         self.i = tf.constant(0)
-    #         b = lambda i: tf.add(i, 1)
-
-    #         def body():
-    #             self.sess.run(self.discriminator_train_op)
-    #             self.sess.run(clip_discriminator_var_op)
-    #             self.i = tf.add(self.i, 1)
-    #             print("training in body ")
-
-
-    #         cond = lambda i: tf.less(i, self.critic_itrs)
-    #         loop_critic = tf.while_loop(cond, body, [i])
-
-
-    #         self.sess.run(set_critic_itr)
-    #         self.sess.run(loop_critic)
-    #         print("discriminator updated")
-
-
-    #         self.sess.run(self.generator_train_op)
-    #         print("generator updated")
-            
-
-    # def train_model(self, max_iterations):
-    #     print("Training Wasserstein GAN model...")
-    #     clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
-    #                                     var in self.discriminator_variables]
-
-
-    #     for itr in range(1, max_iterations):
-    #         print("iterations: ", itr)
-    #         if itr < 25 or itr % 500 == 0:
-    #             critic_itrs = 25
-    #         else:
-    #             critic_itrs = self.critic_iterations
-
-    #         for critic_itr in range(critic_itrs):
-    #             self.sess.run(self.discriminator_train_op)
-    #             self.sess.run(clip_discriminator_var_op)
-
-    #         self.sess.run(self.generator_train_op)
-
-    #         if itr % 200 == 0:
-    #             g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss])
-    #             self.saver.save(self.sess, "./CheckPoint/rnn_GAN")
-    #             print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
+            if itr % 200 == 0:
+                g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss])
+                self.saver.save(self.sess, "./CheckPoint/rnn_GAN")
+                print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
 
 
 
@@ -511,29 +437,7 @@ class WasserstienGAN(object):
         self.sess.close()
         
     def open_session(self):
-        print("open session")
-        tf_config = os.environ.get("TF_CONFIG")
-        tf_config_json = json.loads(tf_config)
-
-        cluster = tf_config_json.get("cluster")
-        self.job_name = tf_config_json.get("task", {}).get("type")
-        task_index = tf_config_json.get("task", {}).get("index")
-
-        cluster_spec = tf.train.ClusterSpec(cluster)
-        server = tf.train.Server(cluster_spec,
-        job_name=self.job_name,
-        task_index=task_index)
-
-        hooks = [tf.train.StopAtStepHook(last_step=100)]
-
-        # self.sess = tf.Session(server.target)
-
-        print("session create")
-        self.sess = tf.train.MonitoredTrainingSession(
-            master=server.target,
-            is_chief=(task_index == 0),
-            checkpoint_dir=FLAGS.log_dir,
-            hooks=hooks)
+        self.sess = tf.Session()
         self.coord = tf.train.Coordinator()
         self.thread = tf.train.start_queue_runners(self.sess, self.coord)
         print("train ready")
@@ -552,5 +456,4 @@ if __name__ == "__main__":
     # os.system("mkdir dataset")
     # os.system("gsutil cp gs://wgan/dataset/twitter_emotion_v2\(p,n,N\).csv $(pwd)/dataset/")
     # print("data set copy")
-
     tf.app.run()

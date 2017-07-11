@@ -1,12 +1,25 @@
 
-import pandas
-import os
+import tensorflow as tf
 
 
-filename = os.getcwd() + "/dataset/twitter_emotion_v2(p,n,N).csv"
-data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
+a = tf.constant(10)
+b = tf.constant(20)
+b = tf.Print(b, [b], message="b")
+a = tf.Print(a, [a], message="a1")
+a = a + 1
+c = a + b
+a = tf.Print(a, [a], message="a2")
+d = c * a
 
-print(data)
+with tf.Session() as sess:
+    sess.run(d)
+
+
+
+# filename = os.getcwd() + "/dataset/twitter_emotion_v2(p,n,N).csv"
+# data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
+
+# print(data)
 
 # filename_queue = tf.train.string_input_producer([FLAGS.train_data])
 

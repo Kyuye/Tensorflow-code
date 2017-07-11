@@ -5,7 +5,10 @@ gcloud ml-engine jobs submit training $job_name \
 --module-name=personality_replication.model \
 --staging-bucket=gs://tensorflowprojects-mlengine/ \
 --region=europe-west1 \
---scale-tier=BASIC_GPU 
+--scale-tier=BASIC_GPU \
+-- \
+--g_hidden1=5 \
+--g_hidden2=10 
 
 sleep 5
 
