@@ -24,8 +24,8 @@ tf.flags.DEFINE_integer("batch_size", 10, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
 tf.flags.DEFINE_integer("embed_dim", 50, "embedding dimension")
 tf.flags.DEFINE_integer("g_hidden1", 50, "g function 1st hidden layer unit")
-tf.flags.DEFINE_integer("g_hidden2", 50, "g function 1st hidden layer unit")
-tf.flags.DEFINE_integer("g_hidden3", 50, "g function 1st hidden layer unit")
+tf.flags.DEFINE_integer("g_hidden2", 50, "g function 2nd hidden layer unit")
+tf.flags.DEFINE_integer("g_hidden3", 50, "g function 3rd hidden layer unit")
 tf.flags.DEFINE_integer("g_logits", 50, "g function logits")
 tf.flags.DEFINE_integer("f_hidden1", 50, "f function 1st hidden layer unit")
 tf.flags.DEFINE_integer("f_hidden2", 50, "f function 2nd hidden layer unit")
@@ -74,7 +74,7 @@ class WasserstienGAN(object):
         return tf.stack(generated_pair_set)
 
 
-    def one_hot_encoding(self, dataframe):
+    def one_hot_encoding(self, dataframe):  # labeling 
         indices = []
         for s in dataframe["Sentiment"]:
             if s == "Neg":
@@ -142,8 +142,8 @@ class WasserstienGAN(object):
         
     def read_datafile(self, filename):
         print(os.getcwd())
-        # os.system("rm -rf ./dataset")
-        os.system("gsutil cp -r gs://wgan/dataset $(pwd)/dataset")
+        os.system("rm -rf ./dataset")
+        os.system("gsutil cp -r gs://jejucamp2017/dataset $(pwd)/dataset")
         print("data set copy")
         data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
         data = data[data["content"] != "0"]
@@ -325,7 +325,7 @@ class WasserstienGAN(object):
         print("Setting up model...")
         real_pairs, labels = self.get_batch(self.object_pairs, self.label, FLAGS.batch_size, 100)
         print("create generator...")
-        self._create_generator(FLAGS.batch_size)
+        self._create_generator(FLAGS.batch_size) # making pairs 
         print("building generated pair set...")
         fake_pairs = self.build_generated_pair_set(self.gen_data)
 
@@ -341,6 +341,7 @@ class WasserstienGAN(object):
         print("variables scoping...")
         train_variables = tf.trainable_variables()
 
+        # --variables meaning is upadated weight variables in shape style
         self.generator_variables = [v for v in train_variables if v.name.startswith("generator")]
         self.discriminator_variables = [v for v in train_variables if v.name.startswith("discriminator")]
 
@@ -351,11 +352,10 @@ class WasserstienGAN(object):
 
         optim = self._get_optimizer(optimizer, learning_rate, optimizer_param)
 
-        print("building train op")
+        print("building train op") # op= fianal grapgh before turn on the power like train = ~~ 
         self.generator_train_op = self._train(self.gen_loss, self.generator_variables, optim)
         self.discriminator_train_op = self._train(self.discriminator_loss, self.discriminator_variables, optim)
 
-        sess.run(train)
 
     def initialize_network(self, mode):
         print("initialize")
@@ -401,7 +401,7 @@ class WasserstienGAN(object):
 
     def _train(self, loss_val, var_list, optimizer):
         self.batch_steps+=1
-        grads = optimizer.compute_gradients(loss_val, var_list=var_list)
+        grads = optimizer.compute_gradients(loss_val, var_list=var_list) #generator or discriminator loss/updated weight list 
         return optimizer.apply_gradients(grads, global_step=self.global_step)
 
     def predict(self):

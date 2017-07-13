@@ -9,29 +9,29 @@ import csv
 import json
 import collections
 import matplotlib.pyplot as plt
+from pprint import pprint
 
-file_dir = "./DataSet/"
-data_name = file_dir + "twitter_emotion.csv"
+
 
 class skip_gram(object):
     def __init__(self):
-        self.vocabulary_size = 50000
+        self.vocabulary_size = 50000 
         self.embed_size = 300
         self.num_sampled = 64
         self.batch_size = 32
 
     def csv_to_text(self, file_dir):
-        with open(data_name, 'r') as f:
+        with open(file_dir, 'r') as f:
             reader = csv.reader(f)
-            data = list(map(lambda x: x[3] , reader))
+            data = list(map(lambda x: x[3]+x[4]+x[5]+x[6]+x[7]+x[8]+x[9]+x[10], reader))
             del data[0]
 
-        with open(data_name, 'w') as f:
+        with open(file_dir[:-4]+".txt", 'w') as f:
             for i in data:
-                f.writelines(i)
+                f.writelines(i+"\n")
 
     def words_read_text(self, file_dir):
-        with open(data_name, 'r')  as f:
+        with open(file_dir, 'r')  as f:
             return [word for line in f for word in line.split()]
 
     def word_count(self, file_dir):
@@ -65,7 +65,7 @@ class skip_gram(object):
                 writer.writerow(row)
 
 
-    def train_model(self):
+    def train_model(self,step):
         tf.reset_default_graph()
         with tf.name_scope("train_set_build"):
             filename = file_dir + 'train_set.csv'
@@ -114,7 +114,7 @@ class skip_gram(object):
             writer = tf.summary.FileWriter("./CheckPoint", sess.graph)
             writer.add_graph(sess.graph)
             sess.run(init)
-            for i in range(100):
+            for i in range(step):
                 _, _loss = sess.run([optimizer, loss])
                 print(i, " ", _loss)
 
@@ -128,7 +128,7 @@ class skip_gram(object):
             tf.zeros(shape=(self.vocabulary_size, self.embed_size)),
             name="embeddings")
 
-        words = self.word_count("./DataSet/songdata.txt")
+        words = self.word_count("./DataSet/twitter_emotion_v2(p,n,N).txt")
 
         saver = tf.train.Saver([embeddings])
 
@@ -147,10 +147,59 @@ class skip_gram(object):
         with open('./DataSet/word2vec_map.json', 'w') as outfile:
             json.dump(wordvec_map, outfile)
             
+
+
+
+file_dir = "./DataSet/"
+
+data_name = file_dir + "twitter_emotion_v2(p,n,N).csv"
+
+filename = "./DataSet/twitter_emotion_v2(p,n,N).csv"
+
+textname = "./DataSet/twitter_emotion_v2(p,n,N).txt"
+
 if __name__ == "__main__":
-    word2vec = skip_gram()
+
+
+    w = skip_gram()
+    #w.csv_to_text(filename)
+    # words_pair, vocab_dict = w.vocab_to_dict(textname)
+    
+    # print("words pair : ", words_pair)
+    # print("vocab_dictionary :", vocab_dict)
+    
+    # #data = w.words_read_text(textname)
+    # #words_id = [vocab_dict[i] if i in vocab_dict else vocab_dict["UNK"] for i in data[:100]]
+    
+    # print("data is ", data[:10])
+    # print("words id :", words_id[:10])
+
+    # # batch = w.build_train_data(words_id, 2, 20)
+    # # w.write_train_data(batch)
+
+    # print("batch is ", batch[:10])
+    
+    # w.train_model(10)
+    w.wordvec_map()
+
+
+    # words_pair, vocab_dict = vocab_to_dict(filename)
+    # data = words_read_text(file_dir)
+    # words = [i[0] for i in words_pair]
+    # words_id = [vocab_dict[i] if i in vocab_dict else vocab_dict["UTK8"] for i in data]
+
+
+    # word2vec = skip_gram()
     # word2vec.train_model()
-    word2vec.wordvec_map()
+    # word2vec.wordvec_map()
+
+
+
+
+# batch = build_train_data(words_id, 2, 20)
+# write_train_data(batch)
+
+
     # with open('./DataSet/word2vec_map.json') as data_file:    
     #     data = json.load(data_file)
 
