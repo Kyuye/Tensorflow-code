@@ -12,6 +12,7 @@ import pandas
 import json
 import csv
 import os
+import time
 from pprint import pprint
 
 FLAGS = tf.flags.FLAGS
@@ -19,7 +20,7 @@ tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
 # tf.flags.DEFINE_string("train_data", "gs://wgan/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
 # tf.flags.DEFINE_string("train_data", "./DataSet/twitter_emotion_v2(p,n,N).csv", "train data path")
-tf.flags.DEFINE_string("train_data", "./dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
+tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
 tf.flags.DEFINE_integer("batch_size", 10, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
 tf.flags.DEFINE_integer("embed_dim", 50, "embedding dimension")
@@ -38,7 +39,6 @@ tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
         self.batch_steps = 0
-        self.global_step = tf.contrib.framework.get_or_create_global_step()
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
         self.max_document_length = FLAGS.max_document_length
@@ -57,6 +57,7 @@ class WasserstienGAN(object):
         print("session opening...")
         self.open_session()
         print("session opened")
+
 
 
     def build_generated_pair_set(self, gen_data):
@@ -142,9 +143,6 @@ class WasserstienGAN(object):
         
     def read_datafile(self, filename):
         print(os.getcwd())
-        os.system("rm -rf ./dataset")
-        os.system("gsutil cp -r gs://wgan/dataset $(pwd)/dataset")
-        print("data set copy")
         data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
         data = data[data["content"] != "0"]
         data["content"] = data["content"].astype("str")
@@ -369,9 +367,8 @@ class WasserstienGAN(object):
                 with tf.device(tf.train.replica_device_setter()):
                     print("building network")
                     self._create_network()
-                
-            # print("variables initializing")
-            # self.sess.run(tf.global_variables_initializer())
+                    print("variables initializing")
+                    self.sess.run(tf.global_variables_initializer())
                 print("training...")
                 self.train_model(100)
                 print("session closed")
@@ -510,6 +507,7 @@ class WasserstienGAN(object):
         self.sess.close()
         
     def open_session(self):
+        self.global_step = tf.contrib.framework.get_or_create_global_step()
         print("open session")
         tf_config = os.environ.get("TF_CONFIG")
         tf_config_json = json.loads(tf_config)
@@ -519,13 +517,12 @@ class WasserstienGAN(object):
         task_index = tf_config_json.get("task", {}).get("index")
 
         cluster_spec = tf.train.ClusterSpec(cluster)
-        server = tf.train.Server(cluster_spec,
-        job_name=self.job_name,
-        task_index=task_index)
+        server = tf.train.Server(
+            cluster_spec,
+            job_name=self.job_name,
+            task_index=task_index)
 
         hooks = [tf.train.StopAtStepHook(last_step=100)]
-
-        # self.sess = tf.Session(server.target)
 
         print("session create")
         self.sess = tf.train.MonitoredTrainingSession(
@@ -537,19 +534,24 @@ class WasserstienGAN(object):
         self.thread = tf.train.start_queue_runners(self.sess, self.coord)
         print("train ready")
 
-
-    # def word2vec(self, word_sequence):
-    #     return list(map(lambda x: self.embedding_map[x], word_sequence))
-
-
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
     gan.initialize_network("train")
 
 
 if __name__ == "__main__":
-    # os.system("mkdir dataset")
-    # os.system("gsutil cp gs://wgan/dataset/twitter_emotion_v2\(p,n,N\).csv $(pwd)/dataset/")
-    # print("data set copy")
+    if not os.path.exists('./dataset/twitter_emotion_v2(p,n,N).csv'):
+        print("before file exist: ", os.path.exists('./dataset/twitter_emotion_v2(p,n,N).csv'))
+        if not os.path.isdir('dataset'):
+            print("dir exist: ", os.path.isdir('dataset'))
+            os.mkdir('dataset')
+        os.system("gsutil cp -r gs://wgan/dataset/* $(pwd)/dataset/")
+        print("after file exist: ", os.path.exists('./dataset/twitter_emotion_v2(p,n,N).csv'))
+    print("data set copy")
+
+    # print("sleep...")
+    # print(os.getcwd())
+    # time.sleep(10)
+    print("start!!")
 
     tf.app.run()
