@@ -17,12 +17,11 @@ from pprint import pprint
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
-# tf.flags.DEFINE_string("train_data", "gs://wgan/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
-tf.flags.DEFINE_string("train_data", "/DataSet/twitter_emotion_v2(p,n,N).csv", "train data path")
-# tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
-tf.flags.DEFINE_integer("batch_size", 10, "batch size for training")
+tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
+tf.flags.DEFINE_string("word_vec_map_file", '/dataset/word2vec_map.json', "mapfile for word2vec")
+tf.flags.DEFINE_integer("batch_size", 50, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
-tf.flags.DEFINE_integer("embed_dim", 50, "embedding dimension")
+tf.flags.DEFINE_integer("embed_dim", 300, "embedding dimension")
 tf.flags.DEFINE_integer("g_hidden1", 50, "g function 1st hidden layer unit")
 tf.flags.DEFINE_integer("g_hidden2", 50, "g function 1st hidden layer unit")
 tf.flags.DEFINE_integer("g_hidden3", 50, "g function 1st hidden layer unit")
@@ -31,80 +30,50 @@ tf.flags.DEFINE_integer("f_hidden1", 50, "f function 1st hidden layer unit")
 tf.flags.DEFINE_integer("f_hidden2", 50, "f function 2nd hidden layer unit")
 tf.flags.DEFINE_integer("f_logits", 50, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
-tf.flags.DEFINE_integer("memory_size", 50, "LSTM cell(memory) size")
+tf.flags.DEFINE_integer("memory_size", 10, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
-tf.flags.DEFINE_string("word_vec_map_file", './DataSet/word2vec_map.json', "mapfile for word2vec")
+
 
 
 class WasserstienGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
-        self.batch_steps = 0
-        self.global_step = tf.contrib.framework.get_or_create_global_step()
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
         self.max_document_length = FLAGS.max_document_length
         self.object_pairs_set = []
-        self.max_object_pairs_num = 0
+        self.max_object_pairs_num = 11174
         print("reading data..")
-        # print(os.getcwd() + FLAGS.train_data)
         self.data = self.read_datafile(os.getcwd() + FLAGS.train_data)
+        print("file loaded size :", len(self.data))
+        self.train_batch = tf.placeholder(tf.float32, [FLAGS.batch_size, 150, 300])
+        self.label_indices = tf.placeholder(tf.int32, [FLAGS.batch_size,])
         print("reading map...")
-        self.embedding_map = self.load_embedding_map(FLAGS.word_vec_map_file)
+        self.embedding_map = self.load_embedding_map(os.getcwd() + FLAGS.word_vec_map_file)
         print("session opening...")
         self.open_session()
 
-    
-        print("convert words to vector")
 
+    def get_batch(self, data, iterator):
+        fullbatch_size = len(data)
+        train_batch = data[(iterator*FLAGS.batch_size)%fullbatch_size:((iterator+1)*FLAGS.batch_size)%fullbatch_size]
+        
         seq_vec = []
-        fullbatch_size = 100
-        minibatch_size = 10
-        iterator = 0
-        # for i in range(fullbatch_size//minibatch_size):
-        #     # minibatch = self.data['content'][self.batch_steps%fullbatch_size*minibatch_size:(self.batch_steps%fullbatch_size+1)*minibatch_size]
-        #     print("batch: ", i)
-        #     minibatch = self.data['content'][i*minibatch_size:(i+1)*minibatch_size]
-
-        minibatch = self.get_batch(self.data['content'], iterator, minibatch_size, fullbatch_size)
-
-
-        for seq in minibatch:
+        for seq in train_batch['content']:
             embeds = np.array([self.embedding_map[i] if i in self.embedding_map else self.embedding_map["UNK"] for i in seq.split(' ')])
             seq_vec.append(np.pad(embeds, ((0, 150-embeds.shape[0]), (0,0)), 'constant'))
-            
-        seq_vec = np.stack(seq_vec)
-        max_length = 150
 
-
-        x = tf.placeholder(tf.float32)
-        feed_dict = {x: seq_vec}
-
-        with tf.Session() as sess:
-            data, shp = sess.run([x, tf.shape(x)], feed_dict)
-            print(data)
-            print(shp)
-
-    
-        exit()
-
-        self.word_ids  = self.word_identify(self.data[:self.batch_size])
-        print("building pair set...")
-        self.object_pairs_set = self.build_pair_set(self.word_ids)
-
-
-        print(self.object_pairs_set)
-        print(np.shape(self.object_pairs_set))
-
-
-        print("embedding...")
-        print(self.object_pairs_set[:10])
-        self.object_pairs = self.embedding_object_pairs(self.object_pairs_set)
-        print("one hot encoding ....")
-        self.label = self.one_hot_encoding(self.data)
-
-
-    def get_batch(self, data, iterator, minibatch_size, fullbatch_size):
-        return data[(iterator*minibatch_size)%fullbatch_size:((iterator+1)*minibatch_size)%fullbatch_size]
+        indices = []
+        for s in train_batch['Sentiment']:
+            if s == "Neg":
+                indices.append(0)
+            elif s == "neutral":
+                indices.append(1)
+            elif s == "Pos":
+                indices.append(2)
+            else:
+                indices.append(0)
+        
+        return seq_vec, indices
 
 
     def load_embedding_map(self, mapfile):
@@ -112,11 +81,8 @@ class WasserstienGAN(object):
             data = json.load(data_file)
         return data
 
-    def word2vec(self, word_sequence):
-        return list(map(lambda x: self.embedding_map[x], word_sequence))
 
-
-    def build_generated_pair_set(self, gen_data):
+    def pairing(self, gen_data):
         generated_pair_set = []
         for seq in tf.unstack(gen_data):
             comb = [i for i in range(FLAGS.max_document_length)]
@@ -131,85 +97,11 @@ class WasserstienGAN(object):
         return tf.stack(generated_pair_set)
 
 
-    def one_hot_encoding(self, dataframe):
-        indices = []
-        for s in dataframe["Sentiment"]:
-            if s == "Neg":
-                indices.append(0)
-            elif s == "neutral":
-                indices.append(1)
-            elif s == "Pos":
-                indices.append(2)
-            else:
-                indices.append(0)
-            
-        return tf.one_hot(indices=indices, depth=3, on_value=1.0, off_value=0.0)
-
-
-    def build_pair_set(self, word_ids):
-        object_pairs_set = []
-        self.max_object_pairs_num = 0
-        for ids in word_ids:
-            object_pairs = []
-            seq = ids.tolist()
-            seq_length = np.count_nonzero(ids)
-            while seq_length >= 2:
-                object_pairs += list(map(lambda x: (seq[0], x), seq[:seq_length]))[1:]
-                del seq[0]
-                seq_length = np.count_nonzero(seq)
-
-            object_pairs_set.append(object_pairs)
-
-            if self.max_object_pairs_num < len(object_pairs):
-                self.max_object_pairs_num = len(object_pairs)
-
-        return object_pairs_set
-    
-    def embedding_object_pairs(self, object_pairs_set):
-        embed_reuse = False
-        object_pairs_list = []
-        for ids in object_pairs_set:
-            object_pairs_embed = tf.contrib.layers.embed_sequence(
-                ids=ids,
-                vocab_size=FLAGS.vocabulary_size,
-                embed_dim=FLAGS.embed_dim,
-                reuse=embed_reuse,
-                scope="embeddings")
-            
-            object_pairs_concat = tf.reshape(
-                object_pairs_embed,
-                shape=(-1, 2*FLAGS.embed_dim))
-            
-            object_pairs_list.append(tf.pad(
-                tensor=object_pairs_concat,
-                paddings=[
-                    [0, self.max_object_pairs_num-len(ids)], 
-                    [0, 0]])
-            )
-            embed_reuse = True
-
-        return tf.stack(object_pairs_list)
-
-
-    def get_batch_(self, train, label, minibatch_size, fullbatch_size):
-        train_batch = train[self.batch_steps%fullbatch_size*minibatch_size:(self.batch_steps%fullbatch_size+1)*minibatch_size]
-        label_batch = label[self.batch_steps%fullbatch_size*minibatch_size:(self.batch_steps%fullbatch_size+1)*minibatch_size]
-        return train_batch, label_batch
-
-        
     def read_datafile(self, filename):
         data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
         data = data[data["content"] != "0"]
         data["content"] = data["content"].astype("str")
         return data
-
-
-    def word_identify(self, dataframe):
-        contents = dataframe["content"].values.tolist()
-        vocab_processor = VocabularyProcessor(self.max_document_length)
-        word_ids = np.array(list(vocab_processor.fit_transform(contents)))
-        self.vocabulary_size = np.max(word_ids)
-        return word_ids
 
 
     def _generator(self, x):
@@ -236,7 +128,10 @@ class WasserstienGAN(object):
             gs = []
             g_reuse = reuse
             f_reuse = reuse
-            for i in range(self.max_object_pairs_num):
+            # for i in range(self.max_object_pairs_num):
+            for i in range(100):
+                if i % 10 == 0:
+                    print("discriminator g func processing... : ", i, "/", self.max_object_pairs_num)
                 g_in = tf.reshape(x[:,i,:], (-1, 2*FLAGS.embed_dim))
                 g_layer1 = tf.layers.dense(
                     inputs=g_in,
@@ -301,9 +196,10 @@ class WasserstienGAN(object):
                 gs.append(g_out)
                 g_reuse=True
 
-            
+            print("discriminator g summation...")
             g_batch = tf.reduce_sum(tf.transpose(tf.stack(gs), [1, 0, 2]), axis=1)
 
+            print("discriminator f func in progress...")
             f_layer1 = tf.layers.dense(
                 inputs=g_batch,
                 units=FLAGS.f_hidden1,
@@ -318,6 +214,8 @@ class WasserstienGAN(object):
                 reuse=f_reuse,
                 name="f_layer1"
             )
+
+            print("discriminator f func in progress... layer1 complete")
 
             f_layer2 = tf.layers.dense(
                 inputs=f_layer1,
@@ -334,6 +232,8 @@ class WasserstienGAN(object):
                 name="f_layer2"
             )
 
+            print("discriminator f func in progress... layer2 complete")
+
             logits = tf.layers.dense(
                 inputs=f_layer2,
                 units=FLAGS.f_logits,
@@ -348,6 +248,8 @@ class WasserstienGAN(object):
                 reuse=f_reuse,
                 name="f_out"
             )
+
+            print("discriminator f func in progress... logits complete")
         
             supervised_logits = tf.layers.dense(
                 inputs=logits, 
@@ -364,6 +266,8 @@ class WasserstienGAN(object):
                 name="supervised_layer"
                 )
 
+            print("discriminator f func in progress... supervised logits complete")
+
         return logits, supervised_logits
 
 
@@ -376,11 +280,14 @@ class WasserstienGAN(object):
 
     def _create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
         print("Setting up model...")
-        real_pairs, labels = self.get_batch(self.object_pairs, self.label, FLAGS.batch_size, 100)
+
+        print("real data pairing..")
+        real_pairs = self.pairing(self.train_batch)
+
         print("create generator...")
         self._create_generator(FLAGS.batch_size)
-        print("building generated pair set...")
-        fake_pairs = self.build_generated_pair_set(self.gen_data)
+        print("fake data pairing..")
+        fake_pairs = self.pairing(self.gen_data)
 
         print("building discriminator for real data...")
         logits_real, logits_supervised = self._discriminator(real_pairs, reuse=False)
@@ -389,6 +296,7 @@ class WasserstienGAN(object):
 
         # Loss calculation
         print("building gan loss graph...")
+        labels = tf.one_hot(indices=self.label_indices, depth=3, on_value=1.0, off_value=0.0)
         self.discriminator_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake, logits_supervised, labels)
 
         print("variables scoping...")
@@ -409,29 +317,6 @@ class WasserstienGAN(object):
         self.discriminator_train_op = self._train(self.discriminator_loss, self.discriminator_variables, optim)
 
 
-    def initialize_network(self, mode):
-        print("initialize")
-        if mode == 'train':
-            print("model creating..")
-            self._create_network()                
-            print("variables initializing")
-            self.sess.run(tf.global_variables_initializer())
-            print("training...")
-            self.train_model(100)
-            print("session closed")
-        elif mode == 'predict':
-            print("building network")
-            self._create_generator()
-            print("session opening...")
-            self.open_session()
-            print("predict..")
-            self.predict()
-            print("session closed")
-            self.sess.close()
-        else:
-            print("please select the mode train/predict")
-            return
-
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
         self.learning_rate = learning_rate
@@ -443,64 +328,57 @@ class WasserstienGAN(object):
             raise ValueError("Unknown optimizer %s" % optimizer_name)
 
     def _train(self, loss_val, var_list, optimizer):
-        self.batch_steps+=1
         grads = optimizer.compute_gradients(loss_val, var_list=var_list)
-        return optimizer.apply_gradients(grads, global_step=self.global_step)
+        return optimizer.apply_gradients(grads)
 
-    def predict(self):
-        saver = tf.train.Saver()
-        saver.restore(self.sess, "./CheckPoint/rnn_GAN")
-        tf.train.write_graph(self.sess.graph_def,"./CheckPoint/",'graph.pbtxt',False)
-        _pred  = self.sess.run(tf.transpose(self.gen_data, perm=[1,0,2]))
-        print(_pred)
-
-            
 
     def train_model(self, max_iterations):
         print("Training Wasserstein GAN model...")
         clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
                                         var in self.discriminator_variables]
 
+        print("variables initializing")
+        self.sess.run(tf.global_variables_initializer())
 
         for itr in range(1, max_iterations):
+            train_data, indices = self.get_batch(self.data, itr-1)
+            feed_dict = {self.train_batch: train_data, self.label_indices: indices}
+
             print("iterations: ", itr)
+
             if itr < 25 or itr % 500 == 0:
                 critic_itrs = 25
             else:
                 critic_itrs = self.critic_iterations
 
             for critic_itr in range(critic_itrs):
-                self.sess.run(self.discriminator_train_op)
-                self.sess.run(clip_discriminator_var_op)
-
-            self.sess.run(self.generator_train_op)
+                print("discriminator critic: ", critic_itr)
+                self.sess.run(self.discriminator_train_op, feed_dict)
+                self.sess.run(clip_discriminator_var_op, feed_dict)
+            
+            print("generator update")
+            self.sess.run(self.generator_train_op, feed_dict)
 
             if itr % 200 == 0:
                 g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss])
                 self.saver.save(self.sess, "./CheckPoint/rnn_GAN")
                 print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
 
+            self.sess.close()
 
 
-    def close_session(self):
-        self.coord.request_stop()
-        self.coord.join(self.thread)
-        self.sess.close()
-        
     def open_session(self):
         self.sess = tf.Session()
-        self.coord = tf.train.Coordinator()
-        self.thread = tf.train.start_queue_runners(self.sess, self.coord)
         print("train ready")
 
 
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
-    # gan.initialize_network("train")
-
+    gan._create_network()                
+    gan.train_model(100)
 
 if __name__ == "__main__":
-    # os.system("mkdir dataset")
-    # os.system("gsutil cp -r gs://wgan/dataset/* $(pwd)/dataset/")
-    # print("data set copy")
+    os.system("mkdir dataset")
+    os.system("gsutil -m cp -r gs://wgan/dataset/* $(pwd)/dataset/")
+    print("data set copy")
     tf.app.run()
