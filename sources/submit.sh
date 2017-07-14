@@ -4,7 +4,7 @@ gcloud ml-engine jobs submit training $job_name \
 --package-path=$(pwd)/sources/personality_replication \
 --module-name=personality_replication.model_single \
 --staging-bucket=gs://wgan/ \
---region=europe-west1 \
+--region=us-east1 \
 --scale-tier=BASIC_GPU
 
 # region list

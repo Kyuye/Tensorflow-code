@@ -40,8 +40,7 @@ class WasserstienGAN(object):
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
         self.max_document_length = FLAGS.max_document_length
-        self.object_pairs_set = []
-        self.max_object_pairs_num = 11174
+        self.max_object_pairs_num = 11174 # 150C2
         print("reading data..")
         self.data = self.read_datafile(os.getcwd() + FLAGS.train_data)
         print("file loaded size :", len(self.data))
@@ -71,7 +70,7 @@ class WasserstienGAN(object):
             elif s == "Pos":
                 indices.append(2)
             else:
-                indices.append(0)
+                indices.append(1)
         
         return seq_vec, indices
 
@@ -82,9 +81,9 @@ class WasserstienGAN(object):
         return data
 
 
-    def pairing(self, gen_data):
-        generated_pair_set = []
-        for seq in tf.unstack(gen_data):
+    def pairing(self, embeds):
+        pair_set = []
+        for seq in tf.unstack(embeds):
             comb = [i for i in range(FLAGS.max_document_length)]
             ids = []
             while len(comb) > 2:
@@ -92,14 +91,14 @@ class WasserstienGAN(object):
                 del comb[0]
             
             pair = tf.nn.embedding_lookup(seq, ids)
-            generated_pair_set.append(tf.concat([pair[:,0], pair[:,1]], axis=1))
+            pair_set.append(tf.concat([pair[:,0], pair[:,1]], axis=1))
             
-        return tf.stack(generated_pair_set)
+        return tf.stack(pair_set)
 
 
     def read_datafile(self, filename):
         data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
-        data = data[data["content"] != "0"]
+        data = data[data["content"] != "0"]"0"]
         data["content"] = data["content"].astype("str")
         return data
 
@@ -110,7 +109,7 @@ class WasserstienGAN(object):
             out, _ = tf.contrib.rnn.static_rnn(cell=rnn_cell, inputs=x, dtype=tf.float32)
             Wo = tf.Variable(tf.truncated_normal(shape=(len(x), FLAGS.memory_size, FLAGS.embed_dim)))
             bo = tf.Variable(tf.zeros(shape=(len(x), FLAGS.embed_dim)))
-            return tf.unstack(tf.matmul(out, Wo), axis=1)+ bo
+            return tf.transpose(tf.matmul(out, Wo) + bo, 
 
     def _create_generator(self, samples):
         self.z = tf.unstack(
