@@ -8,6 +8,10 @@ gcloud ml-engine jobs submit training $job_name \
 --scale-tier=BASIC_GPU
 
 # region list
+# asia-east1
+# us-east1
+# us-central1
+# europe-west1
 
 
 # scale tier list
