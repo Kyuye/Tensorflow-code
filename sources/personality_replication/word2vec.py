@@ -149,7 +149,6 @@ class skip_gram(object):
             
 
 
-
 file_dir = "./DataSet/"
 
 data_name = file_dir + "twitter_emotion_v2(p,n,N).csv"
@@ -159,8 +158,6 @@ filename = "./DataSet/twitter_emotion_v2(p,n,N).csv"
 textname = "./DataSet/twitter_emotion_v2(p,n,N).txt"
 
 if __name__ == "__main__":
-
-
     w = skip_gram()
     w.csv_to_text(filename)
     words_pair, vocab_dict = w.vocab_to_dict(textname)
@@ -203,6 +200,3 @@ if __name__ == "__main__":
     # with open('./DataSet/word2vec_map.json') as data_file:    
     #     data = json.load(data_file)
 
-    # print(data["the"])
-    # print(type(data["the"]))
-    # print(type(data["the"][0]))

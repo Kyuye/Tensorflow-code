@@ -15,6 +15,19 @@ with tf.Session() as sess:
     sess.run(d)
 
 
+# filename = os.path.join(os.getcwd(), "DataSet/twitter_emotion_v2(p,n,N).csv")
+# queue = tf.train.string_input_producer([filename])
+
+# reader = tf.TextLineReader(skip_header_lines=1)
+# key, value = reader.read(queue)
+
+# _, sent, _, c0, c1, c2, c3, c4, c5, c6, c7 = tf.decode_csv(value, [[""]]*11)
+# content = tf.stack([c0, c1, c2, c3, c4, c5, c6, c7])
+
+# label, batch = tf.train.batch([sent, content], 10)
+# batch = tf.expand_dims(tf.reduce_join(batch, 1), axis=1)
+# label = tf.expand_dims(label, axis=1)
+
 
 # filename = os.getcwd() + "/dataset/twitter_emotion_v2(p,n,N).csv"
 # data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)

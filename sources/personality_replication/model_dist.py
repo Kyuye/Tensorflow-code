@@ -361,7 +361,7 @@ class WasserstienGAN(object):
             print(self.job_name)
             if self.job_name == "ps":
                 print("ps work")
-                server.join()
+                self.server.join()
             elif self.job_name == "worker":
                 print("workers work")
                 with tf.device(tf.train.replica_device_setter()):
@@ -426,7 +426,17 @@ class WasserstienGAN(object):
                 self.sess.run(clip_discriminator_var_op)
 
             self.sess.run(self.generator_train_op)
+
+            if itr % 200 == 0:
+                d_loss_val, g_loss_val = self.sess.run([self.discriminator_loss, self.gen_loss])
+                self.saver.save(self.sess, "./logs")
+                print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
+
+            
             itr += 1
+
+            if i > max_iterations:
+                break
 
 
 
@@ -508,26 +518,24 @@ class WasserstienGAN(object):
         
     def open_session(self):
         self.global_step = tf.contrib.framework.get_or_create_global_step()
-        print("open session")
         tf_config = os.environ.get("TF_CONFIG")
         tf_config_json = json.loads(tf_config)
 
-        cluster = tf_config_json.get("cluster")
+        self.cluster = tf_config_json.get("cluster")
         self.job_name = tf_config_json.get("task", {}).get("type")
-        task_index = tf_config_json.get("task", {}).get("index")
+        self.task_index = tf_config_json.get("task", {}).get("index")
 
-        cluster_spec = tf.train.ClusterSpec(cluster)
-        server = tf.train.Server(
-            cluster_spec,
-            job_name=self.job_name,
-            task_index=task_index)
+        self.cluster_spec = tf.train.ClusterSpec(self.cluster)
+        
+        pprint(tf_config_json)
 
+        self.server = tf.train.Server(self.cluster_spec, job_name=self.job_name,task_index=self.task_index)
+
+        print("open session")
         hooks = [tf.train.StopAtStepHook(last_step=100)]
-
-        print("session create")
         self.sess = tf.train.MonitoredTrainingSession(
-            master=server.target,
-            is_chief=(task_index == 0),
+            master=self.server.target,
+            is_chief=(self.task_index == 0),
             checkpoint_dir=FLAGS.log_dir,
             hooks=hooks)
         self.coord = tf.train.Coordinator()
@@ -536,6 +544,7 @@ class WasserstienGAN(object):
 
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
+    print("train start")
     gan.initialize_network("train")
 
 
@@ -545,7 +554,7 @@ if __name__ == "__main__":
         if not os.path.isdir('dataset'):
             print("dir exist: ", os.path.isdir('dataset'))
             os.mkdir('dataset')
-        os.system("gsutil cp -r gs://wgan/dataset/* $(pwd)/dataset/")
+        os.system("gsutil -m cp gs://wgan/dataset/* $(pwd)/dataset/")
         print("after file exist: ", os.path.exists('./dataset/twitter_emotion_v2(p,n,N).csv'))
     print("data set copy")
 

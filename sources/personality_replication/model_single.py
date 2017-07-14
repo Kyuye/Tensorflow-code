@@ -18,8 +18,8 @@ FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
 # tf.flags.DEFINE_string("train_data", "gs://wgan/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
-# tf.flags.DEFINE_string("train_data", "./DataSet/twitter_emotion_v2(p,n,N).csv", "train data path")
-tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
+tf.flags.DEFINE_string("train_data", "/DataSet/twitter_emotion_v2(p,n,N).csv", "train data path")
+# tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
 tf.flags.DEFINE_integer("batch_size", 10, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
 tf.flags.DEFINE_integer("embed_dim", 50, "embedding dimension")
@@ -33,6 +33,7 @@ tf.flags.DEFINE_integer("f_logits", 50, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
 tf.flags.DEFINE_integer("memory_size", 50, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
+tf.flags.DEFINE_string("word_vec_map_file", './DataSet/word2vec_map.json', "mapfile for word2vec")
 
 
 class WasserstienGAN(object):
@@ -45,19 +46,74 @@ class WasserstienGAN(object):
         self.object_pairs_set = []
         self.max_object_pairs_num = 0
         print("reading data..")
-        print(os.getcwd() + FLAGS.train_data)
+        # print(os.getcwd() + FLAGS.train_data)
         self.data = self.read_datafile(os.getcwd() + FLAGS.train_data)
-        print("words identifing")
-        self.word_ids  = self.word_identify(self.data)
+        print("reading map...")
+        self.embedding_map = self.load_embedding_map(FLAGS.word_vec_map_file)
+        print("session opening...")
+        self.open_session()
+
+    
+        print("convert words to vector")
+
+        seq_vec = []
+        fullbatch_size = 100
+        minibatch_size = 10
+        iterator = 0
+        # for i in range(fullbatch_size//minibatch_size):
+        #     # minibatch = self.data['content'][self.batch_steps%fullbatch_size*minibatch_size:(self.batch_steps%fullbatch_size+1)*minibatch_size]
+        #     print("batch: ", i)
+        #     minibatch = self.data['content'][i*minibatch_size:(i+1)*minibatch_size]
+
+        minibatch = self.get_batch(self.data['content'], iterator, minibatch_size, fullbatch_size)
+
+
+        for seq in minibatch:
+            embeds = np.array([self.embedding_map[i] if i in self.embedding_map else self.embedding_map["UNK"] for i in seq.split(' ')])
+            seq_vec.append(np.pad(embeds, ((0, 150-embeds.shape[0]), (0,0)), 'constant'))
+            
+        seq_vec = np.stack(seq_vec)
+        max_length = 150
+
+
+        x = tf.placeholder(tf.float32)
+        feed_dict = {x: seq_vec}
+
+        with tf.Session() as sess:
+            data, shp = sess.run([x, tf.shape(x)], feed_dict)
+            print(data)
+            print(shp)
+
+    
+        exit()
+
+        self.word_ids  = self.word_identify(self.data[:self.batch_size])
         print("building pair set...")
         self.object_pairs_set = self.build_pair_set(self.word_ids)
+
+
+        print(self.object_pairs_set)
+        print(np.shape(self.object_pairs_set))
+
+
         print("embedding...")
+        print(self.object_pairs_set[:10])
         self.object_pairs = self.embedding_object_pairs(self.object_pairs_set)
         print("one hot encoding ....")
         self.label = self.one_hot_encoding(self.data)
-        print("session opening...")
-        self.open_session()
-        print("session opened")
+
+
+    def get_batch(self, data, iterator, minibatch_size, fullbatch_size):
+        return data[(iterator*minibatch_size)%fullbatch_size:((iterator+1)*minibatch_size)%fullbatch_size]
+
+
+    def load_embedding_map(self, mapfile):
+        with open(mapfile) as data_file:    
+            data = json.load(data_file)
+        return data
+
+    def word2vec(self, word_sequence):
+        return list(map(lambda x: self.embedding_map[x], word_sequence))
 
 
     def build_generated_pair_set(self, gen_data):
@@ -135,17 +191,13 @@ class WasserstienGAN(object):
         return tf.stack(object_pairs_list)
 
 
-    def get_batch(self, train, label, minibatch_size, fullbatch_size):
+    def get_batch_(self, train, label, minibatch_size, fullbatch_size):
         train_batch = train[self.batch_steps%fullbatch_size*minibatch_size:(self.batch_steps%fullbatch_size+1)*minibatch_size]
         label_batch = label[self.batch_steps%fullbatch_size*minibatch_size:(self.batch_steps%fullbatch_size+1)*minibatch_size]
         return train_batch, label_batch
 
         
     def read_datafile(self, filename):
-        print(os.getcwd())
-        os.system("mkdir dataset")
-        os.system("gsutil cp -r gs://wgan/dataset/* $(pwd)/dataset/")
-        print("data set copy")
         data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
         data = data[data["content"] != "0"]
         data["content"] = data["content"].astype("str")
@@ -356,7 +408,6 @@ class WasserstienGAN(object):
         self.generator_train_op = self._train(self.gen_loss, self.generator_variables, optim)
         self.discriminator_train_op = self._train(self.discriminator_loss, self.discriminator_variables, optim)
 
-        sess.run(train)
 
     def initialize_network(self, mode):
         print("initialize")
@@ -443,17 +494,13 @@ class WasserstienGAN(object):
         print("train ready")
 
 
-    # def word2vec(self, word_sequence):
-    #     return list(map(lambda x: self.embedding_map[x], word_sequence))
-
-
 def main(argv=None):
     gan = WasserstienGAN(critic_iterations=5)
-    gan.initialize_network("train")
+    # gan.initialize_network("train")
 
 
 if __name__ == "__main__":
     # os.system("mkdir dataset")
-    # os.system("gsutil cp gs://wgan/dataset/twitter_emotion_v2\(p,n,N\).csv $(pwd)/dataset/")
+    # os.system("gsutil cp -r gs://wgan/dataset/* $(pwd)/dataset/")
     # print("data set copy")
     tf.app.run()
