@@ -116,8 +116,7 @@ class WassersteinGAN(object):
             out, _ = tf.contrib.rnn.static_rnn(cell=rnn_cell, inputs=x, dtype=tf.float32)
             Wo = tf.Variable(tf.truncated_normal(shape=(len(x), FLAGS.memory_size, FLAGS.embed_dim)))
             bo = tf.Variable(tf.zeros(shape=(len(x), FLAGS.embed_dim)))
-            #out = (150,,, 10, 20)
-            Wo = tf.unstack(Wo) #(150,,, 20, 300)
+            Wo = tf.unstack(Wo)
             bo = tf.unstack(bo) 
 
             logits = []
