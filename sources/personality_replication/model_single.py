@@ -40,7 +40,11 @@ class WasserstienGAN(object):
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
         self.max_document_length = FLAGS.max_document_length
+<<<<<<< HEAD
         self.max_object_pairs_num = 11174 #150C2
+=======
+        self.max_object_pairs_num = 11174 # 150C2
+>>>>>>> 2180b3510f9bb6240f6d9aeb4280f839a1d6f890
         print("reading data..")
         self.data = self.read_datafile(os.getcwd() + FLAGS.train_data)
         print("file loaded size :", len(self.data))
@@ -98,7 +102,7 @@ class WasserstienGAN(object):
 
     def read_datafile(self, filename):
         data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
-        data = data[data["content"] != "0"]
+        data = data[data["content"] != "0"]"0"]
         data["content"] = data["content"].astype("str")
         return data
 
@@ -109,7 +113,7 @@ class WasserstienGAN(object):
             out, _ = tf.contrib.rnn.static_rnn(cell=rnn_cell, inputs=x, dtype=tf.float32)
             Wo = tf.Variable(tf.truncated_normal(shape=(len(x), FLAGS.memory_size, FLAGS.embed_dim)))
             bo = tf.Variable(tf.zeros(shape=(len(x), FLAGS.embed_dim)))
-            return tf.unstack(tf.matmul(out, Wo), axis=1)+ bo
+            return tf.transpose(tf.matmul(out, Wo) + bo, 
 
     def _create_generator(self, samples):
         self.z = tf.unstack(
