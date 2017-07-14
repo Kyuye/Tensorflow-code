@@ -4,15 +4,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.contrib.learn.python.learn.preprocessing import VocabularyProcessor
 
-import collections
-import numpy as np
-import pandas
-import json
-import csv
-import os
-from pprint import pprint
+from data_loader import TrainDataLoader
+from preprocessing import Preprocessor
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
@@ -35,79 +29,21 @@ tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
 tf.flags.DEFINE_bool("on_cloud", False, "run on cloud or local")
 
 
-
 class WassersteinGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
-        self.max_document_length = FLAGS.max_document_length
-        self.max_object_pairs_num = 11174 # 150C2
-        print("reading data..")
-        self.data = self.read_datafile(os.getcwd() + FLAGS.train_data)
-        print("file loaded size :", len(self.data))
-        self.train_batch = tf.placeholder(tf.float32, [FLAGS.batch_size, 150, 300])
+
+        loader = TrainDataLoader(FLAGS.train_data, FLAGS.word_vec_map_file, FLAGS.on_cloud)
+        self.preprocessor = Preprocessor(loader.embedding_map, FLAGS.batch_size, FLAGS.max_document_length)
+
+        self.data = loader.train_data
+
+        self.train_batch = tf.placeholder(tf.float32, [FLAGS.batch_size, FLAGS.max_document_length, FLAGS.embed_dim])
         self.label_indices = tf.placeholder(tf.int32, [FLAGS.batch_size,])
-        print("reading map...")
-        self.embedding_map = self.load_embedding_map(os.getcwd() + FLAGS.word_vec_map_file)
+
         print("session opening...")
         self.open_session()
-
-
-    def get_batch(self, data, iterator):
-        fullbatch_size = len(data)
-        start = (iterator*FLAGS.batch_size)%fullbatch_size
-        end = ((iterator+1)*FLAGS.batch_size)%fullbatch_size
-        if start > end:
-            start = fullbatch_size - FLAGS.batch_size
-            end = fullbatch_size
-        print(start, "-", end)
-        train_batch = data[start:end]
-        
-        seq_vec = []
-        for seq in train_batch['content']:
-            embeds = np.array([self.embedding_map[i] if i in self.embedding_map else self.embedding_map["UNK"] for i in seq.split(' ')])
-            seq_vec.append(np.pad(embeds, ((0, 150-embeds.shape[0]), (0,0)), 'constant'))
-
-        indices = []
-        for s in train_batch['Sentiment']:
-            if s == "Neg":
-                indices.append(0)
-            elif s == "neutral":
-                indices.append(1)
-            elif s == "Pos":
-                indices.append(2)
-            else:
-                indices.append(1)
-        
-        return seq_vec, indices
-
-
-    def load_embedding_map(self, mapfile):
-        with open(mapfile) as data_file:    
-            data = json.load(data_file)
-        return data
-
-
-    def pairing(self, embeds):
-        pair_set = []
-        for seq in tf.unstack(embeds):
-            comb = [i for i in range(FLAGS.max_document_length)]
-            ids = []
-            while len(comb) > 2:
-                ids += list(map(lambda x: [comb[0], x], comb))[1:]
-                del comb[0]
-            
-            pair = tf.nn.embedding_lookup(seq, ids)
-            pair_set.append(tf.concat([pair[:,0], pair[:,1]], axis=1))
-            
-        return tf.stack(pair_set)
-
-
-    def read_datafile(self, filename):
-        data = pandas.read_csv(filename, usecols=["Sentiment", "content"])
-        data = data[data["content"] != "0"]
-        data["content"] = data["content"].astype("str")
-        return data
 
 
     def _generator(self, x):
@@ -127,7 +63,7 @@ class WassersteinGAN(object):
     def _create_generator(self, samples):
         self.z = tf.unstack(
             tf.random_uniform(
-                shape=(samples, self.max_document_length, FLAGS.embed_dim), 
+                shape=(samples, FLAGS.max_document_length, FLAGS.embed_dim), 
                 minval=-1, 
                 maxval=1, 
                 dtype=tf.float32), 
@@ -139,7 +75,7 @@ class WassersteinGAN(object):
         with tf.variable_scope("discriminator") as scope:
             g_reuse = reuse
             f_reuse = reuse
-            g_in = tf.reshape(x, (FLAGS.batch_size*self.max_object_pairs_num, 2*FLAGS.embed_dim))
+            g_in = tf.reshape(x, (FLAGS.batch_size*self.preprocessor.max_object_pairs_num, 2*FLAGS.embed_dim))
             g_layer1 = tf.layers.dense(
                 inputs=g_in,
                 units=FLAGS.g_hidden1,
@@ -200,7 +136,7 @@ class WassersteinGAN(object):
                 name="g_out"
             )
 
-            gs = tf.reshape(g_out, (FLAGS.batch_size,self.max_object_pairs_num, FLAGS.g_logits))
+            gs = tf.reshape(g_out, (FLAGS.batch_size,self.preprocessor.max_object_pairs_num, FLAGS.g_logits))
 
             print("discriminator g summation...")
             g_batch = tf.reduce_sum(gs, axis=1)
@@ -288,12 +224,12 @@ class WassersteinGAN(object):
         print("Setting up model...")
 
         print("real data pairing..")
-        real_pairs = self.pairing(self.train_batch)
+        real_pairs = self.preprocessor.pairing(self.train_batch)
 
         print("create generator...")
         self._create_generator(FLAGS.batch_size)
         print("fake data pairing..")
-        fake_pairs = self.pairing(self.gen_data)
+        fake_pairs = self.preprocessor.pairing(self.gen_data)
 
         print("building discriminator for real data...")
         logits_real, logits_supervised = self._discriminator(real_pairs, reuse=False)
@@ -347,7 +283,7 @@ class WassersteinGAN(object):
         self.sess.run(tf.global_variables_initializer())
 
         for itr in range(1, max_iterations):
-            train_data, indices = self.get_batch(self.data, itr-1)
+            train_data, indices = self.preprocessor.get_batch(self.data, itr-1)
             print(indices)
             feed_dict = {self.train_batch: train_data, self.label_indices: indices}
 
@@ -366,10 +302,10 @@ class WassersteinGAN(object):
             print("generator update")
             self.sess.run(self.generator_train_op, feed_dict)
 
-            # if itr % 10 == 0:
-            #     g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss])
-            #     # self.saver.save(self.sess, "./CheckPoint/rnn_GAN")
-            #     print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
+            if itr % 10 == 0:
+                g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss], feed_dict)
+                # self.saver.save(self.sess, "./CheckPoint/rnn_GAN")
+                print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
 
         self.sess.close()
 
@@ -380,10 +316,6 @@ class WassersteinGAN(object):
 
 
 def main(argv=None):
-    if FLAGS.on_cloud:
-        os.system("mkdir dataset")
-        os.system("gsutil -m cp -r gs://wgan/dataset/* $(pwd)/dataset/")
-        print("data set copy")
     gan = WassersteinGAN(critic_iterations=5)
     gan._create_network()                
     gan.train_model(1000)

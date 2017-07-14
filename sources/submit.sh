@@ -1,8 +1,8 @@
 job_name=wgan_rn_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
---package-path=$(pwd)/sources/personality_replication \
---module-name=personality_replication.model_single \
+--package-path=$(pwd)/sources/mintor \
+--module-name=mintor.model_single \
 --staging-bucket=gs://wgan/ \
 --region=us-east1 \
 --scale-tier=BASIC_GPU \
