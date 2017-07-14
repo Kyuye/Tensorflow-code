@@ -1,4 +1,4 @@
-
+    
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -19,7 +19,7 @@ tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
 tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
 tf.flags.DEFINE_string("word_vec_map_file", '/dataset/word2vec_map.json', "mapfile for word2vec")
-tf.flags.DEFINE_integer("batch_size", 50, "batch size for training")
+tf.flags.DEFINE_integer("batch_size", 10, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
 tf.flags.DEFINE_integer("embed_dim", 300, "embedding dimension")
 tf.flags.DEFINE_integer("g_hidden1", 50, "g function 1st hidden layer unit")
@@ -30,12 +30,13 @@ tf.flags.DEFINE_integer("f_hidden1", 50, "f function 1st hidden layer unit")
 tf.flags.DEFINE_integer("f_hidden2", 50, "f function 2nd hidden layer unit")
 tf.flags.DEFINE_integer("f_logits", 50, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
-tf.flags.DEFINE_integer("memory_size", 10, "LSTM cell(memory) size")
+tf.flags.DEFINE_integer("memory_size", 20, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
+tf.flags.DEFINE_bool("on_cloud", False, "run on cloud or local")
 
 
 
-class WasserstienGAN(object):
+class WassersteinGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
@@ -54,7 +55,13 @@ class WasserstienGAN(object):
 
     def get_batch(self, data, iterator):
         fullbatch_size = len(data)
-        train_batch = data[(iterator*FLAGS.batch_size)%fullbatch_size:((iterator+1)*FLAGS.batch_size)%fullbatch_size]
+        start = (iterator*FLAGS.batch_size)%fullbatch_size
+        end = ((iterator+1)*FLAGS.batch_size)%fullbatch_size
+        if start > end:
+            start = fullbatch_size - FLAGS.batch_size
+            end = fullbatch_size
+        print(start, "-", end)
+        train_batch = data[start:end]
         
         seq_vec = []
         for seq in train_batch['content']:
@@ -97,8 +104,8 @@ class WasserstienGAN(object):
 
 
     def read_datafile(self, filename):
-        data = pandas.read_csv(filename, usecols=["Sentiment", "content"], nrows=100)
-        data = data[data["content"] != "0"]"0"]
+        data = pandas.read_csv(filename, usecols=["Sentiment", "content"])
+        data = data[data["content"] != "0"]
         data["content"] = data["content"].astype("str")
         return data
 
@@ -109,7 +116,14 @@ class WasserstienGAN(object):
             out, _ = tf.contrib.rnn.static_rnn(cell=rnn_cell, inputs=x, dtype=tf.float32)
             Wo = tf.Variable(tf.truncated_normal(shape=(len(x), FLAGS.memory_size, FLAGS.embed_dim)))
             bo = tf.Variable(tf.zeros(shape=(len(x), FLAGS.embed_dim)))
-            return tf.transpose(tf.matmul(out, Wo) + bo, 
+            #out = (150,,, 10, 20)
+            Wo = tf.unstack(Wo) #(150,,, 20, 300)
+            bo = tf.unstack(bo) 
+
+            logits = []
+            for i in range(len(x)):
+                logits.append(tf.matmul(out[i], Wo[i]) + bo[i])
+            return tf.transpose(tf.stack(logits), [1, 0, 2])
 
     def _create_generator(self, samples):
         self.z = tf.unstack(
@@ -124,79 +138,73 @@ class WasserstienGAN(object):
 
     def _discriminator(self, x, reuse=False):
         with tf.variable_scope("discriminator") as scope:
-            gs = []
             g_reuse = reuse
             f_reuse = reuse
-            # for i in range(self.max_object_pairs_num):
-            for i in range(100):
-                if i % 10 == 0:
-                    print("discriminator g func processing... : ", i, "/", self.max_object_pairs_num)
-                g_in = tf.reshape(x[:,i,:], (-1, 2*FLAGS.embed_dim))
-                g_layer1 = tf.layers.dense(
-                    inputs=g_in,
-                    units=FLAGS.g_hidden1,
-                    activation=tf.nn.relu,
-                    use_bias=True,
-                    kernel_initializer=tf.truncated_normal_initializer(),
-                    bias_initializer=tf.zeros_initializer(),
-                    kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    trainable=True,
-                    name="g_layer1",
-                    reuse=g_reuse
-                )
+            g_in = tf.reshape(x, (FLAGS.batch_size*self.max_object_pairs_num, 2*FLAGS.embed_dim))
+            g_layer1 = tf.layers.dense(
+                inputs=g_in,
+                units=FLAGS.g_hidden1,
+                activation=tf.nn.relu,
+                use_bias=True,
+                kernel_initializer=tf.truncated_normal_initializer(),
+                bias_initializer=tf.zeros_initializer(),
+                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                trainable=True,
+                name="g_layer1",
+                reuse=g_reuse
+            )
 
-                g_layer2 = tf.layers.dense(
-                    inputs=g_layer1,
-                    units=FLAGS.g_hidden2,
-                    activation=tf.nn.relu,
-                    use_bias=True,
-                    kernel_initializer=tf.truncated_normal_initializer(),
-                    bias_initializer=tf.zeros_initializer(),
-                    kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    trainable=True,
-                    reuse=g_reuse,
-                    name="g_layer2"
-                )
+            g_layer2 = tf.layers.dense(
+                inputs=g_layer1,
+                units=FLAGS.g_hidden2,
+                activation=tf.nn.relu,
+                use_bias=True,
+                kernel_initializer=tf.truncated_normal_initializer(),
+                bias_initializer=tf.zeros_initializer(),
+                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                trainable=True,
+                reuse=g_reuse,
+                name="g_layer2"
+            )
 
-                g_layer3 = tf.layers.dense(
-                    inputs=g_layer2,
-                    units=FLAGS.g_hidden3,
-                    activation=tf.nn.relu,
-                    use_bias=True,
-                    kernel_initializer=tf.truncated_normal_initializer(),
-                    bias_initializer=tf.zeros_initializer(),
-                    kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    trainable=True,
-                    reuse=g_reuse,
-                    name="g_layer3"
-                )
+            g_layer3 = tf.layers.dense(
+                inputs=g_layer2,
+                units=FLAGS.g_hidden3,
+                activation=tf.nn.relu,
+                use_bias=True,
+                kernel_initializer=tf.truncated_normal_initializer(),
+                bias_initializer=tf.zeros_initializer(),
+                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                trainable=True,
+                reuse=g_reuse,
+                name="g_layer3"
+            )
 
-                g_out = tf.layers.dense(
-                    inputs=g_layer3,
-                    units=FLAGS.g_logits,
-                    activation=tf.nn.relu,
-                    use_bias=True,
-                    kernel_initializer=tf.truncated_normal_initializer(),
-                    bias_initializer=tf.zeros_initializer(),
-                    kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                    trainable=True,
-                    reuse=g_reuse,
-                    name="g_out"
-                )
+            g_out = tf.layers.dense(
+                inputs=g_layer3,
+                units=FLAGS.g_logits,
+                activation=tf.nn.relu,
+                use_bias=True,
+                kernel_initializer=tf.truncated_normal_initializer(),
+                bias_initializer=tf.zeros_initializer(),
+                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
+                trainable=True,
+                reuse=g_reuse,
+                name="g_out"
+            )
 
-                gs.append(g_out)
-                g_reuse=True
+            gs = tf.reshape(g_out, (FLAGS.batch_size,self.max_object_pairs_num, FLAGS.g_logits))
 
             print("discriminator g summation...")
-            g_batch = tf.reduce_sum(tf.transpose(tf.stack(gs), [1, 0, 2]), axis=1)
+            g_batch = tf.reduce_sum(gs, axis=1)
 
             print("discriminator f func in progress...")
             f_layer1 = tf.layers.dense(
@@ -341,6 +349,7 @@ class WasserstienGAN(object):
 
         for itr in range(1, max_iterations):
             train_data, indices = self.get_batch(self.data, itr-1)
+            print(indices)
             feed_dict = {self.train_batch: train_data, self.label_indices: indices}
 
             print("iterations: ", itr)
@@ -358,12 +367,12 @@ class WasserstienGAN(object):
             print("generator update")
             self.sess.run(self.generator_train_op, feed_dict)
 
-            if itr % 200 == 0:
-                g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss])
-                self.saver.save(self.sess, "./CheckPoint/rnn_GAN")
-                print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
+            # if itr % 10 == 0:
+            #     g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss])
+            #     # self.saver.save(self.sess, "./CheckPoint/rnn_GAN")
+            #     print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
 
-            self.sess.close()
+        self.sess.close()
 
 
     def open_session(self):
@@ -372,12 +381,13 @@ class WasserstienGAN(object):
 
 
 def main(argv=None):
-    gan = WasserstienGAN(critic_iterations=5)
+    if FLAGS.on_cloud:
+        os.system("mkdir dataset")
+        os.system("gsutil -m cp -r gs://wgan/dataset/* $(pwd)/dataset/")
+        print("data set copy")
+    gan = WassersteinGAN(critic_iterations=5)
     gan._create_network()                
-    gan.train_model(100)
+    gan.train_model(1000)
 
 if __name__ == "__main__":
-    os.system("mkdir dataset")
-    os.system("gsutil -m cp -r gs://wgan/dataset/* $(pwd)/dataset/")
-    print("data set copy")
     tf.app.run()
