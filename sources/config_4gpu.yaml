@@ -1,0 +1,18 @@
+trainingInput:
+  # Use a cluster with many workers and a few parameter servers.
+  masterType: complex_model_m_gpu
+  # scaleTier: STANDARD_1
+  # workerType: complex_model_m_gpu
+  # parameterServerType: standard
+  # workerCount: 3
+  # parameterServerCount: 3
+
+
+# standard	A basic machine configuration suitable for training simple models with small to moderate datasets.
+# large_model	A machine with a lot of memory, specially suited for parameter servers when your model is large (having many hidden layers or layers with very large numbers of nodes).
+# complex_model_s	A machine suitable for the master and workers of the cluster when your model requires more computation than the standard machine can handle satisfactorily.
+# complex_model_m	A machine with roughly twice the number of cores and roughly double the memory of complex_model_s.
+# complex_model_l	A machine with roughly twice the number of cores and roughly double the memory of complex_model_m.
+# standard_gpu	A machine equivalent to standard that also includes a GPU that you can use in your trainer.
+# complex_model_m_gpu	A machine equivalent to complex_model_m that also includes four GPUs.
+# complex_model_l_gpu	A machine equivalent to complex_model_l that also includes eight GPUs.

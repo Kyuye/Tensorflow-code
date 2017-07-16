@@ -1,13 +1,18 @@
 
 import numpy as np
 import tensorflow as tf
+import math
 
 class Preprocessor(object):
     def __init__(self, embedding_map, batch_size, max_document_length):
         self.embedding_map = embedding_map
-        self.max_object_pairs_num = 0
-        self.batch_size = batch_size
         self.max_document_length = max_document_length
+        self.max_object_pairs_num = self.nCr(max_document_length,2)-1
+        self.batch_size = batch_size
+
+    def nCr(self, n,r=2):
+        f = math.factorial
+        return f(n) / f(r) / f(n-r)
 
     def get_batch(self, data, iterator):
         fullbatch_size = len(data)
@@ -16,7 +21,6 @@ class Preprocessor(object):
         if start > end:
             start = fullbatch_size - self.batch_size
             end = fullbatch_size
-        print(start, "-", end)
         train_batch = data[start:end]
         
         seq_vec = []
@@ -51,7 +55,5 @@ class Preprocessor(object):
             pair = tf.nn.embedding_lookup(seq, ids)
             pair_set.append(tf.concat([pair[:,0], pair[:,1]], axis=1))
 
-            self.max_object_pairs_num = len(ids)
-        
         return tf.stack(pair_set)
     

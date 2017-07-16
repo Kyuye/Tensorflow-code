@@ -4,9 +4,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-
-from data_loader import TrainDataLoader
-from preprocessing import Preprocessor
+import os
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
@@ -28,37 +26,49 @@ tf.flags.DEFINE_integer("memory_size", 20, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
 tf.flags.DEFINE_bool("on_cloud", False, "run on cloud or local")
 
+if FLAGS.on_cloud:
+    from mintor.data_loader import TrainDataLoader
+    from mintor.preprocessing import Preprocessor
+else:
+    from data_loader import TrainDataLoader
+    from preprocessing import Preprocessor
+    
 
 class WassersteinGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
 
-        loader = TrainDataLoader(FLAGS.train_data, FLAGS.word_vec_map_file, FLAGS.on_cloud)
-        self.preprocessor = Preprocessor(loader.embedding_map, FLAGS.batch_size, FLAGS.max_document_length)
+        loader = TrainDataLoader(
+            train_data_csv=FLAGS.train_data, 
+            word2vec_map_json=FLAGS.word_vec_map_file, 
+            on_cloud=FLAGS.on_cloud)
+        
+        self.preproc = Preprocessor(
+            embedding_map=loader.embedding_map, 
+            batch_size=FLAGS.batch_size, 
+            max_document_length=FLAGS.max_document_length)
 
         self.data = loader.train_data
-
-        self.train_batch = tf.placeholder(tf.float32, [FLAGS.batch_size, FLAGS.max_document_length, FLAGS.embed_dim])
-        self.label_indices = tf.placeholder(tf.int32, [FLAGS.batch_size,])
 
         print("session opening...")
         self.open_session()
 
 
     def _generator(self, x):
-        with tf.variable_scope("generator") as scope:
+        with tf.variable_scope('generator') as scope:
             rnn_cell = tf.contrib.rnn.BasicLSTMCell(num_units=FLAGS.memory_size)
             out, _ = tf.contrib.rnn.static_rnn(cell=rnn_cell, inputs=x, dtype=tf.float32)
-            Wo = tf.Variable(tf.truncated_normal(shape=(len(x), FLAGS.memory_size, FLAGS.embed_dim)))
-            bo = tf.Variable(tf.zeros(shape=(len(x), FLAGS.embed_dim)))
-            Wo = tf.unstack(Wo)
-            bo = tf.unstack(bo) 
+            Wo = tf.unstack(tf.Variable(
+                tf.truncated_normal(shape=(len(x), FLAGS.memory_size, FLAGS.embed_dim))))
+            bo = tf.unstack(tf.Variable(
+                tf.zeros(shape=(len(x), FLAGS.embed_dim))))
 
             logits = []
             for i in range(len(x)):
                 logits.append(tf.matmul(out[i], Wo[i]) + bo[i])
-            return tf.transpose(tf.stack(logits), [1, 0, 2])
+
+        return tf.transpose(tf.stack(logits), [1, 0, 2])
 
     def _create_generator(self, samples):
         self.z = tf.unstack(
@@ -72,10 +82,10 @@ class WassersteinGAN(object):
 
 
     def _discriminator(self, x, reuse=False):
-        with tf.variable_scope("discriminator") as scope:
-            g_reuse = reuse
-            f_reuse = reuse
-            g_in = tf.reshape(x, (FLAGS.batch_size*self.preprocessor.max_object_pairs_num, 2*FLAGS.embed_dim))
+        with tf.variable_scope('discriminator') as scope:
+            g_in = tf.reshape(
+                tensor=x, 
+                shape=(FLAGS.batch_size*self.preproc.max_object_pairs_num, 2*FLAGS.embed_dim))
             g_layer1 = tf.layers.dense(
                 inputs=g_in,
                 units=FLAGS.g_hidden1,
@@ -88,7 +98,7 @@ class WassersteinGAN(object):
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
                 name="g_layer1",
-                reuse=g_reuse
+                reuse=reuse
             )
 
             g_layer2 = tf.layers.dense(
@@ -102,10 +112,9 @@ class WassersteinGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
-                reuse=g_reuse,
+                reuse=reuse,
                 name="g_layer2"
             )
-
             g_layer3 = tf.layers.dense(
                 inputs=g_layer2,
                 units=FLAGS.g_hidden3,
@@ -117,7 +126,7 @@ class WassersteinGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
-                reuse=g_reuse,
+                reuse=reuse,
                 name="g_layer3"
             )
 
@@ -132,18 +141,20 @@ class WassersteinGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
-                reuse=g_reuse,
+                reuse=reuse,
                 name="g_out"
             )
 
-            gs = tf.reshape(g_out, (FLAGS.batch_size,self.preprocessor.max_object_pairs_num, FLAGS.g_logits))
+            g_out = tf.reshape(
+                tensor=g_out, 
+                shape=(FLAGS.batch_size,self.preproc.max_object_pairs_num, FLAGS.g_logits))
 
             print("discriminator g summation...")
-            g_batch = tf.reduce_sum(gs, axis=1)
+            g_sum = tf.reduce_sum(g_out, axis=1)
 
             print("discriminator f func in progress...")
             f_layer1 = tf.layers.dense(
-                inputs=g_batch,
+                inputs=g_sum,
                 units=FLAGS.f_hidden1,
                 activation=tf.nn.relu,
                 use_bias=True,
@@ -153,7 +164,7 @@ class WassersteinGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
-                reuse=f_reuse,
+                reuse=reuse,
                 name="f_layer1"
             )
 
@@ -170,12 +181,11 @@ class WassersteinGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
-                reuse=f_reuse,
+                reuse=reuse,
                 name="f_layer2"
             )
 
             print("discriminator f func in progress... layer2 complete")
-
             logits = tf.layers.dense(
                 inputs=f_layer2,
                 units=FLAGS.f_logits,
@@ -187,7 +197,7 @@ class WassersteinGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
-                reuse=f_reuse,
+                reuse=reuse,
                 name="f_out"
             )
 
@@ -204,7 +214,7 @@ class WassersteinGAN(object):
                 bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
                 trainable=True,
-                reuse=f_reuse,
+                reuse=reuse,
                 name="supervised_layer"
                 )
 
@@ -217,47 +227,57 @@ class WassersteinGAN(object):
         supervised_loss = tf.losses.softmax_cross_entropy(label, supervised_logits)
         discriminator_loss = tf.reduce_mean(logits_real - logits_fake) + supervised_loss
         gen_loss = tf.reduce_mean(logits_fake)
+        tf.summary.scalar('discriminator_loss', discriminator_loss)
+        tf.summary.scalar('gen_loss', gen_loss)
+        tf.summary.scalar('supervised_loss', supervised_loss)
         return discriminator_loss, gen_loss
 
 
     def _create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
         print("Setting up model...")
+        self.train_batch = tf.placeholder(
+            dtype=tf.float32, 
+            shape=[FLAGS.batch_size, FLAGS.max_document_length, FLAGS.embed_dim])
+        
+        self.label_indices = tf.placeholder(
+            dtype=tf.int32, 
+            shape=[FLAGS.batch_size,])
 
-        print("real data pairing..")
-        real_pairs = self.preprocessor.pairing(self.train_batch)
+        print("  real data pairing..")
+        real_pairs = self.preproc.pairing(self.train_batch)
 
-        print("create generator...")
+        print("   create generator...")
         self._create_generator(FLAGS.batch_size)
-        print("fake data pairing..")
-        fake_pairs = self.preprocessor.pairing(self.gen_data)
+        
+        print("   fake data pairing..")
+        fake_pairs = self.preproc.pairing(self.gen_data)
 
-        print("building discriminator for real data...")
-        logits_real, logits_supervised = self._discriminator(real_pairs, reuse=False)
-        print("building discriminator for fake data...")
-        logits_fake, _ = self._discriminator(fake_pairs, reuse=True)
+        print("   building discriminator for real data...")
+        logits_real, logits_supervised = self._discriminator(real_pairs, False)
 
-        # Loss calculation
-        print("building gan loss graph...")
+        print("   building discriminator for fake data...")
+        logits_fake, _ = self._discriminator(fake_pairs, True)
+
+        print("  building gan loss graph...")
         labels = tf.one_hot(indices=self.label_indices, depth=3, on_value=1.0, off_value=0.0)
-        self.discriminator_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake, logits_supervised, labels)
+        self.disc_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake, logits_supervised, labels)
 
         print("variables scoping...")
         train_variables = tf.trainable_variables()
 
-        self.generator_variables = [v for v in train_variables if v.name.startswith("generator")]
-        self.discriminator_variables = [v for v in train_variables if v.name.startswith("discriminator")]
+        self.gen_variables = [v for v in train_variables if v.name.startswith("generator")]
+        self.disc_variables = [v for v in train_variables if v.name.startswith("discriminator")]
 
         # print(list(map(lambda x: x.op.name, self.generator_variables)))
         # print(list(map(lambda x: x.op.name, self.discriminator_variables)))
 
-        self.saver = tf.train.Saver(self.generator_variables)
-
         optim = self._get_optimizer(optimizer, learning_rate, optimizer_param)
 
-        print("building train op")
-        self.generator_train_op = self._train(self.gen_loss, self.generator_variables, optim)
-        self.discriminator_train_op = self._train(self.discriminator_loss, self.discriminator_variables, optim)
+        print("   building train op")
+        self.gen_train_op = self._train(self.gen_loss, self.gen_variables, optim)
+        self.disc_train_op = self._train(self.disc_loss, self.disc_variables, optim)
 
+        self.saver = tf.train.Saver(self.gen_variables)
 
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
@@ -277,17 +297,16 @@ class WassersteinGAN(object):
     def train_model(self, max_iterations):
         print("Training Wasserstein GAN model...")
         clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
-                                        var in self.discriminator_variables]
+                                        var in self.disc_variables]
 
         print("variables initializing")
+        merged = tf.summary.merge_all()
+        summary_writer = tf.summary.FileWriter(FLAGS.log_dir, self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
 
         for itr in range(1, max_iterations):
-            train_data, indices = self.preprocessor.get_batch(self.data, itr-1)
-            print(indices)
+            train_data, indices = self.preproc.get_batch(self.data, itr-1)
             feed_dict = {self.train_batch: train_data, self.label_indices: indices}
-
-            print("iterations: ", itr)
 
             if itr < 25 or itr % 500 == 0:
                 critic_itrs = 25
@@ -295,23 +314,24 @@ class WassersteinGAN(object):
                 critic_itrs = self.critic_iterations
 
             for critic_itr in range(critic_itrs):
-                print("discriminator critic: ", critic_itr)
-                self.sess.run(self.discriminator_train_op, feed_dict)
+                # print("discriminator critic: ", critic_itr)
+                self.sess.run(self.disc_train_op, feed_dict)
                 self.sess.run(clip_discriminator_var_op, feed_dict)
             
-            print("generator update")
-            self.sess.run(self.generator_train_op, feed_dict)
+            # print("generator update")
+            summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
-            if itr % 10 == 0:
-                g_loss_val, d_loss_val = self.sess.run([self.gen_loss, self.discriminator_loss], feed_dict)
-                # self.saver.save(self.sess, "./CheckPoint/rnn_GAN")
+            if itr % 100 == 0:
+                g_loss_val, d_loss_val = self.sess.run(
+                    [self.gen_loss, self.disc_loss], feed_dict)
+                self.saver.save(self.sess, "gs://wgan/logs/wgan")
+                summary_writer.add_summary(summary, itr)
                 print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
-
-        self.sess.close()
 
 
     def open_session(self):
-        self.sess = tf.Session()
+        self.sess = tf.Session(config=tf.ConfigProto(
+            allow_soft_placement=True, log_device_placement=True))
         print("train ready")
 
 
@@ -319,6 +339,7 @@ def main(argv=None):
     gan = WassersteinGAN(critic_iterations=5)
     gan._create_network()                
     gan.train_model(1000)
+    gan.sess.close()
 
 if __name__ == "__main__":
     tf.app.run()
