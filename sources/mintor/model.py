@@ -25,200 +25,100 @@ tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
 tf.flags.DEFINE_integer("memory_size", 20, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
 tf.flags.DEFINE_bool("on_cloud", False, "run on cloud or local")
+tf.flags.DEFINE_integer("gpu_num", 4, "the number of GPUs")
 
 if FLAGS.on_cloud:
     from mintor.data_loader import TrainDataLoader
     from mintor.preprocessing import Preprocessor
+    from mintor.utils import *
 else:
     from data_loader import TrainDataLoader
     from preprocessing import Preprocessor
+    from utils import *
     
 
 class WassersteinGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
-        self.critic_iterations = critic_iterations
-        self.clip_values = clip_values
-
+        # data loader:
+        # load train data and load word2vec map file
         loader = TrainDataLoader(
             train_data_csv=FLAGS.train_data, 
             word2vec_map_json=FLAGS.word_vec_map_file, 
             on_cloud=FLAGS.on_cloud)
         
-        self.preproc = Preprocessor(
+        # preprocessor:
+        # get batch and pairing 
+        preproc = Preprocessor(
             embedding_map=loader.embedding_map, 
-            batch_size=FLAGS.batch_size, 
+            batch_size=FLAGS.batch_size*FLAGS.gpu_num, 
             max_document_length=FLAGS.max_document_length)
 
+        self.critic_iterations = critic_iterations
+        self.clip_values = clip_values
+        self.max_object_pairs_num = preproc.max_object_pairs_num
         self.data = loader.train_data
 
+        self.get_batch = preproc.get_batch
+        self.pairing = preproc.pairing
+
         print("session opening...")
-        self.open_session()
+        self._open_session()
+        
 
+    def _generator(self, reuse=False):
+        z = rand((FLAGS.batch_size, FLAGS.max_document_length, FLAGS.embed_dim))
+        time_step = len(z)
 
-    def _generator(self, x):
-        with tf.variable_scope('generator') as scope:
-            rnn_cell = tf.contrib.rnn.BasicLSTMCell(num_units=FLAGS.memory_size)
-            out, _ = tf.contrib.rnn.static_rnn(cell=rnn_cell, inputs=x, dtype=tf.float32)
-            Wo = tf.unstack(tf.Variable(
-                tf.truncated_normal(shape=(len(x), FLAGS.memory_size, FLAGS.embed_dim))))
-            bo = tf.unstack(tf.Variable(
-                tf.zeros(shape=(len(x), FLAGS.embed_dim))))
+        with tf.variable_scope('generator', reuse=reuse) as scope:
+            rnn_cell = tf.contrib.rnn.LSTMCell(num_units=FLAGS.memory_size)
+            out, _ = tf.contrib.rnn.static_rnn(
+                cell=rnn_cell, inputs=z, dtype=tf.float32, scope=scope)
 
-            logits = []
-            for i in range(len(x)):
-                logits.append(tf.matmul(out[i], Wo[i]) + bo[i])
+            Wo = LSTM_Wo(shape=(time_step, FLAGS.memory_size, FLAGS.embed_dim), reuse=reuse)
+            bo = LSTM_bo(shape=(time_step, FLAGS.embed_dim), reuse=reuse)
+
+            logits = [tf.matmul(out[i], Wo[i]) + bo[i] for i in range(time_step)]
 
         return tf.transpose(tf.stack(logits), [1, 0, 2])
 
-    def _create_generator(self, samples):
-        self.z = tf.unstack(
-            tf.random_uniform(
-                shape=(samples, FLAGS.max_document_length, FLAGS.embed_dim), 
-                minval=-1, 
-                maxval=1, 
-                dtype=tf.float32), 
-                axis=1)
-        self.gen_data = self._generator(self.z)
-
 
     def _discriminator(self, x, reuse=False):
-        with tf.variable_scope('discriminator') as scope:
-            g_in = tf.reshape(
-                tensor=x, 
-                shape=(FLAGS.batch_size*self.preproc.max_object_pairs_num, 2*FLAGS.embed_dim))
-            g_layer1 = tf.layers.dense(
-                inputs=g_in,
-                units=FLAGS.g_hidden1,
-                activation=tf.nn.relu,
-                use_bias=True,
-                kernel_initializer=tf.truncated_normal_initializer(),
-                bias_initializer=tf.zeros_initializer(),
-                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                trainable=True,
-                name="g_layer1",
-                reuse=reuse
-            )
+        with tf.variable_scope('discriminator', reuse=reuse) as scope:
+            g_input_shape = (FLAGS.batch_size*self.max_object_pairs_num, 2*FLAGS.embed_dim)
+            g_output_shape = (FLAGS.batch_size, self.max_object_pairs_num, FLAGS.g_logits)
 
-            g_layer2 = tf.layers.dense(
-                inputs=g_layer1,
-                units=FLAGS.g_hidden2,
-                activation=tf.nn.relu,
-                use_bias=True,
-                kernel_initializer=tf.truncated_normal_initializer(),
-                bias_initializer=tf.zeros_initializer(),
-                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                trainable=True,
-                reuse=reuse,
-                name="g_layer2"
-            )
-            g_layer3 = tf.layers.dense(
-                inputs=g_layer2,
-                units=FLAGS.g_hidden3,
-                activation=tf.nn.relu,
-                use_bias=True,
-                kernel_initializer=tf.truncated_normal_initializer(),
-                bias_initializer=tf.zeros_initializer(),
-                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                trainable=True,
-                reuse=reuse,
-                name="g_layer3"
-            )
+            g_in = tf.reshape(tensor=x, shape=g_input_shape)
+            
+            g_layer1 = dense_layer(
+                inputs=g_in, units=FLAGS.g_hidden1, reuse=reuse, name="g_layer1")
+            
+            g_layer2 = dense_layer(
+                inputs=g_layer1, units=FLAGS.g_hidden2, reuse=reuse, name="g_layer2")
+            
+            g_layer3 = dense_layer(
+                inputs=g_layer2, units=FLAGS.g_hidden3, reuse=reuse, name="g_layer3")
+            
+            g_out = dense_layer(
+                inputs=g_layer3, units=FLAGS.g_logits, reuse=reuse, name="g_out")
 
-            g_out = tf.layers.dense(
-                inputs=g_layer3,
-                units=FLAGS.g_logits,
-                activation=tf.nn.relu,
-                use_bias=True,
-                kernel_initializer=tf.truncated_normal_initializer(),
-                bias_initializer=tf.zeros_initializer(),
-                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                trainable=True,
-                reuse=reuse,
-                name="g_out"
-            )
-
-            g_out = tf.reshape(
-                tensor=g_out, 
-                shape=(FLAGS.batch_size,self.preproc.max_object_pairs_num, FLAGS.g_logits))
-
-            print("discriminator g summation...")
+            g_out = tf.reshape(tensor=g_out, shape=(g_output_shape))
             g_sum = tf.reduce_sum(g_out, axis=1)
 
-            print("discriminator f func in progress...")
-            f_layer1 = tf.layers.dense(
-                inputs=g_sum,
-                units=FLAGS.f_hidden1,
-                activation=tf.nn.relu,
-                use_bias=True,
-                kernel_initializer=tf.truncated_normal_initializer(),
-                bias_initializer=tf.zeros_initializer(),
-                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                trainable=True,
-                reuse=reuse,
-                name="f_layer1"
-            )
+            f_layer1 = dense_layer(
+                inputs=g_sum,units=FLAGS.f_hidden1, reuse=reuse, name="f_layer1")
+            
+            f_layer2 = dense_layer(
+                inputs=f_layer1, units=FLAGS.f_hidden2, reuse=reuse, name="f_layer2")
+            
+            logits = dense_layer(
+                inputs=f_layer2, units=FLAGS.f_logits, reuse=reuse, name="f_out")
 
-            print("discriminator f func in progress... layer1 complete")
-
-            f_layer2 = tf.layers.dense(
-                inputs=f_layer1,
-                units=FLAGS.f_hidden2,
-                activation=tf.nn.relu,
-                use_bias=True,
-                kernel_initializer=tf.truncated_normal_initializer(),
-                bias_initializer=tf.zeros_initializer(),
-                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                trainable=True,
-                reuse=reuse,
-                name="f_layer2"
-            )
-
-            print("discriminator f func in progress... layer2 complete")
-            logits = tf.layers.dense(
-                inputs=f_layer2,
-                units=FLAGS.f_logits,
-                activation=tf.nn.relu,
-                use_bias=True,
-                kernel_initializer=tf.truncated_normal_initializer(),
-                bias_initializer=tf.zeros_initializer(),
-                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                trainable=True,
-                reuse=reuse,
-                name="f_out"
-            )
-
-            print("discriminator f func in progress... logits complete")
-        
-            supervised_logits = tf.layers.dense(
+            supervised_logits = dense_layer(
                 inputs=logits, 
-                units=FLAGS.emotion_class,
-                activation=None,
-                use_bias=True,
-                kernel_initializer=tf.truncated_normal_initializer(),
-                bias_initializer=tf.zeros_initializer(),
-                kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-                trainable=True,
-                reuse=reuse,
-                name="supervised_layer"
-                )
-
-            print("discriminator f func in progress... supervised logits complete")
+                units=FLAGS.emotion_class, 
+                activation=None, 
+                reuse=reuse, 
+                name="supervised_layer")
 
         return logits, supervised_logits
 
@@ -227,71 +127,71 @@ class WassersteinGAN(object):
         supervised_loss = tf.losses.softmax_cross_entropy(label, supervised_logits)
         discriminator_loss = tf.reduce_mean(logits_real - logits_fake) + supervised_loss
         gen_loss = tf.reduce_mean(logits_fake)
+
         tf.summary.scalar('discriminator_loss', discriminator_loss)
         tf.summary.scalar('gen_loss', gen_loss)
         tf.summary.scalar('supervised_loss', supervised_loss)
+
         return discriminator_loss, gen_loss
 
 
-    def _create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
+    def create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
         print("Setting up model...")
-        self.train_batch = tf.placeholder(
-            dtype=tf.float32, 
-            shape=[FLAGS.batch_size, FLAGS.max_document_length, FLAGS.embed_dim])
+
+        self.train_batch = []
+        self.label_indices = []
+
+        for g in range(FLAGS.gpu_num):
+            with tf.device("/gpu:%d"%g):
+                
+                reuse = g > 0
+                
+                self.train_batch.append(tf.placeholder(
+                    dtype=tf.float32, 
+                    shape=[FLAGS.batch_size, FLAGS.max_document_length, FLAGS.embed_dim]))
         
-        self.label_indices = tf.placeholder(
-            dtype=tf.int32, 
-            shape=[FLAGS.batch_size,])
+                self.label_indices.append(tf.placeholder(
+                    dtype=tf.int32, 
+                    shape=[FLAGS.batch_size,]))
 
-        print("  real data pairing..")
-        real_pairs = self.preproc.pairing(self.train_batch)
+                print("GPU:%d   object pairing.."%g)    
+                self.gen_data = self._generator(reuse)
+                fake_pairs = self.pairing(self.gen_data)
+                real_pairs = self.pairing(self.train_batch[g])
 
-        print("   create generator...")
-        self._create_generator(FLAGS.batch_size)
-        
-        print("   fake data pairing..")
-        fake_pairs = self.preproc.pairing(self.gen_data)
+                print("GPU:%d   building discriminator"%g)
+                logits_real, logits_supervised = self._discriminator(real_pairs, reuse)
+                logits_fake, _ = self._discriminator(fake_pairs, True)
 
-        print("   building discriminator for real data...")
-        logits_real, logits_supervised = self._discriminator(real_pairs, False)
+                print("GPU:%d   building gan loss ..."%g)
+                labels = one_hot(self.label_indices[g])
+                self.disc_loss, self.gen_loss = self._gan_loss(
+                    logits_real, logits_fake, logits_supervised, labels)
 
-        print("   building discriminator for fake data...")
-        logits_fake, _ = self._discriminator(fake_pairs, True)
+                print("GPU:%d   variables scoping..."%g)
+                train_variables = tf.trainable_variables()
 
-        print("  building gan loss graph...")
-        labels = tf.one_hot(indices=self.label_indices, depth=3, on_value=1.0, off_value=0.0)
-        self.disc_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake, logits_supervised, labels)
+                self.gen_variables = [v for v in train_variables if v.name.startswith("generator")]
+                self.disc_variables = [v for v in train_variables if v.name.startswith("discriminator")]
 
-        print("variables scoping...")
-        train_variables = tf.trainable_variables()
+                # print(list(map(lambda x: x.op.name, self.gen_variables)))
+                # print(list(map(lambda x: x.op.name, self.disc_variables)))
 
-        self.gen_variables = [v for v in train_variables if v.name.startswith("generator")]
-        self.disc_variables = [v for v in train_variables if v.name.startswith("discriminator")]
+                print("GPU:%d   gradient computing ..."%g)
+                self.optim = self._get_optimizer(optimizer, learning_rate, optimizer_param)
 
-        # print(list(map(lambda x: x.op.name, self.generator_variables)))
-        # print(list(map(lambda x: x.op.name, self.discriminator_variables)))
+                if g == 0:
+                    self.gen_grads = self.optim.compute_gradients(self.gen_loss, self.gen_variables)
+                    self.disc_grads = self.optim.compute_gradients(self.disc_loss, self.disc_variables)
+                else:
+                    self.gen_grads += self.optim.compute_gradients(self.gen_loss, self.gen_variables)
+                    self.disc_grads += self.optim.compute_gradients(self.disc_loss, self.disc_variables)
 
-        optim = self._get_optimizer(optimizer, learning_rate, optimizer_param)
-
-        print("   building train op")
-        self.gen_train_op = self._train(self.gen_loss, self.gen_variables, optim)
-        self.disc_train_op = self._train(self.disc_loss, self.disc_variables, optim)
+        print("build train op")
+        self.gen_train_op = self.optim.apply_gradients(self.gen_grads)
+        self.disc_train_op = self.optim.apply_gradients(self.disc_grads)
 
         self.saver = tf.train.Saver(self.gen_variables)
-
-
-    def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
-        self.learning_rate = learning_rate
-        if optimizer_name == "Adam":
-            return tf.train.AdamOptimizer(learning_rate, beta1=optimizer_param)
-        elif optimizer_name == "RMSProp":
-            return tf.train.RMSPropOptimizer(learning_rate, decay=optimizer_param)
-        else:
-            raise ValueError("Unknown optimizer %s" % optimizer_name)
-
-    def _train(self, loss_val, var_list, optimizer):
-        grads = optimizer.compute_gradients(loss_val, var_list=var_list)
-        return optimizer.apply_gradients(grads)
 
 
     def train_model(self, max_iterations):
@@ -305,8 +205,18 @@ class WassersteinGAN(object):
         self.sess.run(tf.global_variables_initializer())
 
         for itr in range(1, max_iterations):
-            train_data, indices = self.preproc.get_batch(self.data, itr-1)
-            feed_dict = {self.train_batch: train_data, self.label_indices: indices}
+            train_data, indices = self.get_batch(self.data, itr-1)
+            feed_dict = {
+                self.train_batch[0]: train_data[0:FLAGS.batch_size], 
+                self.label_indices[0]: indices[0:FLAGS.batch_size],
+                self.train_batch[1]: train_data[FLAGS.batch_size:2*FLAGS.batch_size], 
+                self.label_indices[1]: indices[FLAGS.batch_size:2*FLAGS.batch_size],
+                self.train_batch[2]: train_data[2*FLAGS.batch_size:3*FLAGS.batch_size], 
+                self.label_indices[2]: indices[2*FLAGS.batch_size:3*FLAGS.batch_size],
+                self.train_batch[3]: train_data[3*FLAGS.batch_size:4*FLAGS.batch_size], 
+                self.label_indices[3]: indices[3*FLAGS.batch_size:4*FLAGS.batch_size]
+                }
+
 
             if itr < 25 or itr % 500 == 0:
                 critic_itrs = 25
@@ -329,17 +239,29 @@ class WassersteinGAN(object):
                 print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
 
 
-    def open_session(self):
+    def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
+        self.learning_rate = learning_rate
+        if optimizer_name == "Adam":
+            return tf.train.AdamOptimizer(learning_rate, beta1=optimizer_param, name="optim")
+        elif optimizer_name == "RMSProp":
+            return tf.train.RMSPropOptimizer(learning_rate, decay=optimizer_param)
+        else:
+            raise ValueError("Unknown optimizer %s" % optimizer_name)
+
+
+    def _open_session(self):
         self.sess = tf.Session(config=tf.ConfigProto(
             allow_soft_placement=True, log_device_placement=True))
+        # self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
         print("train ready")
 
 
 def main(argv=None):
     gan = WassersteinGAN(critic_iterations=5)
-    gan._create_network()                
+    gan.create_network()                
     gan.train_model(1000)
     gan.sess.close()
+
 
 if __name__ == "__main__":
     tf.app.run()
