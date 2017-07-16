@@ -66,13 +66,12 @@ class WassersteinGAN(object):
         
 
     def _generator(self, reuse=False):
-        z_shape = (FLAGS.batch_size, FLAGS.max_document_length, FLAGS.embed_dim)
-        z = rand(z_shape)
+        z = rand((FLAGS.batch_size, FLAGS.max_document_length, FLAGS.embed_dim))
         time_step = len(z)
 
         with tf.variable_scope('generator', reuse=reuse) as scope:
-            if reuse:
-                scope.reuse_variables()
+            # if reuse:
+            #     scope.reuse_variables()
             
             rnn_cell = tf.contrib.rnn.LSTMCell(num_units=FLAGS.memory_size)
             out, _ = tf.contrib.rnn.static_rnn(
