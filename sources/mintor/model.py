@@ -4,7 +4,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import os
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
