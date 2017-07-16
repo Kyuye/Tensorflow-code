@@ -253,11 +253,6 @@ class WassersteinGAN(object):
             raise ValueError("Unknown optimizer %s" % optimizer_name)
 
 
-    def _train(self, loss_val, var_list, optimizer):
-        grads = optimizer.compute_gradients(loss_val, var_list=var_list)
-        return optimizer.apply_gradients(grads)
-
-
     def _open_session(self):
         self.sess = tf.Session(config=tf.ConfigProto(
             allow_soft_placement=True, log_device_placement=True))
