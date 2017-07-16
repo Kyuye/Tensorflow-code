@@ -56,9 +56,10 @@ class WassersteinGAN(object):
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
         self.max_object_pairs_num = preproc.max_object_pairs_num
+        self.data = loader.train_data
+
         self.get_batch = preproc.get_batch
         self.pairing = preproc.pairing
-        self.data = loader.train_data
 
         print("session opening...")
         self._open_session()
@@ -79,10 +80,6 @@ class WassersteinGAN(object):
 
             Wo = LSTM_Wo(shape=(time_step, FLAGS.memory_size, FLAGS.embed_dim), reuse=reuse)
             bo = LSTM_bo(shape=(time_step, FLAGS.embed_dim), reuse=reuse)
-
-            # logits = []
-            # for i in range(len(z)):
-            #     logits.append(tf.matmul(out[i], Wo[i]) + bo[i])
 
             logits = [tf.matmul(out[i], Wo[i]) + bo[i] for i in range(time_step)]
 
@@ -108,11 +105,9 @@ class WassersteinGAN(object):
             g_out = dense_layer(
                 inputs=g_layer3, units=FLAGS.g_logits, reuse=reuse, name="g_out")
 
-            print("discriminator g summation...")
             g_out = tf.reshape(tensor=g_out, shape=(g_output_shape))
             g_sum = tf.reduce_sum(g_out, axis=1)
 
-            print("discriminator f func in progress...")
             f_layer1 = dense_layer(
                 inputs=g_sum,units=FLAGS.f_hidden1, reuse=reuse, name="f_layer1")
             
@@ -163,32 +158,30 @@ class WassersteinGAN(object):
                     dtype=tf.int32, 
                     shape=[FLAGS.batch_size,]))
 
-                print("   fake data pairing..")    
+                print("GPU:%d   object pairing.."%g)    
                 self.gen_data = self._generator(reuse)
                 fake_pairs = self.pairing(self.gen_data)
-                    
-                print("  real data pairing..")
                 real_pairs = self.pairing(self.train_batch[g])
 
-                print("   building discriminator")
+                print("GPU:%d   building discriminator"%g)
                 logits_real, logits_supervised = self._discriminator(real_pairs, reuse)
                 logits_fake, _ = self._discriminator(fake_pairs, True)
 
-                print("  building gan loss ...")
+                print("GPU:%d   building gan loss ..."%g)
                 labels = one_hot(self.label_indices[g])
                 self.disc_loss, self.gen_loss = self._gan_loss(
                     logits_real, logits_fake, logits_supervised, labels)
 
-                print("   variables scoping...")
+                print("GPU:%d   variables scoping..."%g)
                 train_variables = tf.trainable_variables()
 
                 self.gen_variables = [v for v in train_variables if v.name.startswith("generator")]
                 self.disc_variables = [v for v in train_variables if v.name.startswith("discriminator")]
 
-                print(list(map(lambda x: x.op.name, self.gen_variables)))
-                print(list(map(lambda x: x.op.name, self.disc_variables)))
+                # print(list(map(lambda x: x.op.name, self.gen_variables)))
+                # print(list(map(lambda x: x.op.name, self.disc_variables)))
 
-                print("   gradient computing ...")
+                print("GPU:%d   gradient computing ..."%g)
                 self.optim = self._get_optimizer(optimizer, learning_rate, optimizer_param)
 
                 if g == 0:
@@ -201,11 +194,6 @@ class WassersteinGAN(object):
         print("build train op")
         self.gen_train_op = self.optim.apply_gradients(self.gen_grads)
         self.disc_train_op = self.optim.apply_gradients(self.disc_grads)
-
-
-        # print("   building train op")
-        # self.gen_train_op = self._train(self.gen_loss, self.gen_variables, optim)
-        # self.disc_train_op = self._train(self.disc_loss, self.disc_variables, optim)
 
         self.saver = tf.train.Saver(self.gen_variables)
 
@@ -270,52 +258,6 @@ class WassersteinGAN(object):
         return optimizer.apply_gradients(grads)
 
 
-    # def dense_layer(
-    #     self,
-    #     inputs,
-    #     units,
-    #     reuse,
-    #     name,
-    #     activation=tf.nn.relu,
-    #     use_bias=True,
-    #     kernel_initializer=tf.truncated_normal_initializer(),
-    #     bias_initializer=tf.zeros_initializer(),
-    #     kernel_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-    #     bias_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-    #     activity_regularizer=tf.contrib.layers.l2_regularizer(FLAGS.regularizer_scale),
-    #     trainable=True):
-    #     return tf.layers.dense(
-    #             inputs=inputs,
-    #             units=units,
-    #             activation=activation,
-    #             use_bias=use_bias,
-    #             kernel_initializer=kernel_initializer,
-    #             bias_initializer=bias_initializer,
-    #             kernel_regularizer=kernel_regularizer,
-    #             bias_regularizer=bias_regularizer,
-    #             activity_regularizer=activity_regularizer,
-    #             trainable=trainable,
-    #             name=name,
-    #             reuse=reuse)
-
-    # def rand(self, shape):
-    #     random_uniform = tf.random_uniform(shape=shape, minval=-1, maxval=1, dtype=tf.float32), 
-    #     return tf.unstack(random_uniform, axis=1)
-
-    # def LSTM_Wo(self, shape):
-    #     init_var = tf.truncated_normal(shape=(len(z), FLAGS.memory_size, FLAGS.embed_dim))
-    #     var = tf.Variable(init_var)
-    #     return tf.unstack(var)
-
-    # def LSTM_bo(self, shape):
-    #     init_var = tf.zeros(shape=shape)
-    #     var = tf.Variable(init_var)
-    #     return tf.unstack(var)
-
-    # def one_hot(self, indices):
-    #     return tf.one_hot(indices=indices, depth=3, on_value=1.0, off_value=0.0)
-
-
     def _open_session(self):
         self.sess = tf.Session(config=tf.ConfigProto(
             allow_soft_placement=True, log_device_placement=True))
@@ -323,12 +265,12 @@ class WassersteinGAN(object):
         print("train ready")
 
 
-
 def main(argv=None):
     gan = WassersteinGAN(critic_iterations=5)
     gan.create_network()                
     gan.train_model(1000)
     gan.sess.close()
+
 
 if __name__ == "__main__":
     tf.app.run()

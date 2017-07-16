@@ -35,29 +35,20 @@ def rand(shape):
     return tf.unstack(random_uniform, axis=1)
 
 def LSTM_Wo(shape, reuse):
-    # if reuse:
     var = tf.get_variable(
         name="Wo",
         shape=shape,
         dtype=tf.float32,
         initializer=tf.truncated_normal_initializer())
-    # else:
-    #     init_var = tf.truncated_normal(shape=shape)
-    #     var = tf.Variable(init_var, name="Wo")
-
     return tf.unstack(var)
 
+
 def LSTM_bo(shape, reuse):
-    # if reuse:
     var = tf.get_variable(
         name="bo",
         shape=shape,
         dtype=tf.float32,
         initializer=tf.truncated_normal_initializer())
-    # else:
-    #     init_var = tf.zeros(shape=shape)
-    #     var = tf.Variable(init_var, name="bo")
-
     return tf.unstack(var)
 
 def one_hot(indices):
