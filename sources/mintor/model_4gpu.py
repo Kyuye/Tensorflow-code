@@ -70,9 +70,6 @@ class WassersteinGAN(object):
         time_step = len(z)
 
         with tf.variable_scope('generator', reuse=reuse) as scope:
-            # if reuse:
-            #     scope.reuse_variables()
-            
             rnn_cell = tf.contrib.rnn.LSTMCell(num_units=FLAGS.memory_size)
             out, _ = tf.contrib.rnn.static_rnn(
                 cell=rnn_cell, inputs=z, dtype=tf.float32, scope=scope)
