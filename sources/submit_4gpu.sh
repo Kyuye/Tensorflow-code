@@ -2,7 +2,7 @@ job_name=wgan_4gpu_us_east1_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
 --package-path=$(pwd)/sources/mintor \
---module-name=mintor.model_4gpu \
+--module-name=mintor.model \
 --staging-bucket=gs://wgan/ \
 --region=us-east1 \
 --scale-tier=CUSTOM \

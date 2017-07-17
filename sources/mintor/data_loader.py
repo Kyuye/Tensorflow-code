@@ -2,6 +2,8 @@
 import pandas
 import json
 import os
+import numpy as np
+from scipy.spatial.distance import cosine
 
 class TrainDataLoader(object):
     def __init__(self, train_data_csv, word2vec_map_json, on_cloud=False):
@@ -27,3 +29,11 @@ class TrainDataLoader(object):
         with open(mapfile) as data_file:    
             data = json.load(data_file)
         return data
+
+    def vec2word(self, embed):
+        sim_word = ("", 1)
+        for v in self.embedding_map:
+            cos_dist = cosine(embed, np.array(self.embedding_map[v]))
+            if cos_dist < sim_word[1]:
+                sim_word = (v, cos_dist)
+        return sim_word[0]

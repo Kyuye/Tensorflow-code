@@ -4,6 +4,8 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import numpy as np
+import os
 
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
@@ -22,7 +24,7 @@ tf.flags.DEFINE_integer("f_hidden2", 50, "f function 2nd hidden layer unit")
 tf.flags.DEFINE_integer("f_logits", 50, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
 tf.flags.DEFINE_integer("memory_size", 20, "LSTM cell(memory) size")
-tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
+tf.flags.DEFINE_string("log_dir", "gs://wgan/logs/", "path to logs directory")
 tf.flags.DEFINE_bool("on_cloud", False, "run on cloud or local")
 tf.flags.DEFINE_integer("gpu_num", 4, "the number of GPUs")
 
@@ -44,7 +46,7 @@ class WassersteinGAN(object):
             train_data_csv=FLAGS.train_data, 
             word2vec_map_json=FLAGS.word_vec_map_file, 
             on_cloud=FLAGS.on_cloud)
-        
+
         # preprocessor:
         # get batch and pairing 
         preproc = Preprocessor(
@@ -56,13 +58,14 @@ class WassersteinGAN(object):
         self.clip_values = clip_values
         self.max_object_pairs_num = preproc.max_object_pairs_num
         self.data = loader.train_data
+        self.vec2word = loader.vec2word
 
         self.get_batch = preproc.get_batch
         self.pairing = preproc.pairing
 
         print("session opening...")
         self._open_session()
-        
+
 
     def _generator(self, reuse=False):
         z = rand((FLAGS.batch_size, FLAGS.max_document_length, FLAGS.embed_dim))
@@ -78,6 +81,7 @@ class WassersteinGAN(object):
 
             logits = [tf.matmul(out[i], Wo[i]) + bo[i] for i in range(time_step)]
 
+        # transpose shape to (batch, time_step, vector)
         return tf.transpose(tf.stack(logits), [1, 0, 2])
 
 
@@ -153,7 +157,7 @@ class WassersteinGAN(object):
                     dtype=tf.int32, 
                     shape=[FLAGS.batch_size,]))
 
-                print("GPU:%d   object pairing.."%g)    
+                print("GPU:%d   object pairing.."%g)
                 self.gen_data = self._generator(reuse)
                 fake_pairs = self.pairing(self.gen_data)
                 real_pairs = self.pairing(self.train_batch[g])
@@ -230,10 +234,10 @@ class WassersteinGAN(object):
             # print("generator update")
             summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
-            if itr % 100 == 0:
+            if itr % 10 == 0:
                 g_loss_val, d_loss_val = self.sess.run(
                     [self.gen_loss, self.disc_loss], feed_dict)
-                self.saver.save(self.sess, "gs://wgan/logs/wgan")
+                self.saver.save(self.sess, FLAGS.log_dir+"wgan")
                 summary_writer.add_summary(summary, itr)
                 print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
 
@@ -247,6 +251,18 @@ class WassersteinGAN(object):
         else:
             raise ValueError("Unknown optimizer %s" % optimizer_name)
 
+    def evaluation(self):
+        gen_data = self.sess.run(self.gen_data)
+        
+        seq = ""
+        for w in gen_data[0]:
+            seq += self.vec2word(w) + " "
+            print(seq)
+
+        with open("./generated_text.txt") as f:
+            f.write(seq)
+
+        os.system("gsutil -m cp -r generated_text.txt gs://wgan/logs")
 
     def _open_session(self):
         self.sess = tf.Session(config=tf.ConfigProto(
@@ -258,7 +274,8 @@ class WassersteinGAN(object):
 def main(argv=None):
     gan = WassersteinGAN(critic_iterations=5)
     gan.create_network()                
-    gan.train_model(1000)
+    gan.train_model(100)
+    gan.evaluation()
     gan.sess.close()
 
 
