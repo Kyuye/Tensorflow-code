@@ -1,11 +1,14 @@
-job_name=wgan_rn_$(date +%Y%m%d_%H%M%S)
+job_name=wgan_4gpu_us_east1_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
---package-path=$(pwd)/sources/personality_replication \
---module-name=personality_replication.model_single \
+--package-path=$(pwd)/sources/mintor \
+--module-name=mintor.model_4gpu \
 --staging-bucket=gs://wgan/ \
 --region=us-east1 \
---scale-tier=BASIC_GPU
+--scale-tier=CUSTOM \
+--config=./sources/config_4gpu.yaml \
+-- \
+--on_cloud=True
 
 # region list
 # asia-east1

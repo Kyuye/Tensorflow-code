@@ -1,18 +1,13 @@
 
 import tensorflow as tf
 
+c1 = tf.constant([1, 2, 3, 4, 5, 6], shape=[2, 3])
+c2 = tf.constant([1, 2, 3, 4, 5, 6], shape=[3, 2])
 
-a = tf.constant(10)
-b = tf.constant(20)
-b = tf.Print(b, [b], message="b")
-a = tf.Print(a, [a], message="a1")
-a = a + 1
-c = a + b
-a = tf.Print(a, [a], message="a2")
-d = c * a
+m = tf.matmul(c1, c2)
 
 with tf.Session() as sess:
-    sess.run(d)
+    print(sess.run(m))
 
 
 # filename = os.path.join(os.getcwd(), "DataSet/twitter_emotion_v2(p,n,N).csv")
