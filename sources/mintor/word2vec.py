@@ -176,8 +176,8 @@ if __name__ == "__main__":
 
     # print("batch is ", batch[:10])
     
-    # w.train_model(10)
-    # w.wordvec_map()
+    w.train_model(10)
+    w.wordvec_map()
 
 
     # words_pair, vocab_dict = vocab_to_dict(filename)

@@ -7,7 +7,8 @@ class TrainDataLoader(object):
     def __init__(self, train_data_csv, word2vec_map_json, on_cloud=False):
         if on_cloud:
             os.system("mkdir dataset")
-            os.system("gsutil -m cp -r gs://wgan/dataset/* $(pwd)/dataset/")
+            os.system("gsutil -m cp -r gs://jejucamp2017/dataset/* $(pwd)/dataset/")
+            # os.system("gsutil -m cp -r gs://wgan/dataset/* $(pwd)/dataset/")
             print("data set copy")
         
         print("reading train data...")
