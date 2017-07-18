@@ -259,15 +259,15 @@ class WassersteinGAN(object):
             seq += self.vec2word(w) + " "
             print(seq)
 
-        with open("./generated_text.txt") as f:
+        with open("./generated_text.txt", 'w') as f:
             f.write(seq)
 
         os.system("gsutil -m cp -r generated_text.txt gs://wgan/logs")
 
     def _open_session(self):
-        self.sess = tf.Session(config=tf.ConfigProto(
-            allow_soft_placement=True, log_device_placement=True))
-        # self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
+        # self.sess = tf.Session(config=tf.ConfigProto(
+        #     allow_soft_placement=True, log_device_placement=True))
+        self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
         print("train ready")
 
 
