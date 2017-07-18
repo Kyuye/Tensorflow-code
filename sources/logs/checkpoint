@@ -1,0 +1,2 @@
+model_checkpoint_path: "wgan"
+all_model_checkpoint_paths: "wgan"
