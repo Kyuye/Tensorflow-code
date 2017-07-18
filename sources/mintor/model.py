@@ -23,15 +23,9 @@ tf.flags.DEFINE_integer("f_hidden1", 256, "f function 1st hidden layer unit")
 tf.flags.DEFINE_integer("f_hidden2", 512, "f function 2nd hidden layer unit")
 tf.flags.DEFINE_integer("f_logits", 159, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
-<<<<<<< HEAD
 tf.flags.DEFINE_integer("memory_size", 128, "LSTM cell(memory) size")
-tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
-tf.flags.DEFINE_bool("on_cloud", True, "run on cloud or local")
-=======
-tf.flags.DEFINE_integer("memory_size", 20, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "gs://wgan/logs/", "path to logs directory")
-tf.flags.DEFINE_bool("on_cloud", False, "run on cloud or local")
->>>>>>> 7a2ac516be9fb038429bd3b1cb5f9dcb878dd383
+tf.flags.DEFINE_bool("on_cloud", True, "run on cloud or local")
 tf.flags.DEFINE_integer("gpu_num", 4, "the number of GPUs")
 
 
@@ -66,6 +60,7 @@ class WassersteinGAN(object):
         self.max_object_pairs_num = preproc.max_object_pairs_num
         self.data = loader.train_data
         self.vec2word = loader.vec2word
+
 
         self.get_batch = preproc.get_batch
         self.pairing = preproc.pairing
@@ -242,17 +237,10 @@ class WassersteinGAN(object):
             # print("generator update")
             summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
-<<<<<<< HEAD
-            if itr % 50 == 0:
-                g_loss_val, d_loss_val = self.sess.run(
-                    [self.gen_loss, self.disc_loss], feed_dict)
-                self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
-=======
             if itr % 10 == 0:
                 g_loss_val, d_loss_val = self.sess.run(
                     [self.gen_loss, self.disc_loss], feed_dict)
                 self.saver.save(self.sess, FLAGS.log_dir+"wgan")
->>>>>>> 7a2ac516be9fb038429bd3b1cb5f9dcb878dd383
                 summary_writer.add_summary(summary, itr)
                 print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
 
@@ -281,11 +269,7 @@ class WassersteinGAN(object):
 
     def _open_session(self):
         # self.sess = tf.Session(config=tf.ConfigProto(
-<<<<<<< HEAD
-            # allow_soft_placement=True, log_device_placement=True))
-=======
         #     allow_soft_placement=True, log_device_placement=True))
->>>>>>> 7a2ac516be9fb038429bd3b1cb5f9dcb878dd383
         self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
         print("train ready")
 
