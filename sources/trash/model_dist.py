@@ -39,6 +39,25 @@ class WassersteinGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
         self.critic_iterations = critic_iterations
         self.clip_values = clip_values
+<<<<<<< HEAD:sources/personality_replication/model_single.py
+        self.max_document_length = FLAGS.max_document_length
+<<<<<<< HEAD
+        self.max_object_pairs_num = 11174 #150C2
+=======
+        self.max_object_pairs_num = 11174 # 150C2
+>>>>>>> 2180b3510f9bb6240f6d9aeb4280f839a1d6f890
+        print("reading data..")
+        self.data = self.read_datafile(os.getcwd() + FLAGS.train_data)
+        print("file loaded size :", len(self.data))
+        self.train_batch = tf.placeholder(tf.float32, [FLAGS.batch_size, 150, 300])
+        self.label_indices = tf.placeholder(tf.int32, [FLAGS.batch_size,])
+        print("reading map...")
+        self.embedding_map = self.load_embedding_map(os.getcwd() + FLAGS.word_vec_map_file)
+        print("session opening...")
+        self.open_session()
+
+=======
+>>>>>>> 3957c25f11fb79dd2326586aaf2cdede542bca06:sources/trash/model_dist.py
 
         loader = TrainDataLoader(
             train_data_csv=FLAGS.train_data, 

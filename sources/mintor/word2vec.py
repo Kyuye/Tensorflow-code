@@ -159,24 +159,24 @@ textname = "./DataSet/twitter_emotion_v2(p,n,N).txt"
 
 if __name__ == "__main__":
     w = skip_gram()
-    #w.csv_to_text(filename)
-    # words_pair, vocab_dict = w.vocab_to_dict(textname)
+    w.csv_to_text(filename)
+    words_pair, vocab_dict = w.vocab_to_dict(textname)
     
     # print("words pair : ", words_pair)
     # print("vocab_dictionary :", vocab_dict)
     
-    # #data = w.words_read_text(textname)
-    # #words_id = [vocab_dict[i] if i in vocab_dict else vocab_dict["UNK"] for i in data[:100]]
+    data = w.words_read_text(textname)
+    words_id = [vocab_dict[i] if i in vocab_dict else vocab_dict["UNK"] for i in data[:100]]
     
     # print("data is ", data[:10])
     # print("words id :", words_id[:10])
 
-    # # batch = w.build_train_data(words_id, 2, 20)
-    # # w.write_train_data(batch)
+    batch = w.build_train_data(words_id, 2, 20)
+    w.write_train_data(batch)
 
     # print("batch is ", batch[:10])
     
-    # w.train_model(10)
+    w.train_model(10)
     w.wordvec_map()
 
 

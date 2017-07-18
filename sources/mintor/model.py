@@ -12,21 +12,28 @@ tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
 tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
 tf.flags.DEFINE_string("word_vec_map_file", '/dataset/word2vec_map.json', "mapfile for word2vec")
-tf.flags.DEFINE_integer("batch_size", 10, "batch size for training")
+tf.flags.DEFINE_integer("batch_size", 32, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
 tf.flags.DEFINE_integer("embed_dim", 300, "embedding dimension")
-tf.flags.DEFINE_integer("g_hidden1", 50, "g function 1st hidden layer unit")
-tf.flags.DEFINE_integer("g_hidden2", 50, "g function 1st hidden layer unit")
-tf.flags.DEFINE_integer("g_hidden3", 50, "g function 1st hidden layer unit")
-tf.flags.DEFINE_integer("g_logits", 50, "g function logits")
-tf.flags.DEFINE_integer("f_hidden1", 50, "f function 1st hidden layer unit")
-tf.flags.DEFINE_integer("f_hidden2", 50, "f function 2nd hidden layer unit")
-tf.flags.DEFINE_integer("f_logits", 50, "f function logits")
+tf.flags.DEFINE_integer("g_hidden1", 256, "g function 1st hidden layer unit")
+tf.flags.DEFINE_integer("g_hidden2", 256, "g function 2nd hidden layer unit")
+tf.flags.DEFINE_integer("g_hidden3", 256, "g function 3rd hidden layer unit")
+tf.flags.DEFINE_integer("g_logits", 256, "g function logits")
+tf.flags.DEFINE_integer("f_hidden1", 256, "f function 1st hidden layer unit")
+tf.flags.DEFINE_integer("f_hidden2", 512, "f function 2nd hidden layer unit")
+tf.flags.DEFINE_integer("f_logits", 159, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
+<<<<<<< HEAD
+tf.flags.DEFINE_integer("memory_size", 128, "LSTM cell(memory) size")
+tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
+tf.flags.DEFINE_bool("on_cloud", True, "run on cloud or local")
+=======
 tf.flags.DEFINE_integer("memory_size", 20, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "gs://wgan/logs/", "path to logs directory")
 tf.flags.DEFINE_bool("on_cloud", False, "run on cloud or local")
+>>>>>>> 7a2ac516be9fb038429bd3b1cb5f9dcb878dd383
 tf.flags.DEFINE_integer("gpu_num", 4, "the number of GPUs")
+
 
 if FLAGS.on_cloud:
     from mintor.data_loader import TrainDataLoader
@@ -100,7 +107,7 @@ class WassersteinGAN(object):
             
             g_layer3 = dense_layer(
                 inputs=g_layer2, units=FLAGS.g_hidden3, reuse=reuse, name="g_layer3")
-            
+                        
             g_out = dense_layer(
                 inputs=g_layer3, units=FLAGS.g_logits, reuse=reuse, name="g_out")
 
@@ -219,7 +226,8 @@ class WassersteinGAN(object):
                 self.train_batch[3]: train_data[3*FLAGS.batch_size:4*FLAGS.batch_size], 
                 self.label_indices[3]: indices[3*FLAGS.batch_size:4*FLAGS.batch_size]
                 }
-
+            
+    
 
             if itr < 25 or itr % 500 == 0:
                 critic_itrs = 25
@@ -234,10 +242,17 @@ class WassersteinGAN(object):
             # print("generator update")
             summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
+<<<<<<< HEAD
+            if itr % 50 == 0:
+                g_loss_val, d_loss_val = self.sess.run(
+                    [self.gen_loss, self.disc_loss], feed_dict)
+                self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
+=======
             if itr % 10 == 0:
                 g_loss_val, d_loss_val = self.sess.run(
                     [self.gen_loss, self.disc_loss], feed_dict)
                 self.saver.save(self.sess, FLAGS.log_dir+"wgan")
+>>>>>>> 7a2ac516be9fb038429bd3b1cb5f9dcb878dd383
                 summary_writer.add_summary(summary, itr)
                 print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
 
@@ -266,7 +281,11 @@ class WassersteinGAN(object):
 
     def _open_session(self):
         # self.sess = tf.Session(config=tf.ConfigProto(
+<<<<<<< HEAD
+            # allow_soft_placement=True, log_device_placement=True))
+=======
         #     allow_soft_placement=True, log_device_placement=True))
+>>>>>>> 7a2ac516be9fb038429bd3b1cb5f9dcb878dd383
         self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
         print("train ready")
 
@@ -280,4 +299,7 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
+    
+    print(FLAGS.on_cloud)
     tf.app.run()
+
