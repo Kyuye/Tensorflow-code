@@ -268,9 +268,10 @@ class WassersteinGAN(object):
         os.system("gsutil -m cp -r generated_text.txt gs://wgan/logs")
 
     def _open_session(self):
-        # self.sess = tf.Session(config=tf.ConfigProto(
-        #     allow_soft_placement=True, log_device_placement=True))
-        self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
+        config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
+        config.gpu_options.allow_growth = True
+        config.gpu_options.per_process_gpu_memory_fraction = 0.4
+        self.sess = tf.Session(config=config)
         print("train ready")
 
 
