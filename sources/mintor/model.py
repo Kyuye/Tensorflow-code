@@ -23,6 +23,7 @@ tf.flags.DEFINE_integer("f_hidden1", 256, "f function 1st hidden layer unit")
 tf.flags.DEFINE_integer("f_hidden2", 512, "f function 2nd hidden layer unit")
 tf.flags.DEFINE_integer("f_logits", 159, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
+<<<<<<< HEAD
 tf.flags.DEFINE_integer("memory_size", 128, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
 tf.flags.DEFINE_bool("on_cloud", True, "run on cloud or local")
@@ -35,15 +36,37 @@ print("max_document_length: ", FLAGS.max_document_length)
 print("batch_size: ", FLAGS.batch_size)
 print("regularizer_scale: ",FLAGS.regularizer_scale)
 print("embed_dim: ", FLAGS.embed_dim )
+=======
+tf.flags.DEFINE_integer("memory_size", 32, "LSTM cell(memory) size")
+tf.flags.DEFINE_string("log_dir", "gs://wgan/logs/", "path to logs directory")
+tf.flags.DEFINE_bool("on_cloud", True, "run on cloud or local")
+tf.flags.DEFINE_integer("gpu_num", 4, "the number of GPUs")
+tf.flags.DEFINE_integer("train_step", 100, "the train step" )
+tf.flags.DEFINE_integer("log_step", 10, "the log step")
+
+print("vocabulary_size: ", FLAGS.vocabulary_size)
+print("max_document_length: ", FLAGS.max_document_length)
+print("batch_size: ", FLAGS.batch_size)
+print("regularizer_scale: ", FLAGS.regularizer_scale)
+print("embed_dim: ", FLAGS.embed_dim)
+>>>>>>> f1df6ca1cf35a7ff94fac9dcea80ef221f81f373
 print("g_hidden1: ", FLAGS.g_hidden1)
 print("g_hidden2: ", FLAGS.g_hidden2)
 print("g_hidden3: ", FLAGS.g_hidden3)
 print("g_logits: ", FLAGS.g_logits)
 print("f_hidden1: ", FLAGS.f_hidden1)
 print("f_hidden2: ", FLAGS.f_hidden2)
+<<<<<<< HEAD
 print("f_logits: ",FLAGS.f_logits)
 print("emotion_class: ", FLAGS.emotion_class)
 print("memory_size: ", FLAGS.memory_size)
+=======
+print("f_logits: ", FLAGS.f_logits)
+print("memory_size: ", FLAGS.memory_size)
+print("train_step: ", FLAGS.train_step)
+print("log_step: ", FLAGS.log_step)
+
+>>>>>>> f1df6ca1cf35a7ff94fac9dcea80ef221f81f373
 
 if FLAGS.on_cloud:
     from mintor.data_loader import TrainDataLoader
@@ -76,6 +99,7 @@ class WassersteinGAN(object):
         self.max_object_pairs_num = preproc.max_object_pairs_num
         self.data = loader.train_data
         self.vec2word = loader.vec2word
+
 
         self.get_batch = preproc.get_batch
         self.pairing = preproc.pairing
@@ -147,11 +171,9 @@ class WassersteinGAN(object):
         supervised_loss = tf.losses.softmax_cross_entropy(label, supervised_logits)
         discriminator_loss = tf.reduce_mean(logits_real - logits_fake) + supervised_loss
         gen_loss = tf.reduce_mean(logits_fake)
-
         tf.summary.scalar('discriminator_loss', discriminator_loss)
         tf.summary.scalar('gen_loss', gen_loss)
         tf.summary.scalar('supervised_loss', supervised_loss)
-
         return discriminator_loss, gen_loss
 
 
@@ -224,6 +246,7 @@ class WassersteinGAN(object):
         summary_writer = tf.summary.FileWriter(FLAGS.log_dir, self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
 
+<<<<<<< HEAD
         train_step = 40000//(FLAGS.batch_size*FLAGS.gpu_num)
         
         for epoch in range(max_iterations): 
@@ -235,12 +258,22 @@ class WassersteinGAN(object):
                     feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
                     feed_dict[self.label_indices[g]] = indices[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
                         
+=======
+        for itr in range(1, max_iterations):
+            train_data, indices = self.get_batch(self.data, itr-1)
+            feed_dict = {}
+            for g in range(FLAGS.gpu_num):
+                feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
+                feed_dict[self.label_indices[g]] = indices[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
+
+>>>>>>> f1df6ca1cf35a7ff94fac9dcea80ef221f81f373
 
                 if itr < 25 or itr % 500 == 0:
                     critic_itrs = 25
                 else:
                     critic_itrs = self.critic_iterations
 
+<<<<<<< HEAD
                 for critic_itr in range(critic_itrs):
                     # print("discriminator critic: ", critic_itr)
                     self.sess.run(self.disc_train_op, feed_dict)
@@ -255,6 +288,22 @@ class WassersteinGAN(object):
                     self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
                     summary_writer.add_summary(summary, itr)
                     print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
+=======
+            for critic_itr in range(critic_itrs):
+                # print("discriminator critic: ", critic_itr)
+                self.sess.run(self.disc_train_op, feed_dict)
+                self.sess.run(clip_discriminator_var_op, feed_dict)
+            
+            # print("generator update")
+            summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
+
+            if itr % FLAGS.log_step == 0:
+                g_loss_val, d_loss_val = self.sess.run(
+                    [self.gen_loss, self.disc_loss], feed_dict)
+                self.saver.save(self.sess, FLAGS.log_dir+"wgan")
+                summary_writer.add_summary(summary, itr)
+                print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
+>>>>>>> f1df6ca1cf35a7ff94fac9dcea80ef221f81f373
 
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
@@ -283,6 +332,7 @@ class WassersteinGAN(object):
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         config.allow_soft_placement = True
+<<<<<<< HEAD
 
         print("allow_growth:",config.gpu_options.allow_growth)
         print("soft placement :" ,config.allow_soft_placement)
@@ -290,6 +340,13 @@ class WassersteinGAN(object):
         
         
         self.sess = tf.Session(config=config)
+=======
+        config.log_device_placement = False
+        # config.gpu_options.per_process_gpu_memory_fraction = 0.4
+        self.sess = tf.Session(config=config)
+        print("allow_growth: ", config.gpu_options.allow_growth)
+        print("soft placement: ", config.allow_soft_placement)
+>>>>>>> f1df6ca1cf35a7ff94fac9dcea80ef221f81f373
         print("train ready")
        
         
@@ -315,13 +372,15 @@ class WassersteinGAN(object):
 def main(argv=None):
     gan = WassersteinGAN(critic_iterations=5)
     gan.create_network()                
+<<<<<<< HEAD
     gan.train_model(FLAGS.epoch)
+=======
+    gan.train_model(FLAGS.train_step)
+>>>>>>> f1df6ca1cf35a7ff94fac9dcea80ef221f81f373
     gan.evaluation()
     gan.sess.close()
 
 
-if __name__ == "__main__":
-    
-    print(FLAGS.on_cloud)
+if __name__ == "__main__":    
     tf.app.run()
 
