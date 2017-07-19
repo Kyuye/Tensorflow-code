@@ -12,7 +12,7 @@ tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
 tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
 tf.flags.DEFINE_string("word_vec_map_file", '/dataset/word2vec_map.json', "mapfile for word2vec")
-tf.flags.DEFINE_integer("batch_size", 128, "batch size for training")
+tf.flags.DEFINE_integer("batch_size", 32, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
 tf.flags.DEFINE_integer("embed_dim", 300, "embedding dimension")
 tf.flags.DEFINE_integer("g_hidden1", 256, "g function 1st hidden layer unit")
@@ -57,7 +57,7 @@ else:
     from utils import *
     
 
-class WassersteinGAN(object):
+class GAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
         # data loader:
         # load train data and load word2vec map file
@@ -214,7 +214,6 @@ class WassersteinGAN(object):
 
         self.saver = tf.train.Saver(self.gen_variables)
 
-
     def train_model(self, max_iterations):
         print("Training Wasserstein GAN model...")
         clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
@@ -232,17 +231,7 @@ class WassersteinGAN(object):
                 feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
 
 
-            if itr < 25 or itr % 500 == 0:
-                critic_itrs = 25
-            else:
-                critic_itrs = self.critic_iterations
-
-            for critic_itr in range(critic_itrs):
-                # print("discriminator critic: ", critic_itr)
-                self.sess.run(self.disc_train_op, feed_dict)
-                self.sess.run(clip_discriminator_var_op, feed_dict)
-            
-            # print("generator update")
+            self.sess.run(self.disc_train_op, feed_dict)
             summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
             if itr % FLAGS.log_step == 0:
@@ -251,6 +240,44 @@ class WassersteinGAN(object):
                 self.saver.save(self.sess, FLAGS.log_dir+"wgan")
                 summary_writer.add_summary(summary, itr)
                 print("Step: %d, prob real: %g, prob fake: %g" % (itr, prob_real, prob_fake))
+
+
+    # def train_model(self, max_iterations):
+    #     print("Training Wasserstein GAN model...")
+    #     clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
+    #                                     var in self.disc_variables]
+
+    #     print("variables initializing")
+    #     merged = tf.summary.merge_all()
+    #     summary_writer = tf.summary.FileWriter(FLAGS.log_dir, self.sess.graph)
+    #     self.sess.run(tf.global_variables_initializer())
+
+    #     for itr in range(1, max_iterations):
+    #         train_data, indices = self.get_batch(self.data, itr-1)
+    #         feed_dict = {}
+    #         for g in range(FLAGS.gpu_num):
+    #             feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
+
+
+    #         if itr < 25 or itr % 500 == 0:
+    #             critic_itrs = 25
+    #         else:
+    #             critic_itrs = self.critic_iterations
+
+    #         for critic_itr in range(critic_itrs):
+    #             # print("discriminator critic: ", critic_itr)
+    #             self.sess.run(self.disc_train_op, feed_dict)
+    #             self.sess.run(clip_discriminator_var_op, feed_dict)
+            
+    #         # print("generator update")
+    #         summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
+
+    #         if itr % FLAGS.log_step == 0:
+    #             prob_real, prob_fake = self.sess.run(
+    #                 [self.prob_real, self.prob_fake], feed_dict)
+    #             self.saver.save(self.sess, FLAGS.log_dir+"wgan")
+    #             summary_writer.add_summary(summary, itr)
+    #             print("Step: %d, prob real: %g, prob fake: %g" % (itr, prob_real, prob_fake))
 
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
@@ -274,7 +301,6 @@ class WassersteinGAN(object):
             seq += self.vec2word(w) + " "
 
             
-
         with open("./generated_text.txt", 'w') as f:
             f.write(seq)
 
@@ -284,7 +310,7 @@ class WassersteinGAN(object):
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         config.allow_soft_placement = True
-        config.log_device_placement = False
+        config.log_device_placement = True
         # config.gpu_options.per_process_gpu_memory_fraction = 0.4
         self.sess = tf.Session(config=config)
         print("allow_growth: ", config.gpu_options.allow_growth)
