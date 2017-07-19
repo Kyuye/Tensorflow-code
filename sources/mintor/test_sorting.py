@@ -1,13 +1,53 @@
 
 import tensorflow as tf
+import pandas
+import json
+import os
+import numpy as np
+import re 
 
-c1 = tf.constant([1, 2, 3, 4, 5, 6], shape=[2, 3])
-c2 = tf.constant([1, 2, 3, 4, 5, 6], shape=[3, 2])
+from pandas import Series, DataFrame 
 
-m = tf.matmul(c1, c2)
+filename = "./dataset/twitter_emotion_v2(p,n,N).csv"
+        
+data = pandas.read_csv(filename, usecols=["Sentiment", "content"])
+data = data[data["content"] != "0"]
+data["content"] = data["content"].astype("str")
+data["Sentiment"] = data["Sentiment"].astype("str")
 
-with tf.Session() as sess:
-    print(sess.run(m))
+df = pandas.DataFrame(data)
+# pandas.Series.sort_index(1)
+
+
+print(df[df['Sentiment'].str.contains("Neg")])
+# print(sent1[df['Sentiment'].str.contains("Pos")])
+# print(sent1[df['Sentiment'].str.contains("neutral")])
+
+# pandas.Series(sent1).str.replace('.','')
+# print(pandas.Series(sent1).str.replace('@',' '))
+# pandas.Series(sent1).str.replace('http://','')
+
+
+# print("Neg only :",select_rows(sent1,['Neg']))
+# print("content only : ", sent1.filter(items=['content']))
+# print("sentiment only:", sent1.filter(items=['Sentiment']))
+
+# print(sent1.filter(like='Neg', axis= 0))
+
+    
+# ".@http://www.com","",sent1.str)
+# aa = re.sub("asd", "", "asdfg123")
+# print(sent1.find('@'))
+# print(sent1)
+# sent2 = sent1.str.replace('.', ' ')
+# print(aa)
+
+# df.to_csv('~/data/sample6.csv')
+
+
+
+# with tf.Session() as sess:
+#     print(sess.run(m))
 
 
 # filename = os.path.join(os.getcwd(), "DataSet/twitter_emotion_v2(p,n,N).csv")

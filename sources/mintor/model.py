@@ -23,17 +23,27 @@ tf.flags.DEFINE_integer("f_hidden1", 256, "f function 1st hidden layer unit")
 tf.flags.DEFINE_integer("f_hidden2", 512, "f function 2nd hidden layer unit")
 tf.flags.DEFINE_integer("f_logits", 159, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
-<<<<<<< HEAD
 tf.flags.DEFINE_integer("memory_size", 128, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
 tf.flags.DEFINE_bool("on_cloud", True, "run on cloud or local")
-=======
-tf.flags.DEFINE_integer("memory_size", 20, "LSTM cell(memory) size")
-tf.flags.DEFINE_string("log_dir", "gs://wgan/logs/", "path to logs directory")
-tf.flags.DEFINE_bool("on_cloud", False, "run on cloud or local")
->>>>>>> 7a2ac516be9fb038429bd3b1cb5f9dcb878dd383
-tf.flags.DEFINE_integer("gpu_num", 4, "the number of GPUs")
+tf.flags.DEFINE_integer("gpu_num", 8, "the number of GPUs")
+tf.flags.DEFINE_integer("epoch", 10, "train epoch")
+tf.flags.DEFINE_integer("log_step", 50, "log step")
 
+print("vocabulary_size: ",FLAGS.vocabulary_size)
+print("max_document_length: ", FLAGS.max_document_length)
+print("batch_size: ", FLAGS.batch_size)
+print("regularizer_scale: ",FLAGS.regularizer_scale)
+print("embed_dim: ", FLAGS.embed_dim )
+print("g_hidden1: ", FLAGS.g_hidden1)
+print("g_hidden2: ", FLAGS.g_hidden2)
+print("g_hidden3: ", FLAGS.g_hidden3)
+print("g_logits: ", FLAGS.g_logits)
+print("f_hidden1: ", FLAGS.f_hidden1)
+print("f_hidden2: ", FLAGS.f_hidden2)
+print("f_logits: ",FLAGS.f_logits)
+print("emotion_class: ", FLAGS.emotion_class)
+print("memory_size: ", FLAGS.memory_size)
 
 if FLAGS.on_cloud:
     from mintor.data_loader import TrainDataLoader
@@ -214,47 +224,37 @@ class WassersteinGAN(object):
         summary_writer = tf.summary.FileWriter(FLAGS.log_dir, self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
 
-        for itr in range(1, max_iterations):
-            train_data, indices = self.get_batch(self.data, itr-1)
-            feed_dict = {
-                self.train_batch[0]: train_data[0:FLAGS.batch_size], 
-                self.label_indices[0]: indices[0:FLAGS.batch_size],
-                self.train_batch[1]: train_data[FLAGS.batch_size:2*FLAGS.batch_size], 
-                self.label_indices[1]: indices[FLAGS.batch_size:2*FLAGS.batch_size],
-                self.train_batch[2]: train_data[2*FLAGS.batch_size:3*FLAGS.batch_size], 
-                self.label_indices[2]: indices[2*FLAGS.batch_size:3*FLAGS.batch_size],
-                self.train_batch[3]: train_data[3*FLAGS.batch_size:4*FLAGS.batch_size], 
-                self.label_indices[3]: indices[3*FLAGS.batch_size:4*FLAGS.batch_size]
-                }
-            
-    
+        train_step = 40000//(FLAGS.batch_size*FLAGS.gpu_num)
+        
+        for epoch in range(max_iterations): 
+            for itr in range(1, train_step):
+                train_data, indices = self.get_batch(self.data, itr-1)
+                
+                feed_dict = {}
+                for g in range(FLAGS.gpu_num):
+                    feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
+                    feed_dict[self.label_indices[g]] = indices[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
+                        
 
-            if itr < 25 or itr % 500 == 0:
-                critic_itrs = 25
-            else:
-                critic_itrs = self.critic_iterations
+                if itr < 25 or itr % 500 == 0:
+                    critic_itrs = 25
+                else:
+                    critic_itrs = self.critic_iterations
 
-            for critic_itr in range(critic_itrs):
-                # print("discriminator critic: ", critic_itr)
-                self.sess.run(self.disc_train_op, feed_dict)
-                self.sess.run(clip_discriminator_var_op, feed_dict)
-            
-            # print("generator update")
-            summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
+                for critic_itr in range(critic_itrs):
+                    # print("discriminator critic: ", critic_itr)
+                    self.sess.run(self.disc_train_op, feed_dict)
+                    self.sess.run(clip_discriminator_var_op, feed_dict)
+                
+                # print("generator update")
+                summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
-<<<<<<< HEAD
-            if itr % 50 == 0:
-                g_loss_val, d_loss_val = self.sess.run(
-                    [self.gen_loss, self.disc_loss], feed_dict)
-                self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
-=======
-            if itr % 10 == 0:
-                g_loss_val, d_loss_val = self.sess.run(
-                    [self.gen_loss, self.disc_loss], feed_dict)
-                self.saver.save(self.sess, FLAGS.log_dir+"wgan")
->>>>>>> 7a2ac516be9fb038429bd3b1cb5f9dcb878dd383
-                summary_writer.add_summary(summary, itr)
-                print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
+                if itr % FLAGS.log_step == 0:
+                    g_loss_val, d_loss_val = self.sess.run(
+                        [self.gen_loss, self.disc_loss], feed_dict)
+                    self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
+                    summary_writer.add_summary(summary, itr)
+                    print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
 
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
@@ -277,23 +277,45 @@ class WassersteinGAN(object):
         with open("./generated_text.txt", 'w') as f:
             f.write(seq)
 
-        os.system("gsutil -m cp -r generated_text.txt gs://wgan/logs")
+        os.system("gsutil -m cp -r generated_text.txt gs://jejucamp2017/logs")
 
     def _open_session(self):
-        # self.sess = tf.Session(config=tf.ConfigProto(
-<<<<<<< HEAD
-            # allow_soft_placement=True, log_device_placement=True))
-=======
-        #     allow_soft_placement=True, log_device_placement=True))
->>>>>>> 7a2ac516be9fb038429bd3b1cb5f9dcb878dd383
-        self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
-        print("train ready")
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        config.allow_soft_placement = True
 
+        print("allow_growth:",config.gpu_options.allow_growth)
+        print("soft placement :" ,config.allow_soft_placement)
+       
+        
+        
+        self.sess = tf.Session(config=config)
+        print("train ready")
+       
+        
+        # OLD one
+        # self.sess = tf.Session(config=tf.ConfigProto(
+        # allow_soft_placement=True, log_device_placement=True))
+       
+
+        # NEW one 
+        
+        # config.gpu_options.allow_growth = True
+        # config.allow_soft_placement = False
+        # config.log_device_placement = False
+        # NEW:config.gpu_options.per_process_gpu_memory_fraction = 0.4
+        # self.sess = tf.Session(config=config)
+        # print("train ready")
+
+
+      
+       
+        
 
 def main(argv=None):
     gan = WassersteinGAN(critic_iterations=5)
     gan.create_network()                
-    gan.train_model(100)
+    gan.train_model(FLAGS.epoch)
     gan.evaluation()
     gan.sess.close()
 

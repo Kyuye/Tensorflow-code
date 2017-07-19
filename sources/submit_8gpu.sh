@@ -1,4 +1,4 @@
-job_name=wgan_4gpu_us_central1_$(date +%Y%m%d_%H%M%S)
+job_name=wgan_8gpu_us_east1_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
 --package-path=$(pwd)/sources/mintor \
@@ -6,7 +6,7 @@ gcloud ml-engine jobs submit training $job_name \
 --staging-bucket=gs://jejucamp2017/ \
 --region=us-east1 \
 --scale-tier=CUSTOM \
---config=./sources/config_4gpu.yaml \
+--config=./sources/config_8gpu.yaml \
 -- \
 --on_cloud=True 
 
