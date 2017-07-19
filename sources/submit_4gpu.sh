@@ -1,11 +1,12 @@
-job_name=wgan_4gpu_us_central1_$(date +%Y%m%d_%H%M%S)
+job_name=gan_test_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
 --package-path=$(pwd)/sources/mintor \
---module-name=mintor.model \
+--module-name=mintor.model_gan_test \
 --staging-bucket=gs://wgan/ \
---region=us-central1 \
+--region=europe-west1 \
 --scale-tier=CUSTOM \
+--job-dir=gs://wgan/logs \
 --config=./sources/config_4gpu.yaml 
 
 # region list

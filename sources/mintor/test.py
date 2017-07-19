@@ -1,13 +1,18 @@
 
 import tensorflow as tf
 
-c1 = tf.constant([1, 2, 3, 4, 5, 6], shape=[2, 3])
-c2 = tf.constant([1, 2, 3, 4, 5, 6], shape=[3, 2])
 
-m = tf.matmul(c1, c2)
+dict_n = {'a':1, 'b':2, 'c':3, 'd':4}
+for i in dict_n:
+    print(i)
 
-with tf.Session() as sess:
-    print(sess.run(m))
+# c1 = tf.constant([1, 2, 3, 4, 5, 6], shape=[2, 3])
+# c2 = tf.constant([1, 2, 3, 4, 5, 6], shape=[3, 2])
+
+# m = tf.matmul(c1, c2)
+
+# with tf.Session() as sess:
+#     print(sess.run(m))
 
 
 # filename = os.path.join(os.getcwd(), "DataSet/twitter_emotion_v2(p,n,N).csv")

@@ -12,7 +12,7 @@ tf.flags.DEFINE_integer("vocabulary_size", 50000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
 tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
 tf.flags.DEFINE_string("word_vec_map_file", '/dataset/word2vec_map.json', "mapfile for word2vec")
-tf.flags.DEFINE_integer("batch_size", 32, "batch size for training")
+tf.flags.DEFINE_integer("batch_size", 128, "batch size for training")
 tf.flags.DEFINE_integer("regularizer_scale", 0.9, "reguarizer scale")
 tf.flags.DEFINE_integer("embed_dim", 300, "embedding dimension")
 tf.flags.DEFINE_integer("g_hidden1", 256, "g function 1st hidden layer unit")
@@ -21,7 +21,7 @@ tf.flags.DEFINE_integer("g_hidden3", 256, "g function 3rd hidden layer unit")
 tf.flags.DEFINE_integer("g_logits", 256, "g function logits")
 tf.flags.DEFINE_integer("f_hidden1", 256, "f function 1st hidden layer unit")
 tf.flags.DEFINE_integer("f_hidden2", 512, "f function 2nd hidden layer unit")
-tf.flags.DEFINE_integer("f_logits", 159, "f function logits")
+tf.flags.DEFINE_integer("f_logits", 1, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
 tf.flags.DEFINE_integer("memory_size", 32, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "gs://wgan/logs/", "path to logs directory")
@@ -136,24 +136,16 @@ class WassersteinGAN(object):
             logits = dense_layer(
                 inputs=f_layer2, units=FLAGS.f_logits, reuse=reuse, name="f_out")
 
-            supervised_logits = dense_layer(
-                inputs=logits, 
-                units=FLAGS.emotion_class, 
-                activation=None, 
-                reuse=reuse, 
-                name="supervised_layer")
-
-        return logits, supervised_logits
+        return logits
 
 
-    def _gan_loss(self, logits_real, logits_fake, supervised_logits, label, use_features=False):
-        supervised_loss = tf.losses.softmax_cross_entropy(label, supervised_logits)
-        discriminator_loss = tf.reduce_mean(logits_real - logits_fake) + supervised_loss
-        gen_loss = tf.reduce_mean(logits_fake)
-        tf.summary.scalar('discriminator_loss', discriminator_loss)
-        tf.summary.scalar('gen_loss', gen_loss)
-        tf.summary.scalar('supervised_loss', supervised_loss)
-        return discriminator_loss, gen_loss
+    def _gan_loss(self, logits_real, logits_fake, use_features=False):
+        disc_loss_real = tf.losses.sigmoid_cross_entropy(tf.ones_like(logits_real), logits_real)
+        disc_loss_fake = tf.losses.sigmoid_cross_entropy(tf.zeros_like(logits_fake), logits_fake)
+        disc_loss = disc_loss_real + disc_loss_fake
+
+        gen_loss = tf.losses.sigmoid_cross_entropy(tf.ones_like(logits_fake),logits_fake)
+        return disc_loss, gen_loss, 
 
 
     def create_network(self, optimizer="Adam", learning_rate=2e-4, optimizer_param=0.9):
@@ -181,13 +173,21 @@ class WassersteinGAN(object):
                 real_pairs = self.pairing(self.train_batch[g])
 
                 print("GPU:%d   building discriminator"%g)
-                logits_real, logits_supervised = self._discriminator(real_pairs, reuse)
-                logits_fake, _ = self._discriminator(fake_pairs, True)
+                logits_real = self._discriminator(real_pairs, reuse)
+                logits_fake = self._discriminator(fake_pairs, True)
 
+                self.prob_real = tf.reduce_mean(tf.nn.sigmoid(logits_real))
+                self.prob_fake = tf.reduce_mean(tf.nn.sigmoid(logits_fake))
+
+                tf.summary.scalar("prob_real", self.prob_real)
+                tf.summary.scalar("prob_fake", self.prob_fake)
+                
                 print("GPU:%d   building gan loss ..."%g)
-                labels = one_hot(self.label_indices[g])
-                self.disc_loss, self.gen_loss = self._gan_loss(
-                    logits_real, logits_fake, logits_supervised, labels)
+                # labels = one_hot(self.label_indices[g])
+                self.disc_loss, self.gen_loss = self._gan_loss(logits_real, logits_fake)
+
+                tf.summary.scalar("discriminator_loss", self.disc_loss)
+                tf.summary.scalar("generator_loss", self.gen_loss)
 
                 print("GPU:%d   variables scoping..."%g)
                 train_variables = tf.trainable_variables()
@@ -230,7 +230,6 @@ class WassersteinGAN(object):
             feed_dict = {}
             for g in range(FLAGS.gpu_num):
                 feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
-                feed_dict[self.label_indices[g]] = indices[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
 
 
             if itr < 25 or itr % 500 == 0:
@@ -247,11 +246,11 @@ class WassersteinGAN(object):
             summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
             if itr % FLAGS.log_step == 0:
-                g_loss_val, d_loss_val = self.sess.run(
-                    [self.gen_loss, self.disc_loss], feed_dict)
+                prob_real, prob_fake = self.sess.run(
+                    [self.prob_real, self.prob_fake], feed_dict)
                 self.saver.save(self.sess, FLAGS.log_dir+"wgan")
                 summary_writer.add_summary(summary, itr)
-                print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr, g_loss_val, d_loss_val))
+                print("Step: %d, prob real: %g, prob fake: %g" % (itr, prob_real, prob_fake))
 
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
@@ -268,8 +267,13 @@ class WassersteinGAN(object):
         
         seq = ""
         for w in gen_data[0]:
+            try:
+                print(seq)
+            except:
+                continue
             seq += self.vec2word(w) + " "
-            print(seq)
+
+            
 
         with open("./generated_text.txt", 'w') as f:
             f.write(seq)
