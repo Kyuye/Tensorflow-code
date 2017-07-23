@@ -45,7 +45,8 @@ print("f_logits: ", FLAGS.f_logits)
 print("memory_size: ", FLAGS.memory_size)
 print("train_step: ", FLAGS.train_step)
 print("log_step: ", FLAGS.log_step)
-
+print("train dir: ", FLAGS.train_data)
+print("log dir: ", FLAGS.log_dir)
 
 if FLAGS.on_cloud:
     from mintor.data_loader import TrainDataLoader
@@ -176,8 +177,8 @@ class GAN(object):
                 logits_real = self._discriminator(real_pairs, reuse)
                 logits_fake = self._discriminator(fake_pairs, True)
 
-                self.prob_real = tf.nn.sigmoid(logits_real)
-                self.prob_fake = tf.nn.sigmoid(logits_fake)
+                self.prob_real = tf.reduce_mean(tf.nn.sigmoid(logits_real))
+                self.prob_fake = tf.reduce_mean(tf.nn.sigmoid(logits_fake))
 
                 tf.summary.scalar("prob_real", self.prob_real)
                 tf.summary.scalar("prob_fake", self.prob_fake)
@@ -288,10 +289,11 @@ class GAN(object):
 
 
 def main(argv=None):
-    gan = GAN(is_train=True)
-    gan.create_network()                
-    gan.train_model(FLAGS.train_step)
-    # gan.evaluation()
+    tf.reset_default_graph()
+    gan = GAN(is_train=False)
+    # gan.create_network()                
+    # gan.train_model(FLAGS.train_step)
+    gan.evaluation()
     gan.sess.close()
 
 

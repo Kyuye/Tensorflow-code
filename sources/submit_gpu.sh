@@ -7,7 +7,9 @@ gcloud ml-engine jobs submit training $job_name \
 --region=europe-west1 \
 --scale-tier=BASIC_GPU \
 -- \
---on_cloud=True
+--on_cloud=True \
+--train_dir=/dataset/twitter_emotion_v2(p,n,N).csv
+--log_dir=gs://wgan/logs/
 
 # region list
 # asia-east1
