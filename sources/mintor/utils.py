@@ -1,6 +1,10 @@
 
 import tensorflow as tf
-
+import pandas
+import numpy as np
+import re 
+from pandas import Series, DataFrame 
+import string 
 
 def dense_layer(
     inputs, 
@@ -53,3 +57,16 @@ def LSTM_bo(shape, reuse):
 
 def one_hot(indices):
     return tf.one_hot(indices=indices, depth=3, on_value=1.0, off_value=0.0)
+
+def filter_word(target,sent):
+    filtered = sent
+    for remove in target:
+         filtered = list(map(lambda s: filter(lambda w: w.find(remove), filter(None, s)), filtered))
+    return filtered
+
+def filter_printable(sent):
+    printable_set = set(string.printable)
+    return list(map(lambda s: filter(lambda w: w[0] in printable_set, s), sent))
+
+def filter_none(sent):
+    return filter(None, sent)

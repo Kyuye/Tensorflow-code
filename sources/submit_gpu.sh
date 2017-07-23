@@ -1,4 +1,4 @@
-job_name=wgan_gpu_us_east1_$(date +%Y%m%d_%H%M%S)
+job_name=wgan_gpu_us_east_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
 --package-path=$(pwd)/sources/mintor \
@@ -8,8 +8,11 @@ gcloud ml-engine jobs submit training $job_name \
 --scale-tier=BASIC_GPU \
 -- \
 --on_cloud=True \
---train_dir=/dataset/twitter_emotion_v2(p,n,N).csv
---log_dir=gs://wgan/logs/
+--bucket=jejucamp2017 \
+--train_data=/dataset/twitter_emotion_v2\(p,n,N\).csv \
+--word_vec_map_file=/dataset/word2vec_map.json \
+--log_dir=./logs/ \
+--gpu_num=1
 
 # region list
 # asia-east1
@@ -25,5 +28,3 @@ gcloud ml-engine jobs submit training $job_name \
 # BASIC_GPU: A single worker instance with a GPU.
 # CUSTOM: custom setting
 
-sleep 5
-gcloud ml-engine jobs stream-logs $job_name

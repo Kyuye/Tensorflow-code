@@ -6,11 +6,11 @@ import numpy as np
 from scipy.spatial.distance import cosine
 
 class TrainDataLoader(object):
-    def __init__(self, train_data_csv, word2vec_map_json, on_cloud=False):
+    def __init__(self, bucket, train_data_csv, word2vec_map_json, on_cloud=False):
         if on_cloud:
             os.system("mkdir dataset")
             # os.system("gsutil -m cp -r gs://jejucamp2017/dataset/* $(pwd)/dataset/")
-            os.system("gsutil -m cp -r gs://wgan/dataset/* $(pwd)/dataset/")
+            os.system("gsutil -m cp -r gs://{}/dataset/* $(pwd)/dataset/".format(bucket))
 
             print("data set copy")
         

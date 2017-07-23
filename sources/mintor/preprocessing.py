@@ -14,6 +14,13 @@ class Preprocessor(object):
         f = math.factorial
         return f(n) / f(r) / f(n-r)
 
+    def embedding_padding(self, data):
+        seq_vec = []
+        for seq in data:
+            embeds = np.array([self.embedding_map[i] if i in self.embedding_map else self.embedding_map["UNK"] for i in seq.split(' ')])
+            seq_vec.append(np.pad(embeds, ((0, 150-embeds.shape[0]), (0,0)), 'constant'))
+        return seq_vec
+
     def get_batch(self, data, iterator):
         fullbatch_size = len(data)
         start = (iterator*self.batch_size)%fullbatch_size
