@@ -2,9 +2,15 @@ job_name=wgan_gpu_us_east_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
 --package-path=$(pwd)/sources/mintor \
+<<<<<<< HEAD
 --module-name=mintor.model1 \
 --staging-bucket=gs://jejucamp2017/ \
 --region=asia-east1 \
+=======
+--module-name=mintor.model_gan_test \
+--staging-bucket=gs://wgan/ \
+--region=europe-west1 \
+>>>>>>> 5bfe3addfb38177e6fa3e201d3e56b9a58c22ff6
 --scale-tier=BASIC_GPU \
 -- \
 --on_cloud=True \

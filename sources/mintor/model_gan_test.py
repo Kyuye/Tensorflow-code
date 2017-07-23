@@ -23,12 +23,21 @@ tf.flags.DEFINE_integer("f_hidden1", 256, "f function 1st hidden layer unit")
 tf.flags.DEFINE_integer("f_hidden2", 512, "f function 2nd hidden layer unit")
 tf.flags.DEFINE_integer("f_logits", 1, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
+<<<<<<< HEAD
 tf.flags.DEFINE_integer("memory_size", 128, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "gs://jejucamp2017/logs/", "path to logs directory")
 tf.flags.DEFINE_bool("on_cloud", True, "run on cloud or local")
 tf.flags.DEFINE_integer("gpu_num", 1, "the number of GPUs")
 tf.flags.DEFINE_integer("train_step", 1000, "the train step" )
 tf.flags.DEFINE_integer("log_step", 500, "the log step")
+=======
+tf.flags.DEFINE_integer("memory_size", 32, "LSTM cell(memory) size")
+tf.flags.DEFINE_string("log_dir", "gs://wgan/logs/", "path to logs directory")
+tf.flags.DEFINE_bool("on_cloud", False, "run on cloud or local")
+tf.flags.DEFINE_integer("gpu_num", 1, "the number of GPUs")
+tf.flags.DEFINE_integer("train_step", 100, "the train step" )
+tf.flags.DEFINE_integer("log_step", 1, "the log step")
+>>>>>>> 5bfe3addfb38177e6fa3e201d3e56b9a58c22ff6
 
 print("vocabulary_size: ", FLAGS.vocabulary_size)
 print("max_document_length: ", FLAGS.max_document_length)
@@ -59,30 +68,30 @@ else:
     
 
 class GAN(object):
-    def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
+    def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5, is_train=True):
         # data loader:
         # load train data and load word2vec map file
-        loader = TrainDataLoader(
-            train_data_csv=FLAGS.train_data, 
-            word2vec_map_json=FLAGS.word_vec_map_file, 
-            on_cloud=FLAGS.on_cloud)
+        if is_train:
+            loader = TrainDataLoader(
+                train_data_csv=FLAGS.train_data, 
+                word2vec_map_json=FLAGS.word_vec_map_file, 
+                on_cloud=FLAGS.on_cloud)
 
-        # preprocessor:
-        # get batch and pairing 
-        preproc = Preprocessor(
-            embedding_map=loader.embedding_map, 
-            batch_size=FLAGS.batch_size*FLAGS.gpu_num, 
-            max_document_length=FLAGS.max_document_length)
+            # preprocessor:
+            # get batch and pairing 
+            preproc = Preprocessor(
+                embedding_map=loader.embedding_map, 
+                batch_size=FLAGS.batch_size*FLAGS.gpu_num, 
+                max_document_length=FLAGS.max_document_length)
 
-        self.critic_iterations = critic_iterations
-        self.clip_values = clip_values
-        self.max_object_pairs_num = preproc.max_object_pairs_num
-        self.data = loader.train_data
-        self.vec2word = loader.vec2word
+            self.critic_iterations = critic_iterations
+            self.clip_values = clip_values
+            self.max_object_pairs_num = preproc.max_object_pairs_num
+            self.data = loader.train_data
+            self.vec2word = loader.vec2word
 
-
-        self.get_batch = preproc.get_batch
-        self.pairing = preproc.pairing
+            self.get_batch = preproc.get_batch
+            self.pairing = preproc.pairing
 
         print("session opening...")
         self._open_session()
@@ -177,8 +186,8 @@ class GAN(object):
                 logits_real = self._discriminator(real_pairs, reuse)
                 logits_fake = self._discriminator(fake_pairs, True)
 
-                self.prob_real = tf.reduce_mean(tf.nn.sigmoid(logits_real))
-                self.prob_fake = tf.reduce_mean(tf.nn.sigmoid(logits_fake))
+                self.prob_real = tf.nn.sigmoid(logits_real)
+                self.prob_fake = tf.nn.sigmoid(logits_fake)
 
                 tf.summary.scalar("prob_real", self.prob_real)
                 tf.summary.scalar("prob_fake", self.prob_fake)
@@ -216,9 +225,7 @@ class GAN(object):
         self.saver = tf.train.Saver(self.gen_variables)
 
     def train_model(self, max_iterations):
-        print("Training Wasserstein GAN model...")
-        clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
-                                        var in self.disc_variables]
+        print("Training GAN model...")
 
         print("variables initializing")
         merged = tf.summary.merge_all()
@@ -231,7 +238,6 @@ class GAN(object):
             for g in range(FLAGS.gpu_num):
                 feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
 
-
             self.sess.run(self.disc_train_op, feed_dict)
             summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
@@ -243,44 +249,6 @@ class GAN(object):
                 print("Step: %d, prob real: %g, prob fake: %g" % (itr, prob_real, prob_fake))
 
 
-    # def train_model(self, max_iterations):
-    #     print("Training Wasserstein GAN model...")
-    #     clip_discriminator_var_op = [var.assign(tf.clip_by_value(var, self.clip_values[0], self.clip_values[1])) for
-    #                                     var in self.disc_variables]
-
-    #     print("variables initializing")
-    #     merged = tf.summary.merge_all()
-    #     summary_writer = tf.summary.FileWriter(FLAGS.log_dir, self.sess.graph)
-    #     self.sess.run(tf.global_variables_initializer())
-
-    #     for itr in range(1, max_iterations):
-    #         train_data, indices = self.get_batch(self.data, itr-1)
-    #         feed_dict = {}
-    #         for g in range(FLAGS.gpu_num):
-    #             feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
-
-
-    #         if itr < 25 or itr % 500 == 0:
-    #             critic_itrs = 25
-    #         else:
-    #             critic_itrs = self.critic_iterations
-
-    #         for critic_itr in range(critic_itrs):
-    #             # print("discriminator critic: ", critic_itr)
-    #             self.sess.run(self.disc_train_op, feed_dict)
-    #             self.sess.run(clip_discriminator_var_op, feed_dict)
-            
-    #         # print("generator update")
-    #         summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
-
-    #         if itr % FLAGS.log_step == 0:
-    #             prob_real, prob_fake = self.sess.run(
-    #                 [self.prob_real, self.prob_fake], feed_dict)
-    #             self.saver.save(self.sess, FLAGS.log_dir+"wgan")
-    #             summary_writer.add_summary(summary, itr)
-    #             print("Step: %d, prob real: %g, prob fake: %g" % (itr, prob_real, prob_fake))
-
-
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
         self.learning_rate = learning_rate
         if optimizer_name == "Adam":
@@ -290,22 +258,36 @@ class GAN(object):
         else:
             raise ValueError("Unknown optimizer %s" % optimizer_name)
 
-    def evaluation(self):
-        gen_data = self.sess.run(self.gen_data)
+    # def evaluation(self):
+    #     gen_data = self.sess.run(self.gen_data)
         
+    #     seq = ""
+    #     for w in gen_data[0]:
+    #         seq += self.vec2word(w) + " "
+            
+    #     with open("./generated_text.txt", 'w') as f:
+    #         f.write(seq)
+
+    #     os.system("gsutil -m cp -r generated_text.txt gs://wgan/logs")
+
+    def evaluation(self):
+        os.system("gsutil -m cp -r gs://wgan/logs/wgan.* $(pwd)/sources/logs/")
+        os.system("gsutil -m cp -r gs://wgan/logs/checkpoint $(pwd)/sources/logs/")
+        
+        self._generator()
+        saver = tf.train.Saver()
+
+        saver.restore(self.sess, "./sources/logs/wgan")
+        gen_data = self.sess.run(self.gen_data)
         seq = ""
         for w in gen_data[0]:
-            try:
-                print(seq)
-            except:
-                continue
-            seq += self.vec2word(w) + " "
+            print(w)
+            seq+=self.vec2word(w) + " "
 
-            
-        with open("./generated_text.txt", 'w') as f:
-            f.write(seq)
-
+<<<<<<< HEAD
         os.system("gsutil -m cp -r generated_text.txt gs://jejucamp2017/logs")
+=======
+>>>>>>> 5bfe3addfb38177e6fa3e201d3e56b9a58c22ff6
 
     def _open_session(self):
         config = tf.ConfigProto()
@@ -320,7 +302,11 @@ class GAN(object):
 
 
 def main(argv=None):
+<<<<<<< HEAD
     gan = GAN(critic_iterations=5)
+=======
+    gan = GAN(is_train=True)
+>>>>>>> 5bfe3addfb38177e6fa3e201d3e56b9a58c22ff6
     gan.create_network()                
     gan.train_model(FLAGS.train_step)
     # gan.evaluation()
