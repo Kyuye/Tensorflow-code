@@ -23,21 +23,12 @@ tf.flags.DEFINE_integer("f_hidden1", 256, "f function 1st hidden layer unit")
 tf.flags.DEFINE_integer("f_hidden2", 512, "f function 2nd hidden layer unit")
 tf.flags.DEFINE_integer("f_logits", 1, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
-<<<<<<< HEAD
-tf.flags.DEFINE_integer("memory_size", 128, "LSTM cell(memory) size")
-tf.flags.DEFINE_string("log_dir", "gs://jejucamp2017/logs/", "path to logs directory")
-tf.flags.DEFINE_bool("on_cloud", True, "run on cloud or local")
-tf.flags.DEFINE_integer("gpu_num", 1, "the number of GPUs")
-tf.flags.DEFINE_integer("train_step", 1000, "the train step" )
-tf.flags.DEFINE_integer("log_step", 500, "the log step")
-=======
 tf.flags.DEFINE_integer("memory_size", 32, "LSTM cell(memory) size")
 tf.flags.DEFINE_string("log_dir", "gs://wgan/logs/", "path to logs directory")
 tf.flags.DEFINE_bool("on_cloud", False, "run on cloud or local")
 tf.flags.DEFINE_integer("gpu_num", 1, "the number of GPUs")
 tf.flags.DEFINE_integer("train_step", 100, "the train step" )
 tf.flags.DEFINE_integer("log_step", 1, "the log step")
->>>>>>> 5bfe3addfb38177e6fa3e201d3e56b9a58c22ff6
 
 print("vocabulary_size: ", FLAGS.vocabulary_size)
 print("max_document_length: ", FLAGS.max_document_length)
@@ -186,8 +177,8 @@ class GAN(object):
                 logits_real = self._discriminator(real_pairs, reuse)
                 logits_fake = self._discriminator(fake_pairs, True)
 
-                self.prob_real = tf.nn.sigmoid(logits_real)
-                self.prob_fake = tf.nn.sigmoid(logits_fake)
+                self.prob_real = tf.reduce_mean(tf.nn.sigmoid(logits_real))
+                self.prob_fake = tf.reduce_mean(tf.nn.sigmoid(logits_fake))
 
                 tf.summary.scalar("prob_real", self.prob_real)
                 tf.summary.scalar("prob_fake", self.prob_fake)
@@ -284,10 +275,6 @@ class GAN(object):
             print(w)
             seq+=self.vec2word(w) + " "
 
-<<<<<<< HEAD
-        os.system("gsutil -m cp -r generated_text.txt gs://jejucamp2017/logs")
-=======
->>>>>>> 5bfe3addfb38177e6fa3e201d3e56b9a58c22ff6
 
     def _open_session(self):
         config = tf.ConfigProto()
@@ -302,16 +289,11 @@ class GAN(object):
 
 
 def main(argv=None):
-<<<<<<< HEAD
     gan = GAN(critic_iterations=5)
-=======
-    gan = GAN(is_train=True)
->>>>>>> 5bfe3addfb38177e6fa3e201d3e56b9a58c22ff6
     gan.create_network()                
     gan.train_model(FLAGS.train_step)
-    # gan.evaluation()
+    gan.evaluation()
     gan.sess.close()
-
 
 if __name__ == "__main__":    
     tf.app.run()
