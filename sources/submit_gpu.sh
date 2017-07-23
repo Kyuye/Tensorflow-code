@@ -2,20 +2,14 @@ job_name=wgan_gpu_us_east_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
 --package-path=$(pwd)/sources/mintor \
-<<<<<<< HEAD
---module-name=mintor.model1 \
+--module-name=mintor.model_1emo \
 --staging-bucket=gs://jejucamp2017/ \
---region=asia-east1 \
-=======
---module-name=mintor.model_gan_test \
---staging-bucket=gs://wgan/ \
---region=europe-west1 \
->>>>>>> 5bfe3addfb38177e6fa3e201d3e56b9a58c22ff6
+--region=us-east1 \
 --scale-tier=BASIC_GPU \
 -- \
 --on_cloud=True \
 --bucket=jejucamp2017 \
---train_data=/dataset/twitter_emotion_v2\(p,n,N\).csv \
+--emotion_data=/dataset/Neutral.tsv \
 --word_vec_map_file=/dataset/word2vec_map.json \
 --log_dir=./logs/ \
 --gpu_num=1
@@ -26,6 +20,9 @@ gcloud ml-engine jobs submit training $job_name \
 # us-central1
 # europe-west1
 
+# --emotion_data=/dataset/Positive.tsv \
+# --emotion_data=/dataset/Negative.tsv \
+# --emotion_data=/dataset/Neutral.tsv \
 
 # scale tier list
 # BASIC: A single worker instance. This tier is suitable for learning how to use Cloud ML Engine and for experimenting with new models using small datasets.

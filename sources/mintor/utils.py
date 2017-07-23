@@ -70,3 +70,4 @@ def filter_printable(sent):
 
 def filter_none(sent):
     return filter(None, sent)
+

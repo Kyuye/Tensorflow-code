@@ -9,6 +9,30 @@ from utils import *
 from pandas import Series, DataFrame 
 import csv 
 
+
+
+# str_list = ["a", "b", "c"]
+# print(str_list)
+# print("a b c")
+# print(str_list[0] + " " + str_list[1] + " "+ str_list[2])
+# filename = "./DataSet/Negative.tsv"
+
+# sent = pandas.read_table(filename)
+# print(sent)
+
+# exit()
+
+with open(filename,'r') as f :
+    reader = f.reader(f,delimiter='\t')
+    reader.readerows()
+ta = pandas.read_csv(filename)
+print(data)
+
+
+
+exit() 
+
+
 filename = "./dataset/twitter_emotion_v2(p,n,N).csv"
 
 
@@ -32,10 +56,11 @@ __pos = data[data['Sentiment'].str.contains("Pos")]
 _pos = __pos["content"]
 __neu = data[data['Sentiment'].str.contains("neutral")]
 _neu = __neu["content"]
-
+# print(_neg[:9])
 neu = _neu.str.split(" ")
 pos = _pos.str.split(" ")
 neg = _neg.str.split(" ")
+# print(neg[:9])
 
 final_neu = filter_none(neu)
 final_neu = filter_word(remove_words,final_neu)
@@ -48,8 +73,17 @@ final_pos = filter_printable(final_pos)
 final_neg = filter_none(neg)
 final_neg = filter_word(remove_words,final_neg)
 final_neg = filter_printable(final_neg)
+# print(final_neg[:9])
 
+final_neg = filter(None,final_neg)
+final_pos = filter(None,final_pos)
+final_neu = filter(None,final_neu)
+# print(final_neg[:9])
 
+neg_sentences = list(map(lambda seq : [reduce(lambda w0, w1: w0+' '+w1, seq)],final_neg))
+pos_sentences = list(map(lambda seq : [reduce(lambda w0, w1: w0+' '+w1, seq)],final_pos))
+neu_sentences = list(map(lambda seq : [reduce(lambda w0, w1: w0+' '+w1, seq)],final_neu))
+# print(neg_sentences[:9])
 # print("Negative contents:", type(final_neg))
 # print()
 # print("Positive contents:", final_pos)
@@ -59,17 +93,18 @@ final_neg = filter_printable(final_neg)
 # with open(file_dir[:-4]+".txt", 'w') as f:
 #     f.write(str(final))
 
-with open("./DataSet/Negative.csv", 'w') as f:
-    writer = csv.writer(f, "excel")
-    writer.writerow(final_neg)
 
-with open("./DataSet/Neutral.csv", 'w') as f:
-    writer = csv.writer(f, "excel")
-    writer.writerow(final_neu)
+with open("./DataSet/Negative.tsv", 'w') as f:
+    writer = csv.writer(f, delimiter='\t')
+    writer.writerows(neg_sentences)
 
-with open("./DataSet/Positive.csv", 'w') as f:
-    writer = csv.writer(f, "excel")
-    writer.writerow(final_pos)
+with open("./DataSet/Neutral.tsv", 'w') as f:
+    writer = csv.writer(f, delimiter='\t')
+    writer.writerows(neu_sentences)
+
+with open("./DataSet/Positive.tsv", 'w') as f:
+    writer = csv.writer(f, delimiter='\t')
+    writer.writerows(pos_sentences)
 # print(sent1[df['Sentiment'].str.contains("Pos")])
 # print(sent1[df['Sentiment'].str.contains("neutral")])
 

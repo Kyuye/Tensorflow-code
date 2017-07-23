@@ -193,7 +193,7 @@ if __name__ == "__main__":
         final_version = json.load(data_file)
         # print(final_version.keys())
     
-    sent = u"""You cannot revisit the past but thanks to modern photography you can try to recreate it Just ask I was a student at a school and photographed her travels across returned to the region exactly 30 years later The photographer decided to recreate some of her favorite snapshots from back in the day I thought it would be a fun photography project for my YouTube channel tells I was amazed at how little these places had changed Before she left, Werner fished out her old photo albums and scanned 13 favorite images. Once in Europe, she successfully tracked down the exact locations and mimicked her pose from 30 years previously -- creating new versions of her favorites she has showcased the then and now photographs on her YouTube""".split(" ")
+    sent = u"""You cannot visit the past but thanks to modern photography you can try to create it Just ask I was a student at a school and picture her travel across returned to the site exactly 30 years later The picture decided to create some of her favorite picture from back in the day I thought it would be a fun picture project for my YouTube channel tells I was amazed at how little these places had changed Before she left he finish out her old photo albums and scan favorite images Once in she successful track down the exact locations and follow her pose from 30 years previous creating new versions of her favorite she has showed the then and now picture on her YouTube""".split(" ")
 
 
     i = 0

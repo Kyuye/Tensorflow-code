@@ -6,7 +6,7 @@ import numpy as np
 from scipy.spatial.distance import cosine
 
 class TrainDataLoader(object):
-    def __init__(self, bucket, train_data_csv, word2vec_map_json, on_cloud=False):
+    def __init__(self, bucket, emotion_tsv=None, train_data_csv=None, word2vec_map_json=None, on_cloud=False):
         if on_cloud:
             os.system("mkdir dataset")
             # os.system("gsutil -m cp -r gs://jejucamp2017/dataset/* $(pwd)/dataset/")
@@ -15,9 +15,13 @@ class TrainDataLoader(object):
             print("data set copy")
         
         print("reading train data...")
-        self.train_data = self.read_datafile(os.getcwd() + train_data_csv)
+        if train_data_csv:
+            self.train_data = self.read_datafile(os.getcwd() + train_data_csv)
         print("loading embedding map...")
-        self.embedding_map = self.load_embedding_map(os.getcwd() + word2vec_map_json)
+        if word2vec_map_json:
+            self.embedding_map = self.load_embedding_map(os.getcwd() + word2vec_map_json)
+        if emotion_tsv:
+            self.emo_train_data = self.read_emotions(os.getcwd() + emotion_tsv)
     
 
     def read_datafile(self, filename):
@@ -26,6 +30,8 @@ class TrainDataLoader(object):
         data["content"] = data["content"].astype("str")
         return data
 
+    def read_emotions(self,filename):
+        return pandas.read_table(filename)
 
     def load_embedding_map(self, mapfile):
         with open(mapfile) as data_file:    

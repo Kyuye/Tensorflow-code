@@ -1,5 +1,6 @@
 DataSet/word2vec_map.json
 dataset/word2vec_map.json
-sources/submit.sh
+sources/submit_4gpu.sh
+sources/submit_8gpu.sh
+sources/submit_gpu.sh
 DataSet/train_set.csv
-sources/submit.sh
