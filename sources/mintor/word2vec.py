@@ -10,25 +10,53 @@ import json
 import collections
 import matplotlib.pyplot as plt
 from pprint import pprint
-
+from utils import *
+import pandas
+import numpy as np
+import re 
+from pandas import Series, DataFrame 
+import string 
 
 
 class skip_gram(object):
     def __init__(self):
-        self.vocabulary_size = 50000 
+        self.vocabulary_size = 10000
         self.embed_size = 300
         self.num_sampled = 64
         self.batch_size = 32
 
     def csv_to_text(self, file_dir):
-        with open(file_dir, 'r') as f:
-            reader = csv.reader(f)
-            data = list(map(lambda x: x[3]+x[4]+x[5]+x[6]+x[7]+x[8]+x[9]+x[10], reader))
-            del data[0]
+        
+        data = pandas.read_csv(file_dir, usecols=["Sentiment", "content"])
+        data = data[data["content"]!= "0"]
+        data["content"] = data["content"].astype("str")
+        sent1 = data["content"]
+        sent2 = sent1.str.split(" ")
 
+        remove_words = ["@", "http://", "--", ":", ";","&","=",">","<","$","~","#","//","^", "(", ")", ",","\\"]
+        final = filter_none(sent2)
+        final = filter_word(remove_words,final)
+        final = filter_printable(final)
+        
+        # with open(file_dir, 'r') as f:
+        #     reader = csv.reader(f)
+        # data = list(map(lambda x: x[3]+x[4]+x[5]+x[6]+x[7]+x[8]+x[9]+x[10], reader))
+            # del data[0]
+        words=[]
+
+        for sent in final:
+            for word in sent:
+                words.append(word)
+                
+        
         with open(file_dir[:-4]+".txt", 'w') as f:
-            for i in data:
-                f.writelines(i+"\n")
+            for i in words:
+                f.write(str(i)+" ")
+        
+       
+        # words = self.words_read_text("./DataSet/twitter_emotion_v2(p,n,N).txt")
+        # count = collections.Counter(words).most_common(self.vocabulary_size)
+        # print(count)
 
     def words_read_text(self, file_dir):
         with open(file_dir, 'r')  as f:
@@ -157,29 +185,50 @@ filename = "./DataSet/twitter_emotion_v2(p,n,N).csv"
 
 textname = "./DataSet/twitter_emotion_v2(p,n,N).txt"
 
+jsonfile = "./DataSet/word2vec_map.json"
+
+
 if __name__ == "__main__":
+    with open(jsonfile) as data_file :    
+        final_version = json.load(data_file)
+        # print(final_version.keys())
+    
+    sent = u"""You cannot revisit the past but thanks to modern photography you can try to recreate it Just ask I was a student at a school and photographed her travels across returned to the region exactly 30 years later The photographer decided to recreate some of her favorite snapshots from back in the day I thought it would be a fun photography project for my YouTube channel tells I was amazed at how little these places had changed Before she left, Werner fished out her old photo albums and scanned 13 favorite images. Once in Europe, she successfully tracked down the exact locations and mimicked her pose from 30 years previously -- creating new versions of her favorites she has showcased the then and now photographs on her YouTube""".split(" ")
+
+
+    i = 0
+    for word in sent:
+        print(word in final_version," ",word)
+        i+=1
+    
+    print(i)
+    exit()
+
     w = skip_gram()
     w.csv_to_text(filename)
     words_pair, vocab_dict = w.vocab_to_dict(textname)
     
     # print("words pair : ", words_pair)
     # print("vocab_dictionary :", vocab_dict)
-    
+   
     data = w.words_read_text(textname)
-    words_id = [vocab_dict[i] if i in vocab_dict else vocab_dict["UNK"] for i in data[:100]]
+
+    words_id = [vocab_dict[i] if i in vocab_dict else vocab_dict["UNK"] for i in data]
     
     # print("data is ", data[:10])
     # print("words id :", words_id[:10])
-
     batch = w.build_train_data(words_id, 2, 20)
     w.write_train_data(batch)
 
     # print("batch is ", batch[:10])
     
-    w.train_model(10)
+    w.train_model(10000)
     w.wordvec_map()
-
-
+    
+   
+    with open(jsonfile) as data_file :    
+        final_version = json.load(data_file)
+        print(final_version.keys())
     # words_pair, vocab_dict = vocab_to_dict(filename)
     # data = words_read_text(file_dir)
     # words = [i[0] for i in words_pair]

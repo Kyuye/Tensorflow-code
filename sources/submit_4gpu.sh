@@ -1,19 +1,20 @@
-job_name=gan_test_$(date +%Y%m%d_%H%M%S)
+job_name=wgan_4gpu_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
 --package-path=$(pwd)/sources/mintor \
-<<<<<<< HEAD
---module-name=mintor.model \
+--module-name=mintor.model1 \
 --staging-bucket=gs://jejucamp2017/ \
---region=us-east1 \
-=======
---module-name=mintor.model_gan_test \
---staging-bucket=gs://wgan/ \
 --region=europe-west1 \
->>>>>>> f1df6ca1cf35a7ff94fac9dcea80ef221f81f373
 --scale-tier=CUSTOM \
---job-dir=gs://wgan/logs \
---config=./sources/config_4gpu.yaml 
+--config=./sources/config_4gpu.yaml \
+-- \
+--on_cloud=True \
+--bucket=jejucamp2017 \
+--train_data=/dataset/twitter_emotion_v2\(p,n,N\).csv \
+--word_vec_map_file=/dataset/word2vec_map.json \
+--log_dir=./logs/ \
+--gpu_num=4 
+
 
 # region list
 # asia-east1
@@ -29,5 +30,4 @@ gcloud ml-engine jobs submit training $job_name \
 # BASIC_GPU: A single worker instance with a GPU.
 # CUSTOM: custom setting
 
-sleep 5
-gcloud ml-engine jobs stream-logs $job_name
+

@@ -5,21 +5,71 @@ import json
 import os
 import numpy as np
 import re 
-
+from utils import *
 from pandas import Series, DataFrame 
+import csv 
 
 filename = "./dataset/twitter_emotion_v2(p,n,N).csv"
-        
+
+
 data = pandas.read_csv(filename, usecols=["Sentiment", "content"])
 data = data[data["content"] != "0"]
 data["content"] = data["content"].astype("str")
 data["Sentiment"] = data["Sentiment"].astype("str")
 
-df = pandas.DataFrame(data)
-# pandas.Series.sort_index(1)
+
+remove_words = ["@", "http://", "--", ":", ";","&","=",">","<","$","~","#","//","^", "(", ")", ",","\\"]
+
+        
+        # with open(file_dir, 'r') as f:
+        #     reader = csv.reader(f)
+        # data = list(map(lambda x: x[3]+x[4]+x[5]+x[6]+x[7]+x[8]+x[9]+x[10], reader))
+            # del data[0]
+
+__neg = data[data['Sentiment'].str.contains("Neg")]
+_neg = __neg["content"]
+__pos = data[data['Sentiment'].str.contains("Pos")]
+_pos = __pos["content"]
+__neu = data[data['Sentiment'].str.contains("neutral")]
+_neu = __neu["content"]
+
+neu = _neu.str.split(" ")
+pos = _pos.str.split(" ")
+neg = _neg.str.split(" ")
+
+final_neu = filter_none(neu)
+final_neu = filter_word(remove_words,final_neu)
+final_neu = filter_printable(final_neu)
+
+final_pos = filter_none(pos)
+final_pos = filter_word(remove_words,final_pos)
+final_pos = filter_printable(final_pos)
+
+final_neg = filter_none(neg)
+final_neg = filter_word(remove_words,final_neg)
+final_neg = filter_printable(final_neg)
 
 
-print(df[df['Sentiment'].str.contains("Neg")])
+# print("Negative contents:", type(final_neg))
+# print()
+# print("Positive contents:", final_pos)
+# print()
+# print("Neutral contents:", final_neu)
+
+# with open(file_dir[:-4]+".txt", 'w') as f:
+#     f.write(str(final))
+
+with open("./DataSet/Negative.csv", 'w') as f:
+    writer = csv.writer(f, "excel")
+    writer.writerow(final_neg)
+
+with open("./DataSet/Neutral.csv", 'w') as f:
+    writer = csv.writer(f, "excel")
+    writer.writerow(final_neu)
+
+with open("./DataSet/Positive.csv", 'w') as f:
+    writer = csv.writer(f, "excel")
+    writer.writerow(final_pos)
 # print(sent1[df['Sentiment'].str.contains("Pos")])
 # print(sent1[df['Sentiment'].str.contains("neutral")])
 

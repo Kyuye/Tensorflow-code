@@ -23,12 +23,12 @@ tf.flags.DEFINE_integer("f_hidden1", 256, "f function 1st hidden layer unit")
 tf.flags.DEFINE_integer("f_hidden2", 512, "f function 2nd hidden layer unit")
 tf.flags.DEFINE_integer("f_logits", 1, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
-tf.flags.DEFINE_integer("memory_size", 32, "LSTM cell(memory) size")
-tf.flags.DEFINE_string("log_dir", "gs://wgan/logs/", "path to logs directory")
+tf.flags.DEFINE_integer("memory_size", 128, "LSTM cell(memory) size")
+tf.flags.DEFINE_string("log_dir", "gs://jejucamp2017/logs/", "path to logs directory")
 tf.flags.DEFINE_bool("on_cloud", True, "run on cloud or local")
-tf.flags.DEFINE_integer("gpu_num", 4, "the number of GPUs")
-tf.flags.DEFINE_integer("train_step", 100, "the train step" )
-tf.flags.DEFINE_integer("log_step", 10, "the log step")
+tf.flags.DEFINE_integer("gpu_num", 1, "the number of GPUs")
+tf.flags.DEFINE_integer("train_step", 1000, "the train step" )
+tf.flags.DEFINE_integer("log_step", 500, "the log step")
 
 print("vocabulary_size: ", FLAGS.vocabulary_size)
 print("max_document_length: ", FLAGS.max_document_length)
@@ -45,7 +45,8 @@ print("f_logits: ", FLAGS.f_logits)
 print("memory_size: ", FLAGS.memory_size)
 print("train_step: ", FLAGS.train_step)
 print("log_step: ", FLAGS.log_step)
-
+print("train data directory:", FLAGS.train_data)
+print("log directoty:", FLAGS.Log_dir)
 
 if FLAGS.on_cloud:
     from mintor.data_loader import TrainDataLoader
@@ -304,7 +305,7 @@ class GAN(object):
         with open("./generated_text.txt", 'w') as f:
             f.write(seq)
 
-        os.system("gsutil -m cp -r generated_text.txt gs://wgan/logs")
+        os.system("gsutil -m cp -r generated_text.txt gs://jejucamp2017/logs")
 
     def _open_session(self):
         config = tf.ConfigProto()
@@ -319,10 +320,10 @@ class GAN(object):
 
 
 def main(argv=None):
-    gan = WassersteinGAN(critic_iterations=5)
+    gan = GAN(critic_iterations=5)
     gan.create_network()                
     gan.train_model(FLAGS.train_step)
-    gan.evaluation()
+    # gan.evaluation()
     gan.sess.close()
 
 

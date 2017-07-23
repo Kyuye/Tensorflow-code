@@ -1,3 +1,9 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+
+import nltk, re, pprint
 
 import tensorflow as tf
 import pandas
@@ -5,19 +11,67 @@ import json
 import os
 import numpy as np
 import re 
+from pandas import Series, DataFrame 
+import string 
+ 
 
+pandas.set_option('display.max_colwidth', 10000)
 
 filename = "./dataset/twitter_emotion_v2(p,n,N).csv"
         
 data = pandas.read_csv(filename, usecols=["Sentiment", "content"])
 data = data[data["content"] != "0"]
 data["content"] = data["content"].astype("str")
-sent1 = data["content"][:10]
+sent1 = data["content"]
+
+sent2 = sent1.str.split(" ")
+
+print(sent2)
+print()
+print()
+
+
+def filter_word(target,sent):
+    filtered = sent
+    for remove in target:
+         filtered = list(map(lambda s: filter(lambda w: w.find(remove), filter(None, s)), filtered))
+    return filtered
+
+def filter_printable(sent):
+    printable_set = set(string.printable)
+    return list(map(lambda s: filter(lambda w: w[0] in printable_set, s), sent))
+
+def filter_none(sent):
+    return filter(None, sent)
+# print(list(map(lambda sent: filter(lambda w: w[0] in printable, sent), afiltered)))
+
+remove_words = ["@", "http://", "--", ":", ";","&","=",">","<","$","~","#","//","^", "(", ")", ",","\\"]
+test = filter_none(sent2)
+test = filter_word(remove_words,test)
+test = filter_printable(test)
+
+print(test)
+
+
+
+
+
+
+
+
+
+# df = pandas.DataFrame(sent1)
 # pandas.Series(sent1).str.replace('.','')
-print(pandas.Series(sent1).str.replace('@',' '))
+# sent2 = pandas.Series(sent1).str.replace('@',' ')
+# print(pandas.Series(sent1).str.replace('http://',''))
+
+
+# print(re.sub(r'[^\x00-\x7F]+',' ', sent2))
 # pandas.Series(sent1).str.replace('http://','')
 # print(sent1)
-    
+# a = df.columns.str.replace('@','')
+# print(sent1)
+# print(pandas.Series(sent1).str.replace('@',''))
 # ".@http://www.com","",sent1.str)
 # aa = re.sub("asd", "", "asdfg123")
 # print(sent1.find('@'))
