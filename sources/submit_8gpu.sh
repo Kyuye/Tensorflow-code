@@ -2,7 +2,7 @@ job_name=wgan_8gpu_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
 --package-path=$(pwd)/sources/mintor \
---module-name=mintor.model_1emo \
+--module-name=mintor.model_1sent \
 --staging-bucket=gs://jejucamp2017/ \
 --region=europe-west1 \
 --scale-tier=CUSTOM \
@@ -10,7 +10,6 @@ gcloud ml-engine jobs submit training $job_name \
 -- \
 --on_cloud=True \
 --bucket=jejucamp2017 \
---train_data=/dataset/Neutral.tsv \
 --word_vec_map_file=/dataset/word2vec_map.json \
 --log_dir=./logs/ \
 --gpu_num=8 
@@ -30,4 +29,5 @@ gcloud ml-engine jobs submit training $job_name \
 # BASIC_GPU: A single worker instance with a GPU.
 # CUSTOM: custom setting
 
+# --train_data=/dataset/Negative.tsv \
 
