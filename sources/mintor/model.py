@@ -11,7 +11,7 @@ FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_integer("vocabulary_size", 10000, "vocabulary size")
 tf.flags.DEFINE_integer("max_document_length", 150, "max document(sentence) length")
 tf.flags.DEFINE_string("train_data", "/dataset/twitter_emotion_v2(p,n,N).csv", "train data path")
-tf.flags.DEFINE_string("word_vec_map_file", '/data set/word2vec_map.json', "mapfile for word2vec")
+tf.flags.DEFINE_string("word_vec_map_file", '/dataset/word2vec_map.json', "mapfile for word2vec")
 tf.flags.DEFINE_string("log_dir", "./logs/", "path to logs directory")
 tf.flags.DEFINE_string("bucket", 'jejucamp2017', "bucket name")
 tf.flags.DEFINE_integer("batch_size", 32, "batch size for training")
@@ -294,8 +294,11 @@ class WassersteinGAN(object):
 
             g_loss_val, d_loss_val = self.sess.run(
                 [self.gen_loss, self.disc_loss], feed_dict)
-            self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
-            
+            if FLAGS.on_cloud == True:
+                self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
+            else:
+                self.saver.save(self.sess, "./logs/regan_local")
+
             print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr+itr*FLAGS.epoch, g_loss_val, d_loss_val))
 
 
@@ -316,10 +319,11 @@ class WassersteinGAN(object):
             seq += self.vec2word(w) + " "
             print(seq)
 
-        with open("./generated_text.txt", 'w') as f:
+        with open("./logs/generated_text.txt", 'w') as f:
             f.write(seq)
 
-        os.system("gsutil -m cp -r generated_text.txt gs://jejucamp2017/logs")
+        if FLAGS.on_cloud == True: 
+            os.system("gsutil -m cp -r generated_text.txt gs://jejucamp2017/logs")
 
     def _open_session(self):
         config = tf.ConfigProto()
