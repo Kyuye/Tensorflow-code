@@ -254,12 +254,19 @@ class WassersteinGAN(object):
                 # print("generator update")
                 summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
-                if itr+itr*FLAGS.epoch % FLAGS.log_step == 0:
-                    g_loss_val, d_loss_val = self.sess.run(
-                        [self.gen_loss, self.disc_loss], feed_dict)
-                    self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
-                    summary_writer.add_summary(summary, itr)
-                    print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr+itr*FLAGS.epoch, g_loss_val, d_loss_val))
+            g_loss_val, d_loss_val = self.sess.run(
+                [self.gen_loss, self.disc_loss], feed_dict)
+            self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
+            summary_writer.add_summary(summary, itr)
+            print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr+itr*FLAGS.epoch, g_loss_val, d_loss_val))
+
+
+                # if itr+itr*FLAGS.epoch % FLAGS.log_step == 0:
+                #     g_loss_val, d_loss_val = self.sess.run(
+                #         [self.gen_loss, self.disc_loss], feed_dict)
+                #     self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
+                #     summary_writer.add_summary(summary, itr)
+                #     print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr+itr*FLAGS.epoch, g_loss_val, d_loss_val))
 
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):

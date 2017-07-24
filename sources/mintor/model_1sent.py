@@ -82,10 +82,10 @@ class WassersteinGAN(object):
         self.max_object_pairs_num = preproc.max_object_pairs_num
         
         # pos: 
-        # sent = "men always remember love because of romance only The best love is the kind that awaken the soul that makes us reach for more that plants the fire in our hearts and brings peace to our minds That's what I hope to give you forever The greatest happiness of life is the declaration that we are loved loved for myself or rather loved in hurt of myself The best and most beautiful things in this world cannot be seen or even heard but must be felt with the heart"
+        sent = "men always remember love because of romance only The best love is the kind that awaken the soul that makes us reach for more that plants the fire in our hearts and brings peace to our minds That's what I hope to give you forever The greatest happiness of life is the declaration that we are loved loved for myself or rather loved in hurt of myself The best and most beautiful things in this world cannot be seen or even heard but must be felt with the heart"
         # neg :
-        sent = "My sadness has become an addiction when i am not sad i feel lost I start to panic trying to find my way back which leads me back to my original state You were rarely wishing for the end of pain the monster said your own pain end to how it you It is the most human wish of all everyone in life is gonna hurt you you just have to figure out which people are worth the pain The World is mad and the people are sad The saddest thing is when you are feeling real down you look around and realize that there is no shoulder for you I guess that is what saying goodbye is always like jumping off an edge The worst part is making the choice to do it Once you are in the air there is nothing you can do but let go"
-        # neutral 
+        # sent = "My sadness has become an addiction when i am not sad i feel lost I start to panic trying to find my way back which leads me back to my original state You were rarely wishing for the end of pain the monster said your own pain end to how it you It is the most human wish of all everyone in life is gonna hurt you you just have to figure out which people are worth the pain The World is mad and the people are sad The saddest thing is when you are feeling real down you look around and realize that there is no shoulder for you I guess that is what saying goodbye is always like jumping off an edge The worst part is making the choice to do it Once you are in the air there is nothing you can do but let go"
+        # neutral: 
         # sent = "You cannot visit the past but thanks to modern photography you can try to create it Just ask I was a student at a school and picture her travel across returned to the site exactly 30 years later The picture decided to create some of her favorite picture from back in the day I thought it would be a fun picture project for my YouTube channel tells I was amazed at how little these places had changed Before she left he finish out her old photo albums and scan favorite images Once in she successful track down the exact locations and follow her pose from 30 years previous creating new versions of her favorite she has showed the then and now picture on her YouTube"
         self.data = [sent for _ in range(FLAGS.batch_size*FLAGS.gpu_num)]
         self.vec2word = loader.vec2word
@@ -264,12 +264,11 @@ class WassersteinGAN(object):
                 # print("generator update")
                 summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
-                if itr+itr*FLAGS.epoch % FLAGS.log_step == 0:
-                    g_loss_val, d_loss_val = self.sess.run(
-                        [self.gen_loss, self.disc_loss], feed_dict)
-                    self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
-                    summary_writer.add_summary(summary, itr)
-                    print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr+itr*FLAGS.epoch, g_loss_val, d_loss_val))
+            g_loss_val, d_loss_val = self.sess.run(
+                [self.gen_loss, self.disc_loss], feed_dict)
+            self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
+            summary_writer.add_summary(summary, itr)
+            print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr+itr*FLAGS.epoch, g_loss_val, d_loss_val))
 
 
     def _get_optimizer(self, optimizer_name, learning_rate, optimizer_param):
@@ -289,7 +288,7 @@ class WassersteinGAN(object):
             seq += self.vec2word(w) + " "
             print(seq)
 
-        with open(e"./generated_text.txt", 'w') as f:
+        with open("./generated_text.txt", 'w') as f:
             f.write(seq)
 
         os.system("gsutil -m cp -r generated_text.txt gs://jejucamp2017/logs")
