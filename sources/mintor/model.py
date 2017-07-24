@@ -33,6 +33,7 @@ tf.flags.DEFINE_integer("log_step", 50, "log step")
 tf.flags.DEFINE_string("emotion_data","/dataset/Negative.tsv", "emotion data")
 tf.flags.DEFINE_string("task", "1emo", "the task of this model")
 
+
 print("vocabulary_size: ",FLAGS.vocabulary_size)
 print("max_document_length: ", FLAGS.max_document_length)
 print("batch_size: ", FLAGS.batch_size)
@@ -67,16 +68,8 @@ class WassersteinGAN(object):
     def __init__(self, clip_values=(-0.01, 0.01), critic_iterations=5):
         # data loader:
         # load train data and load word2vec map file
-        
-        if FLAGS.task == "1sent":
-            loader = TrainDataLoader(
-                bucket=FLAGS.bucket,
-                word2vec_map_json=FLAGS.word_vec_map_file, 
-                on_cloud=FLAGS.on_cloud)
-            sent = "men always remember love because of romance only The best love is the kind that awaken the soul that makes us reach for more that plants the fire in our hearts and brings peace to our minds That's what I hope to give you forever The greatest happiness of life is the declaration that we are loved loved for myself or rather loved in hurt of myself The best and most beautiful things in this world cannot be seen or even heard but must be felt with the heart"
 
-            self.data = [sent for _ in range(FLAGS.batch_size*FLAGS.gpu_num)]
-        else:
+        if FLAGS.task == "1emo":
             loader = TrainDataLoader(
                 bucket=FLAGS.bucket,
                 emotion_tsv=FLAGS.emotion_data,
@@ -85,10 +78,22 @@ class WassersteinGAN(object):
                 on_cloud=FLAGS.on_cloud)
 
             self.data = loader.train_data
-
-
-        print(self.data[:10])
-        exit()
+        
+        else:
+            if FLAGS.task == "pos_sent":
+                sent = "men always remember love because of romance only The best love is the kind that awaken the soul that makes us reach for more that plants the fire in our hearts and brings peace to our minds That's what I hope to give you forever The greatest happiness of life is the declaration that we are loved loved for myself or rather loved in hurt of myself The best and most beautiful things in this world cannot be seen or even heard but must be felt with the heart"
+            elif FLAGS.task == "neg_sent":
+                sent = "My sadness has become an addiction when i am not sad i feel lost I start to panic trying to find my way back which leads me back to my original state You were rarely wishing for the end of pain the monster said your own pain end to how it you It is the most human wish of all everyone in life is gonna hurt you you just have to figure out which people are worth the pain The World is mad and the people are sad The saddest thing is when you are feeling real down you look around and realize that there is no shoulder for you I guess that is what saying goodbye is always like jumping off an edge The worst part is making the choice to do it Once you are in the air there is nothing you can do but let go"
+            elif FLAGS.task == "neu_sent":
+                sent = "You cannot visit the past but thanks to modern photography you can try to create it Just ask I was a student at a school and picture her travel across returned to the site exactly 30 years later The picture decided to create some of her favorite picture from back in the day I thought it would be a fun picture project for my YouTube channel tells I was amazed at how little these places had changed Before she left he finish out her old photo albums and scan favorite images Once in she successful track down the exact locations and follow her pose from 30 years previous creating new versions of her favorite she has showed the then and now picture on her YouTube"
+            
+            loader = TrainDataLoader(
+                bucket=FLAGS.bucket,
+                word2vec_map_json=FLAGS.word_vec_map_file, 
+                on_cloud=FLAGS.on_cloud)
+                
+            self.data = [sent for _ in range(FLAGS.batch_size*FLAGS.gpu_num)]
+            
 
         # preprocessor:
         # get batch and pairing 
@@ -255,13 +260,19 @@ class WassersteinGAN(object):
         
         for epoch in range(max_iterations): 
             for itr in range(1, train_step):
-                train_data, indices = self.get_batch(self.data, itr-1)
-                
-                feed_dict = {}
-                for g in range(FLAGS.gpu_num):
-                    feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
-                    feed_dict[self.label_indices[g]] = indices[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
-                        
+
+                if FLAGS.task == "1emo":
+                    train_data, indices = self.get_batch(self.data, itr-1)
+                    feed_dict = {}
+                    for g in range(FLAGS.gpu_num):
+                        feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
+                        feed_dict[self.label_indices[g]] = indices[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
+                else:
+                    train_data = self.embedding_padding(self.data)
+                    feed_dict = {}
+                    for g in range(FLAGS.gpu_num):
+                        feed_dict[self.train_batch[g]] = train_data[g*FLAGS.batch_size:(g+1)*FLAGS.batch_size]
+
 
                 if itr < 25 or itr % 500 == 0:
                     critic_itrs = 25
@@ -276,10 +287,15 @@ class WassersteinGAN(object):
                 # print("generator update")
                 summary, _ = self.sess.run([merged, self.gen_train_op], feed_dict)
 
+                if itr%50 ==0:
+                    summary_writer.add_summary(summary, itr+itr*FLAGS.epoch)
+                    print("iteration:",itr)
+            
+
             g_loss_val, d_loss_val = self.sess.run(
                 [self.gen_loss, self.disc_loss], feed_dict)
             self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
-            summary_writer.add_summary(summary, itr)
+            
             print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr+itr*FLAGS.epoch, g_loss_val, d_loss_val))
 
 

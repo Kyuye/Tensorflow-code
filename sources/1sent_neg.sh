@@ -1,19 +1,20 @@
 
-job_name=REGAN_1sent_neg_8GPU_$(date +%Y%m%d_%H%M%S)
+job_name=REGAN_1sent_neg_4GPU_$(date +%Y%m%d_%H%M%S)
 
 gcloud ml-engine jobs submit training $job_name \
 --package-path=$(pwd)/sources/mintor \
---module-name=mintor.model_1sent \
+--module-name=mintor.model \
 --staging-bucket=gs://jejucamp2017/ \
---region=europe-west1 \
+--region=asia-east1 \
 --scale-tier=CUSTOM \
---config=./sources/config_8gpu.yaml \
+--config=./sources/config_4gpu.yaml \
 -- \
 --on_cloud=True \
 --bucket=jejucamp2017 \
 --word_vec_map_file=/dataset/word2vec_map.json \
 --log_dir=./logs/ \
---gpu_num=8 
+--gpu_num=4 \
+--task=neg_sent
 
 
 # job_name=REGAN_1sent_neg_singleGPU_$(date +%Y%m%d_%H%M%S)
