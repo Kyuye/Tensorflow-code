@@ -27,11 +27,12 @@ tf.flags.DEFINE_integer("f_logits", 159, "f function logits")
 tf.flags.DEFINE_integer("emotion_class", 3, "number of emotion classes")
 tf.flags.DEFINE_integer("memory_size", 128, "LSTM cell(memory) size")
 tf.flags.DEFINE_bool("on_cloud", True, "run on cloud or local")
-tf.flags.DEFINE_integer("gpu_num", 8, "the number of GPUs")
+tf.flags.DEFINE_integer("gpu_num", 4, "the number of GPUs")
 tf.flags.DEFINE_integer("epoch", 10, "train epoch")
 tf.flags.DEFINE_integer("log_step", 50, "log step")
 tf.flags.DEFINE_string("emotion_data","/dataset/Negative.tsv", "emotion data")
 tf.flags.DEFINE_string("task", "1emo", "the task of this model")
+# tf.flags.DEFINE_integer("gpu_start", 0, "gpu start")
 
 
 print("vocabulary_size: ",FLAGS.vocabulary_size)
@@ -53,7 +54,7 @@ print("log_step:", FLAGS.log_step)
 print("epoch:",FLAGS.epoch)
 print("emotion:",FLAGS.emotion_data)
 print("task: ", FLAGS.task)
-
+# print("gpu_start:",FLAGS.gpu_start)
 if FLAGS.on_cloud:
     from mintor.data_loader import TrainDataLoader
     from mintor.preprocessing import Preprocessor
@@ -109,6 +110,7 @@ class WassersteinGAN(object):
 
         self.get_batch = preproc.get_batch
         self.pairing = preproc.pairing
+        self.embedding_padding = preproc.embedding_padding
 
         print("session opening...")
         self._open_session()
@@ -297,7 +299,7 @@ class WassersteinGAN(object):
             if FLAGS.on_cloud == True:
                 self.saver.save(self.sess, "gs://jejucamp2017/logs/wgan")
             else:
-                self.saver.save(self.sess, "./logs/regan_local")
+                self.saver.save(self.sess, "{}regan_local".format(FLAGS.log_dir))
 
             print("Step: %d, generator loss: %g, discriminator_loss: %g" % (itr+itr*FLAGS.epoch, g_loss_val, d_loss_val))
 
@@ -314,12 +316,15 @@ class WassersteinGAN(object):
     def evaluation(self):
         gen_data = self.sess.run(self.gen_data)
         
+
         seq = ""
         for w in gen_data[0]:
-            seq += self.vec2word(w) + " "
+            seq += self.vec2word(w)[0] + " "
             print(seq)
 
-        with open("./logs/generated_text.txt", 'w') as f:
+            
+
+        with open("{}generated_text.txt".format(FLAGS.log_dir), 'w') as f:
             f.write(seq)
 
         if FLAGS.on_cloud == True: 

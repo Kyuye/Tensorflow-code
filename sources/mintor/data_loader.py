@@ -44,4 +44,4 @@ class TrainDataLoader(object):
             cos_dist = cosine(embed, np.array(self.embedding_map[v]))
             if cos_dist < sim_word[1]:
                 sim_word = (v, cos_dist)
-        return sim_word[0]
+        return sim_word
